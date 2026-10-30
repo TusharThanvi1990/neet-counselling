@@ -2,7 +2,8 @@
 
 NEET PG counselling helper built on MCC's official allotment results (2023 onwards).
 
-- **Predictor** (`/`): enter a rank, category and quotas; see every seat whose closing rank is within reach, labelled Safer / Possible / Reach, with a link to the exact PDF page the closing rank came from.
+- **Home** (`/`): landing page with a quick rank form, live stats, tool overview and FAQ.
+- **College Predictor** (`/predictor`): enter a rank, category and quotas; see every seat whose closing rank is within reach, labelled Safer / Possible / Reach, with a link to the exact PDF page the closing rank came from.
 - **Allotments** (`/allotments`): every allotment in every round, searchable.
 - **Branch cutoffs** (`/cutoffs`): first and closing rank per branch, with other seasons alongside.
 - **Seat matrix** (`/seat-matrix`): seats per institute, branch, quota and category for each season, plus a "Changes vs last year" view (new, increased, reduced and removed seats).
@@ -38,9 +39,9 @@ Node 22. No database and no environment variables: the dataset ships in `data/pg
 | `src/lib/query.ts` | Allotment queries: `predict`, `browse`, `cutoffs`, `rankScan`, `choiceDetails`. Pages and API routes both call these. |
 | `src/lib/institutes.ts` | Seat-matrix and institute queries: `seatMatrix`, `seatChanges`, `listInstitutes`, `instituteDetail`. |
 | `src/app/*/page.tsx` | Server-rendered pages. Filters live in the URL (`AutoForm` updates it as you type). |
-| `src/app/api/predict` | The predictor as JSON (for a mobile app or partners). Same parameters as the home page. |
+| `src/app/api/predict` | The predictor as JSON (for a mobile app or partners). Same parameters as `/predictor`. |
 | `src/app/api/choices` | Details for a saved choice list. |
-| `src/components/` | Small client components: auto-submitting filter form, add-to-list button, nav, choice list. |
+| `src/components/` | Site header/footer, `PageShell` (page header band), icons, and small client components: auto-submitting filter form, add-to-list button, choice lists. |
 | `pipeline/` | PDF → dataset scripts (see below). Not part of the web build. |
 
 Ids in URLs and saved lists are stable across data rebuilds: institutes use a hash of their normalised name, branches and quotas use slugs. Institute pages use MCC's own 6-digit institute code, which the seat matrices print after every name and which stays the same across seasons.

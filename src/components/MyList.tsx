@@ -124,7 +124,7 @@ export default function MyList() {
                   </td>
                 </tr>
               );
-            }) : <tr><td colSpan={7} className="empty">Your list is empty. Add options from the <Link href="/">Predictor</Link> with “+ Add”.</td></tr>}
+            }) : <tr><td colSpan={7} className="empty">Your list is empty. Add options from the <Link href="/predictor">College Predictor</Link> with “+ Add”.</td></tr>}
           </tbody>
         </table>
       </div>

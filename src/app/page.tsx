@@ -1,107 +1,152 @@
 import Link from 'next/link';
-import AutoForm from '@/components/AutoForm';
-import AddButton from '@/components/AddButton';
-import { getData, PROGRAMS, ROUND_SETS, yearLabel } from '@/lib/data';
-import { BAND_LABEL, CATEGORIES, parseProfile, predict, type Band, type SortKey } from '@/lib/query';
-import { fmt, hrefWith, type SearchParams } from '@/lib/url';
+import { ArrowIcon, BuildingIcon, ChartIcon, CheckIcon, GridIcon, ListIcon, ScanIcon, TargetIcon } from '@/components/Icons';
+import { getData, latestFullYear } from '@/lib/data';
+import { cutoffs, CATEGORIES } from '@/lib/query';
+import { fmt } from '@/lib/url';
 
-export default async function PredictorPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  const sp = await searchParams;
+const FEATURES = [
+  { href: '/predictor', icon: <TargetIcon />, title: 'College Predictor', text: 'Enter your rank and category to see every MCC seat within reach, marked Safer, Possible or Reach.' },
+  { href: '/cutoffs', icon: <ChartIcon />, title: 'Branch Cutoffs', text: 'Opening and closing ranks for every branch, quota and category, compared across seasons.' },
+  { href: '/institutes', icon: <BuildingIcon />, title: 'Colleges, Fees & Stipend', text: 'Fees, stipend, hostel and resignation rules for each college, with its seats and cutoffs by year.' },
+  { href: '/seat-matrix', icon: <GridIcon />, title: 'Seat Matrix', text: 'Seats per college and branch for each season, and where seats were added or cut this year.' },
+  { href: '/rank-scan', icon: <ScanIcon />, title: 'Rank Scan', text: 'See what candidates around your rank were allotted in every round, including upgrades.' },
+  { href: '/my-list', icon: <ListIcon />, title: 'Choice List Builder', text: 'Save colleges as you browse, arrange them in your order of preference and copy the list.' },
+];
+
+const FAQ = [
+  ['Where does the data come from?', 'Every number comes from documents MCC publishes: round-wise allotment results, seat matrices and institute profiles. Each closing rank links to the page of the official PDF it came from.'],
+  ['How accurate is the college predictor?', 'It compares your rank with the last rank MCC actually allotted for each seat in past rounds. Cutoffs move every year with seats and competition, so treat the labels as a guide, not a guarantee.'],
+  ['Does it cover state quota counselling?', 'Not yet. The current version covers MCC counselling: All India Quota, deemed and central universities, and DNB. State counselling is on the way.'],
+  ['Is it free?', 'Yes, all tools are free to use during the current season.'],
+  ['Which rounds are included?', 'Rounds 1–3 and the stray rounds from 2023, 2024 and 2025, plus 2026 rounds as MCC publishes them.'],
+];
+
+export default function Home() {
   const d = getData();
-  const p = parseProfile(sp);
-  const band = (['safe', 'possible', 'reach'].includes(String(sp.band)) ? sp.band : 'all') as Band | 'all';
-  const sort = (['close', 'margin', 'inst'].includes(String(sp.sort)) ? sp.sort : 'close') as SortKey;
-  const q = typeof sp.q === 'string' ? sp.q : '';
-  const limit = Math.min(2000, Math.max(100, Number(sp.limit) || 100));
-  const res = predict(p, { band, q, sort, limit });
-  const total = res.counts.safe + res.counts.possible + res.counts.reach;
-  const branches = [...d.course].sort((a, b) => a.label.localeCompare(b.label));
+  const year = latestFullYear(d);
+  const top = cutoffs(year, 'main', 'all-india', 'Open', 'MD/MS').rows
+    .filter((r) => ['General Medicine (MD/MS)', 'Radiodiagnosis (MD/MS)', 'Dermatology (MD/MS)', 'Paediatrics (MD/MS)', 'General Surgery (MD/MS)', 'Obstetrics & Gynaecology (MD/MS)'].includes(r.branch));
+  const totalSeats = d.matrixSources.filter((m) => m.year === Math.max(...d.years)).reduce((s, m) => s + m.seats, 0);
 
   return (
     <>
-      <h1>Where ranks like yours were allotted</h1>
-      <p className="lede">
-        Each option compares your All India Rank with the last rank MCC allotted to that seat in the season you pick.
-        These are past results, not a guarantee.
-      </p>
+      <section className="hero">
+        <div className="container">
+          <div>
+            <span className="eyebrow">NEET PG {Math.max(...d.years)} counselling · Updated with MCC Round 1</span>
+            <h1>Find the PG seat your <em>NEET rank</em> can get</h1>
+            <p className="big">College predictor, cutoffs, seat matrix and fees for MCC counselling, built on {d.years.length} years of official allotment results.</p>
+            <div className="trust">
+              <span><CheckIcon size={18} /> Official MCC data</span>
+              <span><CheckIcon size={18} /> Every round since 2023</span>
+              <span><CheckIcon size={18} /> Free to use</span>
+            </div>
+          </div>
+          <form className="card hero-card" action="/predictor" method="get">
+            <h2>Check your chances</h2>
+            <label className="field"><span>Your NEET PG All India Rank</span>
+              <input name="rank" type="number" min={1} inputMode="numeric" placeholder="e.g. 12500" required /></label>
+            <div className="row">
+              <label className="field"><span>Category</span>
+                <select name="cat" defaultValue="General">{CATEGORIES.map((c) => <option key={c}>{c}</option>)}</select></label>
+              <label className="field"><span>Program</span>
+                <select name="program" defaultValue=""><option value="">All</option><option>MD/MS</option><option>DNB</option><option>Diploma</option></select></label>
+            </div>
+            <label className="check"><input type="checkbox" name="pwd" value="1" /> I am a PwD candidate</label>
+            <button className="btn accent lg block" type="submit">Show my colleges <ArrowIcon size={18} /></button>
+            <span className="note" style={{ textAlign: 'center' }}>Compared with {year} MCC Rounds 1–3</span>
+          </form>
+        </div>
+      </section>
 
-      <AutoForm className="panel">
-        <input type="hidden" name="quotas" value="1" />
-        <div className="fields">
-          <label className="field"><span>All India Rank</span>
-            <input className="rank" name="rank" type="number" min={1} inputMode="numeric" defaultValue={p.rank} /></label>
-          <label className="field"><span>Category</span>
-            <select name="cat" defaultValue={p.cat}>{CATEGORIES.map((c) => <option key={c}>{c}</option>)}</select></label>
-          <label className="check"><input type="checkbox" name="pwd" value="1" defaultChecked={p.pwd} /> PwD</label>
-          <label className="field"><span>Compare with</span>
-            <select name="year" defaultValue={p.year}>{d.years.map((y) => <option key={y} value={y}>{yearLabel(d, y)}</option>)}</select></label>
-          <label className="field"><span>Rounds</span>
-            <select name="rounds" defaultValue={p.rounds}>{ROUND_SETS.map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}</select></label>
+      <div className="container">
+        <div className="statstrip">
+          <div><div className="v">{fmt(d.n)}</div><div className="k">allotments analysed</div></div>
+          <div><div className="v">{fmt(d.codes.length)}</div><div className="k">colleges & hospitals</div></div>
+          <div><div className="v">{fmt(totalSeats)}</div><div className="k">seats in {Math.max(...d.years)} MCC matrix</div></div>
+          <div><div className="v">{d.rounds.length}</div><div className="k">counselling rounds</div></div>
         </div>
-        <hr className="divider" />
-        <div className="fields">
-          <label className="field"><span>Branch</span>
-            <select name="branch" defaultValue={p.branch}><option value="">All branches</option>
-              {branches.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}</select></label>
-          <label className="field"><span>Program</span>
-            <select name="program" defaultValue={p.program}><option value="">All programs</option>{PROGRAMS.map((x) => <option key={x}>{x}</option>)}</select></label>
-          <label className="field"><span>State</span>
-            <select name="state" defaultValue={p.state}><option value="">All states</option>{d.states.map((s) => <option key={s}>{s}</option>)}</select></label>
-          <label className="field"><span>Search institute</span>
-            <input type="search" name="q" defaultValue={q} placeholder="e.g. Maulana Azad" /></label>
-          <label className="field"><span>Sort</span>
-            <select name="sort" defaultValue={sort}>
-              <option value="close">Most competitive first</option><option value="margin">Best margin first</option><option value="inst">Institute A–Z</option>
-            </select></label>
-        </div>
-        <div className="field">
-          <span>Quotas you are eligible for</span>
-          <div className="quotas">
-            {d.quota.map((x) => (
-              <label key={x.id} className="check"><input type="checkbox" name="quota" value={x.id} defaultChecked={p.quotas.includes(x.id)} /> {x.label}</label>
+      </div>
+
+      <section className="band">
+        <div className="container">
+          <div className="section-title">
+            <h2>Everything you need for MCC counselling</h2>
+            <p>From your first shortlist to the final choice list, without digging through hundreds of PDF pages.</p>
+          </div>
+          <div className="features">
+            {FEATURES.map((f) => (
+              <Link key={f.href} href={f.href} className="card feature">
+                <span className="icon">{f.icon}</span>
+                <h3>{f.title}</h3>
+                <p>{f.text}</p>
+                <span className="go">Open →</span>
+              </Link>
             ))}
           </div>
         </div>
-        {band !== 'all' && <input type="hidden" name="band" value={band} />}
-      </AutoForm>
+      </section>
 
-      <div className="seg" role="group" aria-label="Filter by chance">
-        {([['all', 'All', total], ['safe', 'Safer', res.counts.safe], ['possible', 'Possible', res.counts.possible], ['reach', 'Reach', res.counts.reach]] as const).map(([v, label, n]) => (
-          <Link key={v} href={hrefWith('/', sp, { band: v === 'all' ? undefined : v, limit: undefined })} scroll={false} aria-current={band === v}>
-            {label} <span className="n">{fmt(n)}</span>
-          </Link>
-        ))}
-      </div>
-
-      <div className="tablebox">
-        <table>
-          <thead>
-            <tr><th>Chance</th><th>Institute</th><th>Branch</th><th className="hide-sm">Quota · seat</th><th className="num">Closing rank</th>
-              <th className="num">Your margin</th><th className="num hide-sm">Seats</th><th /></tr>
-          </thead>
-          <tbody>
-            {res.options.length ? res.options.map((o) => (
-              <tr key={o.key + o.seatCategory}>
-                <td><span className={`pill b-${o.band}`}>{BAND_LABEL[o.band]}</span></td>
-                <td><div className="inst" title={o.fullName}>{o.code ? <Link href={`/institutes/${o.code}`}>{o.institute}</Link> : o.institute}</div><div className="sub">{o.state}</div></td>
-                <td>{o.branch}</td>
-                <td className="hide-sm"><span className="tag">{o.quota}</span> <span className="sub">{o.seatCategory}</span></td>
-                <td className="num">{fmt(o.closingRank)}<div className="sub">{o.closingRound} · <a href={o.pdf} target="_blank" rel="noopener">PDF</a></div></td>
-                <td className={`num ${o.margin >= 0 ? 'pos' : 'neg'}`}>{o.margin >= 0 ? '+' : '−'}{fmt(Math.abs(o.margin))}</td>
-                <td className="num hide-sm">{o.seats ?? '—'}</td>
-                <td><AddButton choice={o.key} /></td>
-              </tr>
-            )) : (
-              <tr><td colSpan={8} className="empty">No seats within reach for these filters. Try adding quotas, another branch or state, or a different season.</td></tr>
-            )}
-          </tbody>
-        </table>
-        <div className="more">
-          {res.total > res.options.length
-            ? <>Showing {fmt(res.options.length)} of {fmt(res.total)} <Link className="btn" href={hrefWith('/', sp, { limit: limit + 100 })} scroll={false}>Show 100 more</Link></>
-            : res.total ? `${fmt(res.total)} options` : null}
+      <section className="band white">
+        <div className="container">
+          <div className="section-title">
+            <h2>How it works</h2>
+            <p>Three steps from rank to a ready choice list.</p>
+          </div>
+          <div className="steps">
+            <div className="card step"><h3>Enter your rank</h3><p>Add your All India Rank, category and the quotas you are eligible for.</p></div>
+            <div className="card step"><h3>See your options</h3><p>Every college and branch whose closing rank was near yours, with seats, fees and the source PDF.</p></div>
+            <div className="card step"><h3>Build your list</h3><p>Save options, put them in your order of preference and take the list into MCC choice filling.</p></div>
+          </div>
         </div>
-      </div>
+      </section>
+
+      <section className="band">
+        <div className="container split">
+          <div>
+            <h2>Closing ranks you can verify</h2>
+            <p>We read MCC’s result PDFs line by line, so every cutoff is an actual allotment, not an estimate. Click any closing rank to open the exact page of the official PDF.</p>
+            <ul className="checks">
+              <li><CheckIcon size={18} /> Round-wise results for 2023, 2024, 2025 and 2026</li>
+              <li><CheckIcon size={18} /> Seat matrices with year-on-year seat changes</li>
+              <li><CheckIcon size={18} /> Fees and stipends declared by colleges to MCC</li>
+            </ul>
+            <p style={{ marginTop: 22 }}><Link className="btn primary" href="/cutoffs">See all branch cutoffs <ArrowIcon size={18} /></Link></p>
+          </div>
+          <div className="tablebox">
+            <table>
+              <thead><tr><th>Branch (AIQ, Open)</th><th className="num">First rank</th><th className="num">Closing rank {year}</th></tr></thead>
+              <tbody>
+                {top.map((r) => (
+                  <tr key={r.branchId}><td><b>{r.branch.replace(' (MD/MS)', '')}</b><div className="sub">MD/MS</div></td>
+                    <td className="num">{fmt(r.open)}</td><td className="num"><b>{fmt(r.close)}</b></td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section className="band white">
+        <div className="container">
+          <div className="section-title"><h2>Frequently asked questions</h2></div>
+          <div className="faq">
+            {FAQ.map(([q, a]) => <details key={q}><summary>{q}</summary><p>{a}</p></details>)}
+          </div>
+        </div>
+      </section>
+
+      <section className="band">
+        <div className="container">
+          <div className="cta">
+            <div>
+              <h2>Ready to plan your choices?</h2>
+              <p>Start with your rank. It takes less than a minute.</p>
+            </div>
+            <Link className="btn accent lg" href="/predictor">Open College Predictor <ArrowIcon size={18} /></Link>
+          </div>
+        </div>
+      </section>
     </>
   );
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import PageShell from '@/components/PageShell';
 import { getData } from '@/lib/data';
 import { fmt } from '@/lib/url';
 
@@ -13,11 +14,8 @@ export default function SourcesPage() {
   ];
 
   return (
-    <>
-      <div className="prose">
-        <h1>Sources and method</h1>
-        <p className="lede">All figures come from MCC’s official result PDFs. Nothing is estimated or bought from a third party.</p>
-      </div>
+    <PageShell title="Data Sources & Method" intro={<>All figures come from MCC’s official result PDFs. Nothing is estimated or bought from a third party.</>}>
+
       <div className="stats">
         {stats.map(([v, k]) => <div key={k} className="stat"><div className="v">{v}</div><div className="k">{k}</div></div>)}
       </div>
@@ -77,6 +75,6 @@ export default function SourcesPage() {
           <li>Fees, stipends and bonds are not included yet.</li>
         </ul>
       </div>
-    </>
+    </PageShell>
   );
 }

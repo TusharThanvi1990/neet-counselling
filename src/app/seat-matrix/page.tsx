@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import PageShell from '@/components/PageShell';
 import Link from 'next/link';
 import AutoForm from '@/components/AutoForm';
 import { getData, PROGRAMS, type Program } from '@/lib/data';
@@ -24,12 +25,8 @@ export default async function SeatMatrixPage({ searchParams }: { searchParams: P
   const canCompare = matrixYears.includes(year - 1);
 
   return (
-    <>
-      <h1>Seat matrix</h1>
-      <p className="lede">
-        Seats MCC put up for counselling each season, from its official seat matrices, by institute, branch, quota and category.
-        Compare with the season before to see where seats were added or cut.
-      </p>
+    <PageShell title="NEET PG Seat Matrix" intro={<>Seats MCC put up for counselling each season, from its official seat matrices, by institute, branch, quota and category. Compare with the season before to see where seats were added or cut.</>}>
+
 
       <div className="seg" role="group" aria-label="View">
         <Link href={hrefWith('/seat-matrix', sp, { view: undefined, page: undefined })} aria-current={view === 'matrix'}>Seats by institute</Link>
@@ -67,7 +64,7 @@ export default async function SeatMatrixPage({ searchParams }: { searchParams: P
       {view === 'matrix' ? <MatrixTable sp={sp} year={year} program={program} branch={branch} state={state} /> : canCompare
         ? <ChangesTable sp={sp} year={year} program={program} branch={branch} state={state} />
         : <p className="empty">There is no earlier season in the data to compare {year} with.</p>}
-    </>
+    </PageShell>
   );
 }
 

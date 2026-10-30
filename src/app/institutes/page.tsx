@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import PageShell from '@/components/PageShell';
 import Link from 'next/link';
 import AutoForm from '@/components/AutoForm';
 import { getData } from '@/lib/data';
@@ -20,12 +21,8 @@ export default async function InstitutesPage({ searchParams }: { searchParams: P
   const withProfile = Object.keys(d.profiles).length;
 
   return (
-    <>
-      <h1>Institutes, fees and stipends</h1>
-      <p className="lede">
-        Every institute in MCC’s seat matrices, with the first-year fee and stipend each one declared to MCC for {Math.max(...d.years)} counselling
-        ({fmt(withProfile)} institutes have a profile). Open an institute for its full fee schedule, resignation rules, seats and closing ranks.
-      </p>
+    <PageShell title="Colleges, Fees & Stipend" intro={<>Every institute in MCC’s seat matrices, with the first-year fee and stipend each one declared to MCC for {Math.max(...d.years)} counselling ({fmt(withProfile)} institutes have a profile). Open an institute for its full fee schedule, resignation rules, seats and closing ranks.</>}>
+
 
       <AutoForm className="panel">
         <div className="fields">
@@ -68,6 +65,6 @@ export default async function InstitutesPage({ searchParams }: { searchParams: P
         Fees and stipends are as declared by each institute to MCC, in rupees. *Most institutes declare the stipend per month; some write
         separate amounts for MD/MS and diploma, and the first amount is shown here (the institute page shows their exact wording). A dash means not declared.
       </p>
-    </>
+    </PageShell>
   );
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import PageShell from '@/components/PageShell';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { instituteDetail } from '@/lib/institutes';
@@ -20,10 +21,8 @@ export default async function InstitutePage({ params }: Params) {
   const p = inst.profile;
 
   return (
-    <>
-      <p className="sub" style={{ margin: '0 0 6px' }}><Link href="/institutes">← All institutes</Link></p>
-      <h1>{inst.name}</h1>
-      <p className="lede">{inst.state} · {inst.type} · MCC institute code {inst.code}{p?.university ? ` · ${p.university}` : ''}</p>
+    <PageShell title={inst.name} intro={<>{inst.state} · {inst.type} · MCC institute code {inst.code}{p?.university ? ` · ${p.university}` : ''}</>} crumb={{ href: '/institutes', label: 'Colleges' }}>
+
 
       <h2>Fees and stipend</h2>
       {p ? (
@@ -78,6 +77,6 @@ export default async function InstitutePage({ params }: Params) {
           </tbody>
         </table>
       </div>
-    </>
+    </PageShell>
   );
 }

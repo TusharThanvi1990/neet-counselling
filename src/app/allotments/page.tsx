@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import PageShell from '@/components/PageShell';
 import Link from 'next/link';
 import AutoForm from '@/components/AutoForm';
 import { getData } from '@/lib/data';
@@ -17,12 +18,8 @@ export default async function AllotmentsPage({ searchParams }: { searchParams: P
   const branches = [...d.course].sort((a, b) => a.label.localeCompare(b.label));
 
   return (
-    <>
-      <h1>Allotment lists</h1>
-      <p className="lede">
-        Every allotment from MCC’s official result PDFs, searchable. Each row links to the page of the PDF it came from.
-        For Rounds 2 and 3, only seats allotted in that round are listed.
-      </p>
+    <PageShell title="MCC NEET PG Allotment Lists" intro={<>Every allotment from MCC’s official result PDFs, searchable. Each row links to the page of the PDF it came from. For Rounds 2 and 3, only seats allotted in that round are listed.</>}>
+
 
       <AutoForm className="panel">
         <div className="fields">
@@ -69,6 +66,6 @@ export default async function AllotmentsPage({ searchParams }: { searchParams: P
           {f.page < pages && <Link className="btn" href={hrefWith('/allotments', sp, { page: f.page + 1 })}>Next →</Link>}
         </div>
       </div>
-    </>
+    </PageShell>
   );
 }

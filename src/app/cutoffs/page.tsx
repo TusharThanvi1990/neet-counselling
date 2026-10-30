@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import PageShell from '@/components/PageShell';
 import AutoForm from '@/components/AutoForm';
 import { getData, latestFullYear, PROGRAMS, ROUND_SETS, yearLabel, type Program, type RoundSet } from '@/lib/data';
 import { cutoffs } from '@/lib/query';
@@ -19,11 +20,8 @@ export default async function CutoffsPage({ searchParams }: { searchParams: Prom
   const max = Math.max(1, ...res.rows.map((r) => r.close));
 
   return (
-    <>
-      <h1>Branch-wise closing ranks</h1>
-      <p className="lede">
-        The range of ranks allotted to each branch for one quota and seat category, with other seasons alongside for comparison.
-      </p>
+    <PageShell title="NEET PG Branch-wise Cutoffs" intro={<>The range of ranks allotted to each branch for one quota and seat category, with other seasons alongside for comparison.</>}>
+
 
       <AutoForm className="panel">
         <div className="fields">
@@ -66,6 +64,6 @@ export default async function CutoffsPage({ searchParams }: { searchParams: Prom
           </tbody>
         </table>
       </div>
-    </>
+    </PageShell>
   );
 }
