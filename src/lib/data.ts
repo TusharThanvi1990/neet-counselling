@@ -8,7 +8,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-export type Round = { id: string; year: number; label: string; url: string; count: number };
+export type Round = { id: string; year: number; label: string; url: string; count: number; counselling: string };
+/** "MCC Round 2", "Maharashtra Stray". */
+export const roundTitle = (r: Round) => `${r.counselling} ${r.label}`;
 export type Institute = { id: string; name: string; full: string; state: string; code: string };
 /** An institute as MCC registers it (stable 6-digit code), across all seasons. */
 export type CodedInstitute = { code: string; name: string; state: string; type: string };

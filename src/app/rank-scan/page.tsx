@@ -19,7 +19,7 @@ export default async function RankScanPage({ searchParams }: { searchParams: Pro
   const shownTo = from + res.rows.length - 1;
 
   return (
-    <PageShell title="Rank Scan" intro={<>See what every rank in a range was allotted in each MCC round: the first seat, any upgrade in later rounds, and stray-round seats. Use it to see how far down the ranks a seat went, and who moved up from it.</>}>
+    <PageShell title="Rank Scan" intro={<>See what every rank in a range was allotted in each MCC and state counselling round: the first seat, any upgrade in later rounds, and stray-round seats. Use it to see how far down the ranks a seat went, and who moved up from it.</>}>
 
 
       <AutoForm className="panel">
@@ -35,7 +35,7 @@ export default async function RankScanPage({ searchParams }: { searchParams: Pro
       <div className="tablebox">
         <table>
           <thead>
-            <tr><th className="num">Rank</th><th className="hide-sm">Category</th>{res.rounds.map((r) => <th key={r.id}>{r.label}</th>)}</tr>
+            <tr><th className="num">Rank</th><th className="hide-sm">Category</th>{res.rounds.map((r) => <th key={r.id}>{r.counselling}<br />{r.label}</th>)}</tr>
           </thead>
           <tbody>
             {res.rows.map((row) => (

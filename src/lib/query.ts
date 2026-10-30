@@ -222,23 +222,23 @@ export function rankScan(year: number, from: number, to: number) {
   const rows = [];
   for (let rank = from; rank <= hi; rank++) {
     const ks = idx.get(rank) ?? [];
-    let held = false;
+    const held = new Set<string>();
     const cells = rounds.map((rd) => {
       const k = ks.find((x) => d.col.rd[x] === rd.i);
       if (k == null) return null;
       const inst = d.inst[d.col.inst[k]];
       const cell = {
-        status: held ? 'Upgraded' : 'Allotted', institute: inst.name, instId: inst.id, code: inst.code, state: inst.state,
+        status: held.has(rd.counselling) ? 'Upgraded' : 'Allotted', institute: inst.name, instId: inst.id, code: inst.code, state: inst.state,
         branch: d.course[d.col.course[k]].label, quota: d.quota[d.col.quota[k]].label, seatCategory: d.acat[d.col.acat[k]],
         pdf: pdfHref(d, rd.i, d.col.page[k]),
       };
-      held = true;
+      held.add(rd.counselling);
       return cell;
     });
     const cat = ks.length ? d.ccat[d.col.ccat[ks[0]]] : null;
     rows.push({ rank, candidateCategory: cat, cells });
   }
-  return { rounds: rounds.map((r) => ({ id: r.id, label: r.label })), rows };
+  return { rounds: rounds.map((r) => ({ id: r.id, label: r.label, counselling: r.counselling })), rows };
 }
 
 // ---- saved choices ----

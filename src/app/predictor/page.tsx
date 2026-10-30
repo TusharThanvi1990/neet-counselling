@@ -9,6 +9,8 @@ import { fmt, hrefWith, type SearchParams } from '@/lib/url';
 
 export const metadata: Metadata = { title: 'NEET PG College Predictor' };
 
+const STATE_QUOTA = /^Maharashtra /;
+
 export default async function PredictorPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const sp = await searchParams;
   const d = getData();
@@ -48,9 +50,17 @@ export default async function PredictorPage({ searchParams }: { searchParams: Pr
           <label className="field"><span>College name</span>
             <input type="search" name="q" defaultValue={q} placeholder="Search college" /></label>
           <div className="field">
-            <span>Quotas you are eligible for</span>
+            <span>MCC quotas you are eligible for</span>
             <div className="quotas">
-              {d.quota.map((x) => (
+              {d.quota.filter((x) => !STATE_QUOTA.test(x.label)).map((x) => (
+                <label key={x.id} className="check"><input type="checkbox" name="quota" value={x.id} defaultChecked={p.quotas.includes(x.id)} /> {x.label}</label>
+              ))}
+            </div>
+          </div>
+          <div className="field">
+            <span>State counselling (if you are eligible)</span>
+            <div className="quotas">
+              {d.quota.filter((x) => STATE_QUOTA.test(x.label)).map((x) => (
                 <label key={x.id} className="check"><input type="checkbox" name="quota" value={x.id} defaultChecked={p.quotas.includes(x.id)} /> {x.label}</label>
               ))}
             </div>

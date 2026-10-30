@@ -21,10 +21,10 @@ export default function SourcesPage() {
       </div>
       <div className="tablebox">
         <table>
-          <thead><tr><th>Season</th><th>Round</th><th className="num">Allotments</th><th>Official PDF</th></tr></thead>
+          <thead><tr><th>Season</th><th>Counselling</th><th>Round</th><th className="num">Allotments</th><th>Official PDF</th></tr></thead>
           <tbody>
             {[...d.rounds].reverse().map((r) => (
-              <tr key={r.id}><td>{r.year}</td><td>{r.label}</td><td className="num">{fmt(r.count)}</td>
+              <tr key={r.id}><td>{r.year}</td><td>{r.counselling}</td><td>{r.label}</td><td className="num">{fmt(r.count)}</td>
                 <td><a href={r.url} target="_blank" rel="noopener">Open PDF</a></td></tr>
             ))}
           </tbody>
@@ -69,7 +69,8 @@ export default function SourcesPage() {
         </p>
         <h2>Current limits</h2>
         <ul>
-          <li>MCC counselling only (All India, deemed, central universities, DNB). State quota counselling is not included yet.</li>
+          <li>MCC counselling (All India, deemed, central universities, DNB) plus Maharashtra state counselling 2025. Other states are being added.</li>
+          <li>Maharashtra lists show the state merit number; the All India Rank comes from the State CET Cell’s Common State Merit List.</li>
           <li>{Math.max(...d.years)} has {d.rounds.filter((r) => r.year === Math.max(...d.years)).map((r) => r.label).join(', ')} so far.</li>
           <li>Institute names change between years, so each season is compared on its own.</li>
           <li>Fees, stipends and bonds are not included yet.</li>

@@ -25,7 +25,7 @@ export default async function AllotmentsPage({ searchParams }: { searchParams: P
         <div className="fields">
           <label className="field"><span>Round</span>
             <select name="round" defaultValue={f.round}>
-              {[...d.rounds].reverse().map((r) => <option key={r.id} value={r.id}>{r.year} · {r.label}</option>)}
+              {[...d.rounds].reverse().map((r) => <option key={r.id} value={r.id}>{r.year} · {r.counselling} · {r.label}</option>)}
             </select></label>
           <label className="field"><span>Institute</span><input type="search" name="q" defaultValue={f.q} placeholder="Name or city" /></label>
           <label className="field"><span>Branch</span>
@@ -62,7 +62,7 @@ export default async function AllotmentsPage({ searchParams }: { searchParams: P
         </table>
         <div className="more">
           {f.page > 1 && <Link className="btn" href={hrefWith('/allotments', sp, { page: f.page - 1 })}>← Previous</Link>}
-          <span>{fmt(res.total)} allotments in {round.year} {round.label}{pages > 1 ? ` · page ${f.page} of ${fmt(pages)}` : ''}</span>
+          <span>{fmt(res.total)} allotments in {round.year} {round.counselling} {round.label}{pages > 1 ? ` · page ${f.page} of ${fmt(pages)}` : ''}</span>
           {f.page < pages && <Link className="btn" href={hrefWith('/allotments', sp, { page: f.page + 1 })}>Next →</Link>}
         </div>
       </div>

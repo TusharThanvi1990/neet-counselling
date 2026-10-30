@@ -99,17 +99,18 @@ const SPECIALTY: [RegExp, string][] = [
   [/cardiovascular|thoracic/, 'Cardiothoracic Surgery (6-yr)'], [/neurosurgery/, 'Neurosurgery (6-yr)'],
   [/paediatricsurgery/, 'Paediatric Surgery (6-yr)'], [/plastic/, 'Plastic Surgery (6-yr)'],
   [/generalmedicine/, 'General Medicine'], [/generalsurgery/, 'General Surgery'], [/trauma/, 'Traumatology & Surgery'],
-  [/obst|gyna/, 'Obstetrics & Gynaecology'], [/paediatric|childhealth/, 'Paediatrics'],
+  [/obst|gyna|obgy/, 'Obstetrics & Gynaecology'], [/paediatric|childhealth/, 'Paediatrics'],
   [/radiationmedicine/, 'Radiation Medicine'], [/radio-?therap|radiation/, 'Radiation Oncology'], [/radio-?diag|radiology/, 'Radiodiagnosis'],
-  [/derm|d\.d\.v\.l|venere/, 'Dermatology'], [/ortho/, 'Orthopaedics'], [/ophthal/, 'Ophthalmology'],
+  [/derm|d\.d\.v\.l|venere|skin/, 'Dermatology'], [/ortho/, 'Orthopaedics'], [/ophthal|opthal/, 'Ophthalmology'],
   [/otorhino|oto-rhino|e\.?n\.?t\b|\bent\b/, 'ENT'], [/anaesth/, 'Anaesthesiology'], [/psychiat|psycholog/, 'Psychiatry'],
   [/respiratory|tuberculosis|t\.b\.|chest|pulmonary/, 'Respiratory Medicine'], [/emergency/, 'Emergency Medicine'], [/family/, 'Family Medicine'],
-  [/forensic/, 'Forensic Medicine'], [/community|preventive|publichealth|epidemiolog/, 'Community Medicine'],
+  [/forensic/, 'Forensic Medicine'], [/community|preventive|publichealth|epidemiolog|p\.s\.m/, 'Community Medicine'],
   [/administration|admn/, 'Hospital Administration'], [/immuno|transfusion/, 'Immunohaematology & Transfusion'],
   [/microbio|bacterio/, 'Microbiology'], [/laboratory/, 'Laboratory Medicine'], [/patholog/, 'Pathology'], [/pharmacol/, 'Pharmacology'],
   [/physiolog/, 'Physiology'], [/bio-?chem/, 'Biochemistry'], [/anatomy/, 'Anatomy'], [/physicalmed|phy\.medicine/, 'Physical Medicine & Rehab'],
   [/geriatric/, 'Geriatrics'], [/palliative/, 'Palliative Medicine'], [/nuclear/, 'Nuclear Medicine'], [/sport/, 'Sports Medicine'],
   [/tropical/, 'Tropical Medicine'], [/aerospace/, 'Aerospace Medicine'], [/diabetolog/, 'Diabetology'],
+  [/^medicine$/, 'General Medicine'], [/^surgery$/, 'General Surgery'], // state lists' short names
 ];
 const programOf = (raw: string) => { const c = raw.replace(/\s+/g, ''); return /^\(NBEMS-DIPLOMA\)/i.test(c) ? 'DNB Diploma' : /^\(NBEMS\)/i.test(c) ? 'DNB'
   : /^(DIP|PGDiploma)|\(D\.D\.V\.L\.\)/i.test(c) ? 'Diploma' : /^M\.Ch/i.test(c) ? 'M.Ch' : 'MD/MS'; };
@@ -152,27 +153,76 @@ const codeFor = (full: string, year: number) =>
 function dict() { const arr: string[] = [], m = new Map<string, number>(); return { arr, get: (v: string) => { let i = m.get(v); if (i == null) { i = arr.length; arr.push(v); m.set(v, i); } return i; } }; }
 const course = dict(), quota = dict(), acat = dict(), ccat = dict();
 const inst: [string, string, string, string][] = [], instM = new Map<string, number>();
-const instIndex = (full: string, year: number) => {
+const instIndex = (full: string, year: number, given?: { display: string; code: string; state: string }) => {
   const ik = norm(full);
   let i = instM.get(ik);
   if (i != null) return i;
   const cut = full.search(/,(?=\S)/);
-  const display = (cut > 0 ? full.slice(0, cut) : full.split(',').slice(0, 2).join(',')).trim().replace(/\s+/g, ' ');
-  const code = codeFor(full, year);
-  const state = (code && codeState(code)) || stateFromText(full);
+  const display = given?.display ?? (cut > 0 ? full.slice(0, cut) : full.split(',').slice(0, 2).join(',')).trim().replace(/\s+/g, ' ');
+  const code = given ? given.code : codeFor(full, year);
+  const state = given?.state || (code && codeState(code)) || stateFromText(full);
   i = inst.length; inst.push([display, full, state, code]); instM.set(ik, i);
   return i;
 };
 
+// ---- state counselling (see pipeline/states/*) ----
+// Maharashtra college abbreviations → MCC institute codes (government colleges that also offer AIQ seats).
+const MH_CODES: Record<string, string> = {
+  'GSMC MUMBAI': '700310', 'GMC MUMBAI': '700305', 'GMC NAGPUR': '700303', 'LTMC MUMBAI': '700307', 'BJMC PUNE': '700301',
+  'GMC SAMBHAJINA': '700304', 'TNMC MUMBAI': '700313', 'IGMC NAGPUR': '700306', 'TATA MUMBAI': '700321', 'GMC NANDED': '700314',
+  'GMC MIRAJ': '700309', 'VMMC SOLAPUR': '700302', 'SRTR AMBAJOGAI': '700312', 'MGIMS SEVAGRAM,W': '700466', 'GMC LATUR': '700322',
+  'GMC AKOLA': '700328', 'GMC KOLHAPUR': '701496', 'GMC JALGAON': '701704', 'HBT & COOP JUHU, MUMB': '700540', 'VNMC YEOTMAL': '700315',
+  'PCMC PGM I PIMPARI, P': '700523', 'MPGIMER NASHIK': '701701', 'CGMC CHANDRAPUR': '701717', 'Rajeev Gan THANE': '700517',
+  'B Hire DHULE': '903317', 'GGMC GONDIA': '701705', 'GMC BARAMATI': '901804', 'PGIMS NEW MUMBAI': '903367', 'GMC NANDURBAR': '904640',
+  'BARC MUMBAI': '700501', 'AIIPMR MUMBAI': '700318',
+};
+const MH_DIPLOMA: Record<string, string> = {
+  'D.A.': 'Diploma in Anaesthesiology', 'D.P.H.': 'Diploma in Public Health', 'D.V.D.': 'Diploma in Dermatology', 'D.G.O.': 'Diploma in Obstetrics and Gynaecology',
+  'D.M.R.D.': 'Diploma in Radiodiagnosis', 'D.C.H.': 'Diploma in Child Health', 'D.P.M.': 'Diploma in Psychiatry', 'D.D. (DIABET)': 'Diploma in Diabetology',
+  'D.O.': 'Diploma in Ophthalmology', 'D.ORTHO': 'Diploma in Orthopaedics', 'D.L.O.': 'Diploma in Otorhinolaryngology', 'D.C.P.': 'Diploma in Clinical Pathology',
+  'D.F.M.': 'Diploma in Forensic Medicine', 'D.M.R.T.': 'Diploma in Radiotherapy', 'D.T.C.D.': 'Diploma in Tuberculosis and Chest Diseases',
+};
+// Maharashtra seat codes → [quota suffix, seat category]
+const mhSeat = (token: string): [string, string] => {
+  const t = token.toUpperCase().replace(/\.$/, '');
+  if (t === 'I.Q' || t === 'IQ') return ['Institutional', 'Open'];
+  if (t === 'NRI') return ['NRI', 'Open'];
+  if (t.startsWith('MINORIT')) return ['Minority', 'Open'];
+  if (t === 'IS') return ['In-service', 'Open'];
+  if (t === 'ISPH') return ['In-service', 'Open PwD'];
+  if (t === 'PH') return ['State Quota', 'Open PwD'];
+  if (t.startsWith('ORPHAN')) return ['State Quota', 'Orphan'];
+  const base = t.replace(/^EM/, ''); // EM-prefixed seats are reserved within the same category
+  const named: Record<string, string> = { OPEN: 'Open', OBC: 'OBC', SC: 'SC', ST: 'ST', EWS: 'EWS', SEBC: 'SEBC', NTB: 'NT-B', NTC: 'NT-C', NTD: 'NT-D', VJA: 'VJ-A', SBC: 'SBC' };
+  return ['State Quota', named[base] ?? base];
+};
+const mhCandidate = (cat: string) => {
+  const [first] = cat.toUpperCase().split(/\s+/);
+  const named: Record<string, string> = { OPEN: 'General', MIN: 'General', NRI: 'General', ORA: 'General', ORC: 'General', OBC: 'OBC', SC: 'SC', ST: 'ST', EWS: 'EWS',
+    SEBC: 'SEBC', NTB: 'NT-B', NTC: 'NT-C', NTD: 'NT-D', VJA: 'VJ-A', PWD: 'General' };
+  return (named[first] ?? first) + (/PWD/.test(cat.toUpperCase()) ? ' PwD' : '');
+};
+const STATE_FILES = readdirSync('data/parsed').filter((f) => /^mh20\d\d_[a-z0-9]+\.json$/.test(f) && !/merit/.test(f)).map((f) => f.replace('.json', ''));
+
 // ---- rounds ----
 const files = readdirSync('data/parsed').filter((f) => /^mcc20\d\d_[a-z0-9]+\.json$/.test(f)).map((f) => f.replace('.json', ''))
   .filter((f) => SOURCES[f]);
-const rounds = files.map((f) => ({ id: f, year: Number(f.slice(3, 7)), label: SOURCES[f][0], url: U + SOURCES[f][1], count: 0 }))
-  .sort((a, b) => a.year - b.year || ROUND_ORDER.indexOf(a.label) - ROUND_ORDER.indexOf(b.label));
+type RoundInfo = { id: string; year: number; label: string; url: string; count: number; counselling: string };
+const rounds: RoundInfo[] = [
+  ...files.map((f) => ({ id: f, year: Number(f.slice(3, 7)), label: SOURCES[f][0], url: U + SOURCES[f][1], count: 0, counselling: 'MCC' })),
+  ...STATE_FILES.map((f) => { const d = load(`data/parsed/${f}.json`); return { id: f, year: d.year, label: d.round, url: d.url, count: 0, counselling: d.counselling }; }),
+].sort((a, b) => a.year - b.year || (a.counselling === b.counselling ? 0 : a.counselling === 'MCC' ? -1 : 1) || ROUND_ORDER.indexOf(a.label) - ROUND_ORDER.indexOf(b.label));
 const rows: number[] = [];
 rounds.forEach((rd, ri) => {
   const d = load(`data/parsed/${rd.id}.json`);
   for (const r of d.rows) {
+    if (rd.counselling === 'Maharashtra') {
+      const code = MH_CODES[r.institute] ?? '';
+      const ii = instIndex(`MH ${r.institute}`, rd.year, { display: code ? codeName(code) : r.institute.replace(/\s+/g, ' '), code, state: 'Maharashtra' });
+      const [q, seat] = mhSeat(r.allottedCategory);
+      rows.push(ri, r.rank, ii, course.get(normCourse(MH_DIPLOMA[r.course] ?? r.course)), quota.get(`Maharashtra ${q}`), acat.get(seat), ccat.get(mhCandidate(r.candidateCategory)), r.page);
+      continue;
+    }
     rows.push(ri, r.rank, instIndex(r.institute, rd.year), course.get(normCourse(r.course)), quota.get(normQuota(r.quota)),
       acat.get(normSeatCat(r.allottedCategory)), ccat.get(normCandCat(r.candidateCategory)), r.page);
   }
@@ -204,7 +254,7 @@ const QUOTA_LABEL: Record<string, string> = { 'Self-Financed Merit Seat': 'Deeme
 
 const data = {
   meta: { builtAt: new Date().toISOString(), portal: 'https://mcc.nic.in/pg-medical-counselling/', archive: 'https://mcc.nic.in/archive-pg/' },
-  rounds: rounds.map(({ id, year, label, url, count }) => ({ id, year, label, url, count })),
+  rounds: rounds.map(({ id, year, label, url, count, counselling }) => ({ id, year, label, url, count, counselling })),
   // [id, display name, full name as printed by MCC, state, MCC institute code or '']
   inst: inst.map(([display, full, state, code]) => [instId(full), display, full, state, code]),
   // [MCC institute code, name, state, types]
