@@ -451,7 +451,30 @@ const hrSeat = (code: string): [string, string] => {
   return [t.includes('IS') ? 'In-service' : t.includes('IP') ? 'State Quota (institutional preference)' : 'State Quota', seat];
 };
 const hrCourse = (c: string) => c.replace(/^Post MBBS DNB\s*-\s*/i, '(NBEMS) ').replace(/^Post MBBS Diploma\s*-\s*/i, '(NBEMS-DIPLOMA) ').replace(/^(MD|MS)\s*-\s*/, '$1 ');
-const STATE_FILES = readdirSync('data/parsed').filter((f) => /^(mh|ka|kl|ap|rj|tg|gj|mp|hr)20\d\d_[a-z0-9_]+\.json$/.test(f) && !/merit|_oc$/.test(f)).map((f) => f.replace('.json', ''));
+// Bihar (BCECEB): institute (letters only) → [display name, MCC code]. Private colleges have no MCC code.
+const BH_INST: Record<string, [string, string]> = {
+  PMCPATNA: ['Patna Medical College, Patna', '700480'], NMCPATNA: ['Nalanda Medical College, Patna', '700109'],
+  IGIMSPATNA: ['Indira Gandhi Institute of Medical Sciences, Patna', '700111'], DMCLAHERIASARAI: ['Darbhanga Medical College, Laheriasarai', '700107'],
+  SKMCMUZAFFARPUR: ['Sri Krishna Medical College, Muzaffarpur', '700113'], JLNMCBHAGALPUR: ['Jawaharlal Nehru Medical College, Bhagalpur', '700112'],
+  ANMMCGAYA: ['Anugrah Narayan Magadh Medical College, Gaya', '700272'], BMIMSPAWAPURINALANDA: ['Bhagwan Mahavir Institute of Medical Sciences, Pawapuri', '700541'],
+  GMCBETTIAH: ['Government Medical College, Bettiah', '701505'],
+  KMCKATIHAR: ['Katihar Medical College, Katihar', ''], MADHUBANIMEDICALCOLLEGEMADHUBANI: ['Madhubani Medical College, Madhubani', ''],
+  MGMMCLSKHOSKISHANGANJ: ['MGM Medical College & LSK Hospital, Kishanganj', ''], NMCHSASARAM: ['Narayan Medical College & Hospital, Sasaram', ''],
+  NETAJISUBHASMEDICALCOLLEGEHOSPITAL: ['Netaji Subhas Medical College & Hospital, Bihta', ''],
+  LORDBUDHAKOSHIMEDICALCOLLEGEHOSPITALSAHARSA: ['Lord Buddha Koshi Medical College & Hospital, Saharsa', ''],
+  SHRINARAYANMEDICALINSTITUTEANDHOSPITALSAHARSA: ['Shri Narayan Medical Institute & Hospital, Saharsa', ''],
+  RDJMMEDICALCOLLEGEANDHOSPITALTURKIMUZAFFARPUR: ['RDJM Medical College & Hospital, Turki (Muzaffarpur)', ''],
+};
+const BH_CAT: Record<string, string> = { UR: 'Open', BC: 'BC', EBC: 'EBC', EWS: 'EWS', SC: 'SC', ST: 'ST', RCG: 'BC Women (RCG)' };
+/** BCECEB allotted category → [quota suffix, seat category]. MM / SM = Muslim / Sikh minority seats; DQ seats sit inside a vertical category. */
+const bhSeat = (cat: string, inst: [string, string] | undefined): [string, string] => {
+  const c = cat.toUpperCase().replace(/^DQ-?/, '') || 'UR';
+  if (c === 'NRI') return ['NRI', 'Open'];
+  if (c === 'MM' || c === 'SM') return ['Minority', 'Open'];
+  return [inst?.[1] ? 'State Quota' : 'Private (state quota)', BH_CAT[c] ?? c];
+};
+const bhCourse = (type: string, b: string) => (/^DIPLOMA/i.test(type) ? MH_DIPLOMA[b] ?? `Diploma ${b.replace(/^DIP/i, '')}` : `MD/MS ${({ 'F.M.T.': 'Forensic Medicine', RADIOONCOLOGY: 'Radiation Oncology' } as Record<string, string>)[b] ?? b}`);
+const STATE_FILES = readdirSync('data/parsed').filter((f) => /^(mh|ka|kl|ap|rj|tg|gj|mp|hr|bh)20\d\d_[a-z0-9_]+\.json$/.test(f) && !/merit|_oc$/.test(f)).map((f) => f.replace('.json', ''));
 
 // ---- rounds ----
 const files = readdirSync('data/parsed').filter((f) => /^mcc20\d\d_[a-z0-9]+\.json$/.test(f)).map((f) => f.replace('.json', ''))
@@ -476,6 +499,15 @@ rounds.forEach((rd, ri) => {
       const ii = instIndex(`MH ${r.institute}`, rd.year, { display: code ? codeName(code) : r.institute.replace(/\s+/g, ' '), code, state: 'Maharashtra' });
       const [q, seat] = mhSeat(r.allottedCategory);
       rows.push(ri, r.rank, ii, course.get(normCourse(MH_DIPLOMA[r.course] ?? r.course)), quota.get(`Maharashtra ${q}`), acat.get(seat), ccat.get(mhCandidate(r.candidateCategory)), r.page);
+      continue;
+    }
+    if (rd.counselling === 'Bihar') {
+      const k = r.institute.toUpperCase().replace(/[^A-Z]/g, ''), inst = BH_INST[k];
+      if (!inst) unknownMp.add(`BH ${r.institute}`);
+      const ii = instIndex(`BH ${k}`, rd.year, { display: inst?.[0] ?? r.institute, code: inst?.[1] ?? '', state: 'Bihar' });
+      const [q, seat] = bhSeat(r.allottedCategory, inst);
+      const cand = r.candidateCategory === 'UR' ? 'General' : BH_CAT[r.candidateCategory] ?? r.candidateCategory;
+      rows.push(ri, r.rank, ii, course.get(normCourse(bhCourse(r.courseType, r.course))), quota.get(`Bihar ${q}`), acat.get(seat), ccat.get(cand), r.page);
       continue;
     }
     if (rd.counselling === 'Haryana') {
