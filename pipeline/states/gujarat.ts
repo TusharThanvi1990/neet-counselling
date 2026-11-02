@@ -45,7 +45,9 @@ async function readList(file: string): Promise<Row[]> {
       const tail = right(col.college - 10, 9999).join(' ');
       const cm = tail.match(/^([A-Z]{2,}(?=[A-Z][a-z])|[A-Z]{2,}(?=\s)|[A-Z][a-z]+(?=[A-Z])|\S+)\s*(.*)$/);
       out.push({
-        page: pg.index + 1, rank: Math.round(Number(rk.text)), cat: near(col.cat), admCat: near(col.admCat), seat: near(col.seat, 16),
+        // the category can run into the merit number ("SE21.5") or sit beside it; keep the letter code only
+        page: pg.index + 1, rank: Math.round(Number(rk.text)),
+        cat: w.filter((v) => Math.abs(v.x0 - col!.cat) <= 20 && /^[A-Z]{2}/.test(v.text))[0]?.text.match(/^[A-Z]+/)?.[0] ?? '', admCat: near(col.admCat), seat: near(col.seat, 16),
         type: right(rk.x1 + 2, col.round - 5).join(' '), round: Number(near(col.round, 14)) || 0,
         college: cm?.[1] ?? '', branch: (cm?.[2] ?? '').trim(),
       });

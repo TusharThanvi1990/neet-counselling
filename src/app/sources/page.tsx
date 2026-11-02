@@ -69,7 +69,7 @@ export default function SourcesPage() {
         </p>
         <h2>Current limits</h2>
         <ul>
-          <li>MCC counselling (All India, deemed, central universities, DNB) plus state counselling 2025 for Maharashtra, Karnataka, Kerala, Andhra Pradesh, Rajasthan, Telangana and Gujarat (Gujarat 2026 Round 1 too). Other states are being added.</li>
+          <li>MCC counselling (All India, deemed, central universities, DNB) plus state counselling 2025 for Maharashtra, Karnataka, Kerala, Andhra Pradesh, Rajasthan, Telangana, Gujarat and Madhya Pradesh (2026 Round 1 too for Gujarat and Madhya Pradesh). Other states are being added.</li>
           <li>Maharashtra lists show the state merit number; the All India Rank comes from the State CET Cell’s Common State Merit List.</li>
           <li>Karnataka (KEA) lists print the All India Rank directly. Private colleges in Karnataka do not take part in MCC counselling, so they have no MCC fee profile.</li>
           <li>Kerala (CEE) lists print the All India Rank. For Kerala’s in-service quotas we show the All India Rank; CEE ranks those seats on its separate service list.</li>
@@ -77,7 +77,8 @@ export default function SourcesPage() {
           <li>Rajasthan lists give the state merit number and NEET roll number; the All India Rank comes from the board’s State Merit Lists. In-service doctors get bonus marks on the state merit list, so their allotments are shown under a separate “In-service (bonus marks)” quota.</li>
           <li>Telangana (KNRUHS) lists print the All India Rank. Women-only seats are shown with the general seats of the same category.</li>
           <li>Gujarat (ACPPGMEC) lists print the All India Rank. “University Quota” seats are reserved for graduates of the same university.</li>
-          <li>{Math.max(...d.years)} has {d.rounds.filter((r) => r.year === Math.max(...d.years)).map((r) => r.label).join(', ')} so far.</li>
+          <li>Madhya Pradesh (DME MP) lists print the All India Rank. “MP graduates” seats in private colleges are reserved for doctors who did MBBS in Madhya Pradesh; the 2025 mop-up list is no longer linked on the DME site, so it comes from Medical Dialogues’ copy of the official PDF.</li>
+          <li>{Math.max(...d.years)} has {d.rounds.filter((r) => r.counselling === 'MCC' && r.year === Math.max(...d.years)).map((r) => r.label).join(', ')} so far.</li>
           <li>Institute names change between years, so each season is compared on its own.</li>
           <li>Fees, stipends and bonds are not included yet.</li>
         </ul>

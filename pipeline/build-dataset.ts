@@ -30,7 +30,7 @@ const SM_SOURCES: Record<string, string> = {
   sm2025_aiq: '2025/10/202510281305634189.pdf', sm2025_central: '2025/10/20251028847832917.pdf', sm2025_deemed: '2025/11/20251119105316139.pdf', sm2025_dnb: '2025/11/20251119228358966.pdf',
   sm2026_aiq: '2026/10/202610151676193504.pdf', sm2026_central: '2026/10/202610151906520168.pdf', sm2026_deemed: '2026/10/20261015907178910.pdf', sm2026_dnb: '2026/10/202610151482599908.pdf',
 };
-const ROUND_ORDER = ['Round 1', 'Round 2', 'Round 3', 'Stray', 'Special stray'];
+const ROUND_ORDER = ['Round 1', 'Round 2', 'Round 3', 'Mop-up', 'Additional mop-up', 'Stray', 'Special stray'];
 
 const STATES = ['Andaman And Nicobar Islands', 'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chandigarh', 'Chhattisgarh',
   'Dadra And Nagar Haveli', 'Daman And Diu', 'Delhi', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jammu And Kashmir', 'Jharkhand',
@@ -355,7 +355,69 @@ const GJ_QUOTA: Record<string, string> = { GQ: 'State Quota', UQ: 'University Qu
 const GJ_CATS: Record<string, string> = { OP: 'Open', SE: 'SEBC', EW: 'EWS', SC: 'SC', ST: 'ST', MQ: 'Open', NRI: 'Open' };
 const gjSeat = (c: string) => { const pwd = /PH$/.test(c), b = c.replace(/PH$/, ''); return (GJ_CATS[b] ?? b) + (pwd ? ' PwD' : ''); };
 const gjCourse = (c: string) => (/\(DNB\)$/.test(c) ? `(NBEMS) ${c.replace(/\s*\(DNB\)$/, '')}` : c);
-const STATE_FILES = readdirSync('data/parsed').filter((f) => /^(mh|ka|kl|ap|rj|tg|gj)20\d\d_[a-z0-9_]+\.json$/.test(f) && !/merit/.test(f)).map((f) => f.replace('.json', ''));
+// Madhya Pradesh (DME MP): institute name (letters only; 2025 lists glue words together) → [display name, MCC code].
+// Private colleges are not in MCC PG counselling and have no code.
+const MP_INST: Record<string, [string, string]> = {
+  GANDHIMEDICALCOLLEGEBHOPAL: ['Gandhi Medical College, Bhopal', '700296'],
+  GAJRARAJAMEDICALCOLLEGEGWALIOR: ['Gajra Raja Medical College, Gwalior', '700297'],
+  MAHATMAGANDHIMEMORIALMEDICALCOLLEGEINDORE: ['Mahatma Gandhi Memorial Medical College, Indore', '700298'],
+  NETAJISUBHASHCHANDRABOSEMEDICALCOLLEGEJABALPUR: ['Netaji Subhash Chandra Bose Medical College, Jabalpur', '700299'],
+  SHYAMSHAHMEDICALCOLLEGEREWA: ['Shyam Shah Medical College, Rewa', '700300'],
+  BUNDELKHANDMEDICALCOLLEGESAGAR: ['Bundelkhand Medical College, Sagar', '700520'],
+  GOVERMENTMEDICALCOLLEGERATLAM: ['Dr Laxminarayan Pandey Government Medical College, Ratlam', '701513'],
+  DRLAXMINARAYANPANDEYGOVERNMENTMEDICALCOLLEGERATLAM: ['Dr Laxminarayan Pandey Government Medical College, Ratlam', '701513'],
+  GOVERNMENTMEDICALCOLLEGEDATIA: ['Government Medical College, Datia', '701709'],
+  ATALBIHARIVAJPAYEEGOVERNMENTMEDICALCOLLEGEVIDISHA: ['Atal Bihari Vajpayee Government Medical College, Vidisha', '901807'],
+  NANDKUMARSINGHCHOUHANGOVERNMENTMEDICALCOLLEGEKHANDWA: ['Nandkumar Singh Chouhan Government Medical College, Khandwa', '901861'],
+  BIRSAMUNDAGOVERNMENTMEDICALCOLLEGESHAHDOL: ['Birsa Munda Government Medical College, Shahdol', '902851'],
+  SHRIMANTRAJMATAVIJAYARAJESCINDIAMEDICALCOLLEGESHIVPURI: ['Shrimant Rajmata Vijayaraje Scindia Medical College, Shivpuri', '902838'],
+  GOVERMENTMEDICALCOLLEGESATNA: ['Government Medical College, Satna', '904563'],
+  CHHINDWARAINSTITUTEOFMEDICALSCIENCESCHHINDWARA: ['Chhindwara Institute of Medical Sciences, Chhindwara', '904566'],
+  GWALIORMANSIKAROGYSHALAGWALIOR: ['Gwalior Mansik Arogyashala, Gwalior', '701715'],
+  DHBHOPAL: ['JP District Hospital, Bhopal', '700914'], DISTRICTHOSPITALBHOPAL: ['JP District Hospital, Bhopal', '700914'],
+  DHGWALIOR: ['District Hospital, Gwalior', '701554'], DHSAGAR: ['District Hospital, Sagar', '701568'], DHGUNA: ['District Hospital, Guna', '901695'],
+  DHREWA: ['Kushabhau Thakre District Hospital, Rewa', '901727'], DHSATNA: ['Sardar Vallabh Bhai Patel District Hospital, Satna', '701477'],
+  DHVIDISHA: ['Shrimant Madhavrao Scindia District Hospital, Vidisha', '701651'], DHSHIVPURI: ['District Hospital, Shivpuri', '904230'],
+  CIVILHOSPITALJABALPUR: ['Civil Hospital, Jabalpur', ''],
+  INDEXMEDICALCOLLEGEHOSPITALANDRESEARCHCENTERINDORE: ['Index Medical College Hospital and Research Center, Indore', ''],
+  SRIAUROBINDOINSTITUTEOFMEDICALSCIENCEINDORE: ['Sri Aurobindo Institute of Medical Sciences, Indore', ''],
+  LNMEDICALCOLLEGEBHOPAL: ['LN Medical College, Bhopal', ''],
+  PEOPLESCOLLEGEOFMEDICALSCIENCEBHOPAL: ['Peoples College of Medical Sciences, Bhopal', ''],
+  CHIRAYUMEDICALCOLLEGEANDHOSPITALBHOPAL: ['Chirayu Medical College and Hospital, Bhopal', ''],
+  RDGARDIMEDICALCOLLEGEUJJAIN: ['RD Gardi Medical College, Ujjain', ''],
+  AMALTASINSTITUTEOFMEDICALSCIENCESDEWAS: ['Amaltas Institute of Medical Sciences, Dewas', ''],
+  RKDFMEDICALCOLLEGEHOSPITALANDRESEARCHCENTREBHOPAL: ['RKDF Medical College Hospital and Research Centre, Bhopal', ''],
+  RAMKRISHNAMEDICALCOLLEGEHOSPITALANDRESEARCHCENTREBHOPAL: ['Ram Krishna Medical College Hospital and Research Centre, Bhopal', ''],
+  SUKHSAGARMEDICALCOLLEGEANDHOSPITALJABALPUR: ['Sukh Sagar Medical College and Hospital, Jabalpur', ''],
+  MAHAVEERINSTITUTEOFMEDICALSCIENCEANDRESEARCHBHOPAL: ['Mahaveer Institute of Medical Science and Research, Bhopal', ''],
+  LNCTMEDICALCOLLEGESEWAKUNJHOSPITALINDORE: ['LNCT Medical College and Sewakunj Hospital, Indore', ''],
+};
+const mpKey = (s: string) => s.toUpperCase().replace(/[^A-Z]/g, '');
+const MP_CAT: Record<string, string> = { UR: 'Open', OBC: 'OBC', SC: 'SC', ST: 'ST', EWS: 'EWS' };
+/** DME MP seat code "[INST|NON_INST/]CAT/HORIZONTAL/OP" (e.g. INST/OBC/X/OP, IN_UR/X/OP, INST/UR/NRI/OP) → [quota suffix, seat category].
+ *  IN_ = in-service seat; INST = reserved for graduates of MP colleges; NON_INST or no prefix in a private college = open to all. */
+const mpSeat = (code: string, instType: string): [string, string] => {
+  const p = code.toUpperCase().split('/');
+  const [pre, cat, hz] = p.length >= 4 ? [p[0], p[1], p[2]] : ['', p[0], p[1] ?? 'X'];
+  const inService = cat.startsWith('IN_');
+  const c = MP_CAT[cat.replace(/^IN_/, '')] ?? cat.replace(/^IN_/, ''), pwd = hz === 'PH' ? ' PwD' : '';
+  if (inService) return ['In-service', c + pwd];
+  if (hz === 'NRI') return ['NRI', 'Open'];
+  if (/^govt/i.test(instType)) return ['State Quota', c + pwd];
+  return [pre === 'INST' ? 'Private (MP graduates)' : 'Private (open to all)', c + pwd];
+};
+const mpCandidate = (code: string) => {
+  const [cat, hz] = code.toUpperCase().split('/');
+  const c = cat.replace(/^IN_/, '');
+  return (c === 'UR' ? 'General' : MP_CAT[c] ?? c) + (hz === 'PH' ? ' PwD' : '');
+};
+const mpCourse = (course: string, subject: string) => {
+  const s = subject.replace(/\s+/g, ' ').trim();
+  if (/DNB/i.test(course)) return `(NBEMS) ${s}`;
+  if (/DIP/i.test(course)) return `(NBEMS-DIPLOMA) ${s}`;
+  return `${course.trim()} ${s}`;
+};
+const STATE_FILES = readdirSync('data/parsed').filter((f) => /^(mh|ka|kl|ap|rj|tg|gj|mp)20\d\d_[a-z0-9_]+\.json$/.test(f) && !/merit|_oc$/.test(f)).map((f) => f.replace('.json', ''));
 
 // ---- rounds ----
 const files = readdirSync('data/parsed').filter((f) => /^mcc20\d\d_[a-z0-9]+\.json$/.test(f)).map((f) => f.replace('.json', ''))
@@ -367,6 +429,7 @@ const rounds: RoundInfo[] = [
 ].sort((a, b) => a.year - b.year || (a.counselling === 'MCC' ? 0 : 1) - (b.counselling === 'MCC' ? 0 : 1) || a.counselling.localeCompare(b.counselling)
   || ROUND_ORDER.indexOf(a.label) - ROUND_ORDER.indexOf(b.label));
 const rows: number[] = [];
+const unknownMp = new Set<string>();
 for (const rd of rounds.filter((x) => x.counselling === 'Rajasthan')) for (const r of load(`data/parsed/${rd.id}.json`).rows) {
   const nk = r.institute.toLowerCase().replace(/[^a-z]/g, ''), cur = rjBest.get(nk);
   if (!cur || (r.institute.match(/ /g)?.length ?? 0) > (cur.match(/ /g)?.length ?? 0)) rjBest.set(nk, r.institute);
@@ -379,6 +442,14 @@ rounds.forEach((rd, ri) => {
       const ii = instIndex(`MH ${r.institute}`, rd.year, { display: code ? codeName(code) : r.institute.replace(/\s+/g, ' '), code, state: 'Maharashtra' });
       const [q, seat] = mhSeat(r.allottedCategory);
       rows.push(ri, r.rank, ii, course.get(normCourse(MH_DIPLOMA[r.course] ?? r.course)), quota.get(`Maharashtra ${q}`), acat.get(seat), ccat.get(mhCandidate(r.candidateCategory)), r.page);
+      continue;
+    }
+    if (rd.counselling === 'Madhya Pradesh') {
+      const k = mpKey(r.institute), [display, code] = MP_INST[k] ?? [r.institute.replace(/\s+/g, ' '), ''];
+      if (!MP_INST[k]) unknownMp.add(r.institute);
+      const ii = instIndex(`MP ${k}`, rd.year, { display, code, state: 'Madhya Pradesh' });
+      const [q, seat] = mpSeat(r.allottedCategory, r.quota);
+      rows.push(ri, r.rank, ii, course.get(normCourse(mpCourse(r.course, r.subject))), quota.get(`Madhya Pradesh ${q}`), acat.get(seat), ccat.get(mpCandidate(r.candidateCategory)), r.page);
       continue;
     }
     if (rd.counselling === 'Gujarat') {
@@ -475,6 +546,7 @@ writeFileSync('data/pgdata.json', JSON.stringify(data));
 console.log(`rows=${rows.length / 8} institutes=${inst.length} noState=${inst.filter((x) => !x[2]).length} courses=${course.arr.length} quotas=${JSON.stringify(quota.arr)}`);
 console.log('seat cats', JSON.stringify(acat.arr), 'cand cats', JSON.stringify(ccat.arr));
 console.log('unmatched courses', [...unmatchedCourses]);
+console.log('unknown MP institutes', [...unknownMp]);
 console.log('no state', inst.filter((x) => !x[2]).slice(0, 10).map((x) => x[1].slice(0, 100)));
 let linked = 0; for (let k = 0; k < rows.length; k += 8) if (inst[rows[k + 2]][3]) linked++;
 console.log(`allotments linked to an institute code: ${linked}/${rows.length / 8} (${Math.round((linked / (rows.length / 8)) * 100)}%)`);
