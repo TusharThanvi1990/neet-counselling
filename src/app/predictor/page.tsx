@@ -9,7 +9,7 @@ import { fmt, hrefWith, type SearchParams } from '@/lib/url';
 
 export const metadata: Metadata = { title: 'NEET PG College Predictor' };
 
-const STATE_QUOTA = /^Maharashtra /;
+const STATE_QUOTA = /^(Maharashtra|Karnataka) /;
 
 export default async function PredictorPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const sp = await searchParams;

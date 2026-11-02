@@ -102,13 +102,13 @@ const SPECIALTY: [RegExp, string][] = [
   [/obst|gyna|obgy/, 'Obstetrics & Gynaecology'], [/paediatric|childhealth/, 'Paediatrics'],
   [/radiationmedicine/, 'Radiation Medicine'], [/radio-?therap|radiation/, 'Radiation Oncology'], [/radio-?diag|radiology/, 'Radiodiagnosis'],
   [/derm|d\.d\.v\.l|venere|skin/, 'Dermatology'], [/ortho/, 'Orthopaedics'], [/ophthal|opthal/, 'Ophthalmology'],
-  [/otorhino|oto-rhino|e\.?n\.?t\b|\bent\b/, 'ENT'], [/anaesth/, 'Anaesthesiology'], [/psychiat|psycholog/, 'Psychiatry'],
+  [/otorhino|oto-rhino|e\.?n\.?t\b|\bent\b/, 'ENT'], [/anaesth|anesth/, 'Anaesthesiology'], [/psychiat|psycholog/, 'Psychiatry'],
   [/respiratory|tuberculosis|t\.b\.|chest|pulmonary/, 'Respiratory Medicine'], [/emergency/, 'Emergency Medicine'], [/family/, 'Family Medicine'],
   [/forensic/, 'Forensic Medicine'], [/community|preventive|publichealth|epidemiolog|p\.s\.m/, 'Community Medicine'],
   [/administration|admn/, 'Hospital Administration'], [/immuno|transfusion/, 'Immunohaematology & Transfusion'],
   [/microbio|bacterio/, 'Microbiology'], [/laboratory/, 'Laboratory Medicine'], [/patholog/, 'Pathology'], [/pharmacol/, 'Pharmacology'],
-  [/physiolog/, 'Physiology'], [/bio-?chem/, 'Biochemistry'], [/anatomy/, 'Anatomy'], [/physicalmed|phy\.medicine/, 'Physical Medicine & Rehab'],
-  [/geriatric/, 'Geriatrics'], [/palliative/, 'Palliative Medicine'], [/nuclear/, 'Nuclear Medicine'], [/sport/, 'Sports Medicine'],
+  [/physiolog/, 'Physiology'], [/bio-?chem/, 'Biochemistry'], [/anatomy/, 'Anatomy'], [/physicalmed|phy\.medicine|rehab/, 'Physical Medicine & Rehab'],
+  [/geriatric|geritric/, 'Geriatrics'], [/palliative/, 'Palliative Medicine'], [/nuclear/, 'Nuclear Medicine'], [/sport/, 'Sports Medicine'],
   [/tropical/, 'Tropical Medicine'], [/aerospace/, 'Aerospace Medicine'], [/diabetolog/, 'Diabetology'],
   [/^medicine$/, 'General Medicine'], [/^surgery$/, 'General Surgery'], // state lists' short names
 ];
@@ -202,7 +202,48 @@ const mhCandidate = (cat: string) => {
     SEBC: 'SEBC', NTB: 'NT-B', NTC: 'NT-C', NTD: 'NT-D', VJA: 'VJ-A', PWD: 'General' };
   return (named[first] ?? first) + (/PWD/.test(cat.toUpperCase()) ? ' PwD' : '');
 };
-const STATE_FILES = readdirSync('data/parsed').filter((f) => /^mh20\d\d_[a-z0-9]+\.json$/.test(f) && !/merit/.test(f)).map((f) => f.replace('.json', ''));
+// Karnataka (KEA): college code (M01…) → MCC institute code. Only government colleges, deemed universities and
+// DNB hospitals have MCC codes; private colleges do not take part in MCC PG counselling. Checked by hand.
+const KA_CODES: Record<string, string> = {
+  M01: '700391', M02: '700399', M03: '700394', M04: '700396', M05: '700414', M06: '700416', M07: '700413', M08: '700415',
+  M09: '700411', M10: '700408', M11: '700403', M12: '700401', M13: '701411', M32: '700425', M33: '700424', M34: '700509',
+  M35: '700426', M36: '700429', M37: '700430', M38: '905686', M40: '700432', M48: '901783', M49: '700525', M50: '701350',
+  M51: '700539', M55: '701400', M57: '701403', M60: '701502', M61: '701511', M62: '701512', M64: '701724', M66: '905568',
+  M67: '904562', M68: '904558',
+};
+// In-service lists name DNB hospitals without a KEA college code.
+const KA_NAMES: [RegExp, string][] = [
+  [/^Bangalore Medical College/i, '700391'], [/Aralaguppe/i, '700837'], [/District Hospital, Ballari/i, '700823'],
+  [/District Hospital, Bagalkot/i, '701312'], [/District Hospital, Chitradurga/i, '700818'], [/District Hospital, Dharwad/i, '700819'],
+  [/District Hospital, Tumakuru/i, '700821'], [/District Hospital, Vijayapura/i, '700815'], [/Epidemiological/i, '904533'],
+  [/General Hospital, Doddaballapura/i, '701437'], [/General Hospital, Gokak/i, '701581'], [/General Hospital, Holenarasipura/i, '700841'],
+  [/General Hospital, Jayanagar/i, '700817'], [/General Hospital, Kanakapura/i, '701317'], [/General Hospital, Pavagada/i, '701315'],
+  [/General Hospital, Tiptur/i, '701583'], [/JAYACHAMARAJENDRA/i, '701653'], [/^KC General/i, '700820'], [/SNR District/i, '700816'],
+  [/Sir CV Raman/i, '700829'], [/Gangavathi/i, '701485'], [/Sagara/i, '701318'], [/Bhadravathi/i, '701655'], [/Saundatti/i, '701490'],
+];
+const KA_MINORITY = new Set(['ME', 'MM', 'MU', 'MC', 'MA', 'RC1', 'RC2', 'RC3']);
+const KA_RESERVED: Record<string, string> = { GM: 'Open', '1': 'Cat-1', '2A': 'Cat-2A', '2B': 'Cat-2B', '3A': 'Cat-3A', '3B': 'Cat-3B', S1: 'SC', S2: 'SC', S3: 'SC', ST: 'ST' };
+/** KEA allotted category + seat type letter → [quota suffix, seat category].
+ *  Codes end in G (general) or H (Kalyana Karnataka, Article 371J); a leading P marks a PwD seat; GMP = general merit, private seat. */
+const kaSeat = (cat: string, seatType: string, inService: boolean): [string, string] => {
+  let c = cat.toUpperCase().trim();
+  const kk = /H$/.test(c) && !['NRI'].includes(c);
+  if (kk) c = c.slice(0, -1);
+  if (['MNG', 'NRI', 'OPN'].includes(c) || KA_MINORITY.has(c)) {
+    const q = c === 'MNG' ? 'Management' : c === 'NRI' ? 'NRI' : c === 'OPN' ? 'Private (open to all)' : 'Minority';
+    return [inService ? 'In-service' : q, 'Open'];
+  }
+  const pwd = /^P(?=GM|1|2A|2B|3A|3B|S\d|ST)/.test(c);
+  if (pwd) c = c.slice(1);
+  if (c === 'GMP') c = 'GM';
+  c = c.replace(/G$/, '') || 'GM';
+  if (c === 'GM' || c === '') c = 'GM';
+  const seat = (KA_RESERVED[c] ?? c) + (pwd ? ' PwD' : '');
+  const q = inService ? 'In-service' : seatType === 'P' ? 'Private' : seatType === 'Q' ? 'Management' : seatType === 'N' ? 'NRI' : 'Government';
+  return [kk && !inService ? `${q} (Kalyana Karnataka)` : q, seat];
+};
+const kaCourse = (c: string) => c.replace(/^DNB\s+(in\s+)?/i, '(NBEMS) ');
+const STATE_FILES = readdirSync('data/parsed').filter((f) => /^(mh|ka)20\d\d_[a-z0-9_]+\.json$/.test(f) && !/merit/.test(f)).map((f) => f.replace('.json', ''));
 
 // ---- rounds ----
 const files = readdirSync('data/parsed').filter((f) => /^mcc20\d\d_[a-z0-9]+\.json$/.test(f)).map((f) => f.replace('.json', ''))
@@ -211,7 +252,8 @@ type RoundInfo = { id: string; year: number; label: string; url: string; count: 
 const rounds: RoundInfo[] = [
   ...files.map((f) => ({ id: f, year: Number(f.slice(3, 7)), label: SOURCES[f][0], url: U + SOURCES[f][1], count: 0, counselling: 'MCC' })),
   ...STATE_FILES.map((f) => { const d = load(`data/parsed/${f}.json`); return { id: f, year: d.year, label: d.round, url: d.url, count: 0, counselling: d.counselling }; }),
-].sort((a, b) => a.year - b.year || (a.counselling === b.counselling ? 0 : a.counselling === 'MCC' ? -1 : 1) || ROUND_ORDER.indexOf(a.label) - ROUND_ORDER.indexOf(b.label));
+].sort((a, b) => a.year - b.year || (a.counselling === 'MCC' ? 0 : 1) - (b.counselling === 'MCC' ? 0 : 1) || a.counselling.localeCompare(b.counselling)
+  || ROUND_ORDER.indexOf(a.label) - ROUND_ORDER.indexOf(b.label));
 const rows: number[] = [];
 rounds.forEach((rd, ri) => {
   const d = load(`data/parsed/${rd.id}.json`);
@@ -221,6 +263,14 @@ rounds.forEach((rd, ri) => {
       const ii = instIndex(`MH ${r.institute}`, rd.year, { display: code ? codeName(code) : r.institute.replace(/\s+/g, ' '), code, state: 'Maharashtra' });
       const [q, seat] = mhSeat(r.allottedCategory);
       rows.push(ri, r.rank, ii, course.get(normCourse(MH_DIPLOMA[r.course] ?? r.course)), quota.get(`Maharashtra ${q}`), acat.get(seat), ccat.get(mhCandidate(r.candidateCategory)), r.page);
+      continue;
+    }
+    if (rd.counselling.startsWith('Karnataka')) {
+      const code = KA_CODES[r.collegeCode] ?? KA_NAMES.find(([re]) => re.test(r.institute))?.[1] ?? '';
+      const ii = instIndex(`KA ${r.collegeCode || r.institute}`, rd.year, { display: code ? codeName(code) : r.institute.replace(/\s+/g, ' ').replace(/\s*,\s*$/, ''), code, state: 'Karnataka' });
+      const [q, seat] = kaSeat(r.allottedCategory, r.seatType, rd.counselling.endsWith('in-service'));
+      const cand = seat.startsWith('Open') ? 'Not stated' + (seat.endsWith('PwD') ? ' PwD' : '') : seat;
+      rows.push(ri, r.rank, ii, course.get(normCourse(kaCourse(r.course))), quota.get(`Karnataka ${q}`), acat.get(seat), ccat.get(cand), r.page);
       continue;
     }
     rows.push(ri, r.rank, instIndex(r.institute, rd.year), course.get(normCourse(r.course)), quota.get(normQuota(r.quota)),
