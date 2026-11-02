@@ -20,9 +20,9 @@ Every state follows the same steps:
 |---|---|---|---|---|---|---|---|---|
 | 1 | Maharashtra | State CET Cell (DMER PG CAP) | P1 | 2025 | State merit no. → AIR via merit list | ✅ | 10,801 | 5 rounds; 31 govt colleges linked to MCC codes |
 | 2 | Karnataka | KEA | P1 | 2025 | AIR | ✅ | 7,986 | 5 rounds + 3 in-service rounds; 34 colleges + 24 DNB hospitals linked to MCC codes; closing ranks cross-checked against findmybranch (exact match) |
-| 3 | Uttar Pradesh | DGME UP (upneet.gov.in) | P1 | 2025 | | ⏳ | | |
-| 4 | Tamil Nadu | TN Selection Committee (tnmedicalselection.net) | P1 | 2025 | | ⏳ | | |
-| 5 | Kerala | CEE Kerala | P1 | 2025 | | ⏳ | | |
+| 3 | Uttar Pradesh | DGME UP (upneet.gov.in) | P1 | 2026 | | ⛔ | | 2025 lists removed from upneet.gov.in (site reset for 2026) and not in the Web Archive. Capture 2026 Round 1 when published (choice filling open Nov 2026) |
+| 4 | Tamil Nadu | TN Selection Committee (tnmedicalselection.net) | P1 | 2025 | State rank (GRANK) + NEET roll no. | ⛔ | | 2025 GQ/MQ/PwD lists for R1–R3 + stray downloaded (data/raw/states/tamilnadu). Needs NBEMS full NEET PG 2025 result PDF (roll no. → AIR) to convert ranks. 2026 counselling live now |
+| 5 | Kerala | CEE Kerala | P1 | 2025 | AIR | ✅ | 2,879 | 3 phases + stray; 12 govt colleges/cancer centres linked to MCC codes; matches CEE's official last-rank table (11/12 spot checks; in-service quota uses CEE's service rank) |
 | 6 | Rajasthan | Rajasthan NEET PG Board (RUHS) | P1 | 2025 | | ⏳ | | |
 | 7 | West Bengal | WBMCC | P1 | 2025 | | ⏳ | | |
 | 8 | Telangana | KNRUHS | P1 | 2025 | | ⏳ | | |

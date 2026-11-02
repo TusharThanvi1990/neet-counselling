@@ -243,7 +243,28 @@ const kaSeat = (cat: string, seatType: string, inService: boolean): [string, str
   return [kk && !inService ? `${q} (Kalyana Karnataka)` : q, seat];
 };
 const kaCourse = (c: string) => c.replace(/^DNB\s+(in\s+)?/i, '(NBEMS) ');
-const STATE_FILES = readdirSync('data/parsed').filter((f) => /^(mh|ka)20\d\d_[a-z0-9_]+\.json$/.test(f) && !/merit/.test(f)).map((f) => f.replace('.json', ''));
+// Kerala (CEE): college code → MCC institute code (government colleges and cancer centres; self-financing colleges have none).
+const KL_CODES: Record<string, string> = {
+  ALP: '700285', KKM: '700287', KTM: '700289', TCM: '700290', TVM: '700291', RCC: '700293', CMC: '700295', KNM: '700529',
+  MLP: '701401', KLM: '701699', PKM: '904371', MCG: '904554',
+};
+// Kerala's SEBC sub-groups (state backward classes), plus national categories.
+const KL_CATS: Record<string, string> = {
+  SM: 'Open', EW: 'EWS', SC: 'SC', ST: 'ST', PD: 'Open PwD', CD: 'Open', OE: 'Open',
+  EZ: 'SEBC (Ezhava)', MU: 'SEBC (Muslim)', BH: 'SEBC (OBC Hindu)', LA: 'SEBC (Latin Catholic)', BX: 'SEBC (OBC Christian)',
+  KU: 'SEBC (Kudumbi)', DV: 'SEBC (Dheevara)', VK: 'SEBC (Viswakarma)', KN: 'SEBC (Kusavan)',
+};
+/** CEE allotted category → [quota suffix, seat category]. "#", "*" mark provisional allotments and are dropped. */
+const klSeat = (cat: string): [string, string] => {
+  const c = cat.replace(/[#*]+$/, '').toUpperCase();
+  if (['AC', 'NC', 'MM', 'NM'].includes(c)) return ['Minority', 'Open'];
+  if (c === 'NR') return ['NRI', 'Open'];
+  if (c === 'MQ') return ['Management', 'Open'];
+  if (c === 'HQ' || c === 'IQ') return ['In-service', 'Open'];
+  return ['State Quota', KL_CATS[c] ?? c];
+};
+const klCandidate = (cat: string) => (cat === 'General' ? 'General' : cat === 'EW' ? 'EWS' : KL_CATS[cat] ?? cat);
+const STATE_FILES = readdirSync('data/parsed').filter((f) => /^(mh|ka|kl)20\d\d_[a-z0-9_]+\.json$/.test(f) && !/merit/.test(f)).map((f) => f.replace('.json', ''));
 
 // ---- rounds ----
 const files = readdirSync('data/parsed').filter((f) => /^mcc20\d\d_[a-z0-9]+\.json$/.test(f)).map((f) => f.replace('.json', ''))
@@ -265,9 +286,16 @@ rounds.forEach((rd, ri) => {
       rows.push(ri, r.rank, ii, course.get(normCourse(MH_DIPLOMA[r.course] ?? r.course)), quota.get(`Maharashtra ${q}`), acat.get(seat), ccat.get(mhCandidate(r.candidateCategory)), r.page);
       continue;
     }
+    if (rd.counselling === 'Kerala') {
+      const code = KL_CODES[r.collegeCode] ?? '';
+      const ii = instIndex(`KL ${r.collegeCode || r.institute}`, rd.year, { display: r.institute.replace(/[.\s]+$/, '').replace(/,(?=\S)/g, ', '), code, state: 'Kerala' });
+      const [q, seat] = klSeat(r.allottedCategory);
+      rows.push(ri, r.rank, ii, course.get(normCourse(r.course)), quota.get(`Kerala ${q}`), acat.get(seat), ccat.get(klCandidate(r.candidateCategory)), r.page);
+      continue;
+    }
     if (rd.counselling.startsWith('Karnataka')) {
       const code = KA_CODES[r.collegeCode] ?? KA_NAMES.find(([re]) => re.test(r.institute))?.[1] ?? '';
-      const ii = instIndex(`KA ${r.collegeCode || r.institute}`, rd.year, { display: code ? codeName(code) : r.institute.replace(/\s+/g, ' ').replace(/\s*,\s*$/, ''), code, state: 'Karnataka' });
+      const ii = instIndex(`KA ${r.collegeCode || r.institute}`, rd.year, { display: r.institute.replace(/\s+/g, ' ').replace(/\s*,\s*$/, '').replace(/,(?=\S)/g, ', '), code, state: 'Karnataka' });
       const [q, seat] = kaSeat(r.allottedCategory, r.seatType, rd.counselling.endsWith('in-service'));
       const cand = seat.startsWith('Open') ? 'Not stated' + (seat.endsWith('PwD') ? ' PwD' : '') : seat;
       rows.push(ri, r.rank, ii, course.get(normCourse(kaCourse(r.course))), quota.get(`Karnataka ${q}`), acat.get(seat), ccat.get(cand), r.page);

@@ -93,8 +93,9 @@ Progress per state is tracked in [STATES.md](STATES.md). Each state has its own 
 TSX=D:/NamahaPDF/NamahaPDF/node_modules/.bin/tsx
 $TSX pipeline/states/maharashtra.ts   # reads data/raw/state/mh2025_*.pdf
 $TSX pipeline/states/karnataka.ts     # reads data/raw/states/karnataka/ka2025_*.pdf
+$TSX pipeline/states/kerala.ts        # reads data/raw/states/kerala/kl2025_*.pdf
 npm run data:build                    # or $TSX pipeline/build-dataset.ts
 ```
 
 The official PDF links for each round are listed at the top of each extractor. College-to-MCC-code maps and the
-state category/quota codes live in `pipeline/build-dataset.ts` (`MH_CODES`, `KA_CODES`, `mhSeat`, `kaSeat`).
+state category/quota codes live in `pipeline/build-dataset.ts` (`MH_CODES`, `KA_CODES`, `KL_CODES`, `mhSeat`, `kaSeat`, `klSeat`).
