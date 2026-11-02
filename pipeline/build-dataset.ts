@@ -347,7 +347,15 @@ const tgCandidate = (c: string) => (c === 'OC' ? 'General' : /^BC[A-E]$/.test(c)
 const titleCase = (s: string) => s.toLowerCase().replace(/\b([a-z])/g, (m) => m.toUpperCase()).replace(/\b(Esi|Mnr|Cmr|Trr|Rvm|Dr V R K|Hyd|Sci|Med|Inst)\b/g, (m) => ({ Esi: 'ESI', Mnr: 'MNR', Cmr: 'CMR', Trr: 'TRR', Rvm: 'RVM', 'Dr V R K': 'Dr VRK', Hyd: 'Hyderabad', Sci: 'Sciences', Med: 'Medical', Inst: 'Institute of' } as Record<string, string>)[m] ?? m).replace(/Institute of Of/g, 'Institute of');
 const TG_DIPLOMA: Record<string, string> = { DTCD: 'Diploma in Tuberculosis and Chest Diseases', DPH: 'Diploma in Public Health', DO: 'Diploma in Ophthalmology', DPM: 'Diploma in Psychiatry', DCH: 'Diploma in Child Health', DA: 'Diploma in Anaesthesiology', DGO: 'Diploma in Obstetrics and Gynaecology', DLO: 'Diploma in Otorhinolaryngology', DMRD: 'Diploma in Radiodiagnosis', DCP: 'Diploma in Clinical Pathology' };
 const tgCourse = (c: string) => TG_DIPLOMA[c.trim().toUpperCase()] ?? c.replace(/\bDVL\b/i, 'Dermatology').replace(/^(MD|MS)\s*\((.*)\)$/i, '$1 $2').replace(/^(DIP|DIPLOMA)\s*\(?\s*(.*?)\)?$/i, 'Diploma in $2');
-const STATE_FILES = readdirSync('data/parsed').filter((f) => /^(mh|ka|kl|ap|rj|tg)20\d\d_[a-z0-9_]+\.json$/.test(f) && !/merit/.test(f)).map((f) => f.replace('.json', ''));
+// Gujarat (ACPPGMEC): college code → MCC institute code (the government colleges that also have AIQ seats).
+const GJ_CODES: Record<string, string> = { AMED: '700363', BMED: '700365', SMED: '700364', JMED: '700367', RMED: '700368', BHMED: '700369', IKDMED: '701501' };
+const GJ_NAMES: Record<string, string> = { Jamkhambhaliya: 'General Hospital, Jamkhambhaliya' };
+/** ACPPGMEC seat type → quota. UQ = university (institutional) quota for graduates of the same university. */
+const GJ_QUOTA: Record<string, string> = { GQ: 'State Quota', UQ: 'University Quota', MQ: 'Management', NQ: 'NRI', IQ: 'In-service' };
+const GJ_CATS: Record<string, string> = { OP: 'Open', SE: 'SEBC', EW: 'EWS', SC: 'SC', ST: 'ST', MQ: 'Open', NRI: 'Open' };
+const gjSeat = (c: string) => { const pwd = /PH$/.test(c), b = c.replace(/PH$/, ''); return (GJ_CATS[b] ?? b) + (pwd ? ' PwD' : ''); };
+const gjCourse = (c: string) => (/\(DNB\)$/.test(c) ? `(NBEMS) ${c.replace(/\s*\(DNB\)$/, '')}` : c);
+const STATE_FILES = readdirSync('data/parsed').filter((f) => /^(mh|ka|kl|ap|rj|tg|gj)20\d\d_[a-z0-9_]+\.json$/.test(f) && !/merit/.test(f)).map((f) => f.replace('.json', ''));
 
 // ---- rounds ----
 const files = readdirSync('data/parsed').filter((f) => /^mcc20\d\d_[a-z0-9]+\.json$/.test(f)).map((f) => f.replace('.json', ''))
@@ -371,6 +379,13 @@ rounds.forEach((rd, ri) => {
       const ii = instIndex(`MH ${r.institute}`, rd.year, { display: code ? codeName(code) : r.institute.replace(/\s+/g, ' '), code, state: 'Maharashtra' });
       const [q, seat] = mhSeat(r.allottedCategory);
       rows.push(ri, r.rank, ii, course.get(normCourse(MH_DIPLOMA[r.course] ?? r.course)), quota.get(`Maharashtra ${q}`), acat.get(seat), ccat.get(mhCandidate(r.candidateCategory)), r.page);
+      continue;
+    }
+    if (rd.counselling === 'Gujarat') {
+      const code = GJ_CODES[r.collegeCode] ?? '';
+      const ii = instIndex(`GJ ${r.collegeCode}`, rd.year, { display: GJ_NAMES[r.collegeCode] ?? r.institute, code, state: 'Gujarat' });
+      const seat = gjSeat(r.allottedCategory), cand = gjSeat(r.candidateCategory).replace(/^Open/, 'General');
+      rows.push(ri, r.rank, ii, course.get(normCourse(gjCourse(r.course))), quota.get(`Gujarat ${GJ_QUOTA[r.quota] ?? r.quota}`), acat.get(seat), ccat.get(cand), r.page);
       continue;
     }
     if (rd.counselling === 'Telangana') {

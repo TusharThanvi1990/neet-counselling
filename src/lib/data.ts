@@ -155,9 +155,10 @@ export function groupsFor(year: number, set: RoundSet): Map<string, Group> {
   return groups;
 }
 
-export const latestFullYear = (d: Dataset) => d.years.find((y) => d.rounds.filter((r) => r.year === y).length >= 3) ?? d.years[0];
+/** Seasons are judged by MCC's rounds: state boards can publish a new season's first round before MCC finishes. */
+export const latestFullYear = (d: Dataset) => d.years.find((y) => d.rounds.filter((r) => r.year === y && r.counselling === 'MCC').length >= 3) ?? d.years[0];
 export const yearLabel = (d: Dataset, y: number) => {
-  const rs = d.rounds.filter((r) => r.year === y);
+  const rs = d.rounds.filter((r) => r.year === y && r.counselling === 'MCC');
   return rs.length < 3 ? `${y} (${rs.map((r) => r.label).join(', ')} so far)` : `${y} season`;
 };
 /** Seats in MCC's opening seat matrix for one allotment group's seat type, if the institute is linked. */

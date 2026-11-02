@@ -16,7 +16,7 @@ const FEATURES = [
 const FAQ = [
   ['Where does the data come from?', 'Every number comes from documents MCC publishes: round-wise allotment results, seat matrices and institute profiles. Each closing rank links to the page of the official PDF it came from.'],
   ['How accurate is the college predictor?', 'It compares your rank with the last rank MCC actually allotted for each seat in past rounds. Cutoffs move every year with seats and competition, so treat the labels as a guide, not a guarantee.'],
-  ['Does it cover state quota counselling?', 'State counselling 2025 for Maharashtra, Karnataka, Kerala, Andhra Pradesh, Rajasthan and Telangana is included, with every allotment shown by All India Rank. More states are being added. MCC counselling (All India Quota, deemed and central universities, DNB) is fully covered.'],
+  ['Does it cover state quota counselling?', 'State counselling 2025 for Maharashtra, Karnataka, Kerala, Andhra Pradesh, Rajasthan, Telangana and Gujarat is included, plus Gujarat’s 2026 Round 1, with every allotment shown by All India Rank. More states are being added. MCC counselling (All India Quota, deemed and central universities, DNB) is fully covered.'],
   ['Is it free?', 'Yes, all tools are free to use during the current season.'],
   ['Which rounds are included?', 'Rounds 1–3 and the stray rounds from 2023, 2024 and 2025, plus 2026 rounds as MCC publishes them.'],
 ];
@@ -108,7 +108,7 @@ export default function Home() {
             <p>We read MCC’s result PDFs line by line, so every cutoff is an actual allotment, not an estimate. Click any closing rank to open the exact page of the official PDF.</p>
             <ul className="checks">
               <li><CheckIcon size={18} /> Round-wise MCC results for 2023, 2024, 2025 and 2026</li>
-              <li><CheckIcon size={18} /> State counselling for Maharashtra, Karnataka, Kerala, Andhra Pradesh, Rajasthan and Telangana, every 2025 round</li>
+              <li><CheckIcon size={18} /> State counselling for 7 states, every 2025 round</li>
               <li><CheckIcon size={18} /> Seat matrices with year-on-year seat changes</li>
               <li><CheckIcon size={18} /> Fees and stipends declared by colleges to MCC</li>
             </ul>
