@@ -98,9 +98,10 @@ $TSX pipeline/states/rajasthan.ts     # reads data/raw/states/rajasthan/rj2025_*
 $TSX pipeline/states/telangana.ts     # reads data/raw/states/telangana/tg2025_*.pdf
 $TSX pipeline/states/gujarat.ts       # reads data/raw/states/gujarat/gj20xx_*.pdf
 $TSX pipeline/states/madhyapradesh.ts # reads data/raw/states/mp/mp20xx_r*.pdf
+$TSX pipeline/states/haryana.ts       # reads data/raw/states/haryana/hr2025_*.pdf
 python -I pipeline/states/andhra.py   # fetches the Dr NTR UHS last-rank table (no PDF)
 npm run data:build                    # or $TSX pipeline/build-dataset.ts
 ```
 
 The official PDF links for each round are listed at the top of each extractor. College-to-MCC-code maps and the
-state category/quota codes live in `pipeline/build-dataset.ts` (`MH_CODES`, `KA_CODES`, `KL_CODES`, `AP_CODES`, `RJ_CODES`, `TG_CODES`, `GJ_CODES`, `MP_INST`, `mhSeat`, `kaSeat`, `klSeat`, `apQuota`, `rjQuota`, `tgSeat`, `gjSeat`, `mpSeat`).
+state category/quota codes live in `pipeline/build-dataset.ts` (`MH_CODES`, `KA_CODES`, `KL_CODES`, `AP_CODES`, `RJ_CODES`, `TG_CODES`, `GJ_CODES`, `MP_INST`, `HR_INST`, `mhSeat`, `kaSeat`, `klSeat`, `apQuota`, `rjQuota`, `tgSeat`, `gjSeat`, `mpSeat`).

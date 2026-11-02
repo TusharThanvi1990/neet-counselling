@@ -29,7 +29,7 @@ Every state follows the same steps:
 | 9 | Andhra Pradesh | Dr NTR UHS | P1 | 2025 | AIR (closing ranks only) | ✅ | 2,614 closing ranks | Official last-rank table (drntr.uhsap.in/index/adms_lastranks), per seat type × category × local area × round; 17 govt colleges linked |
 | 10 | Gujarat | ACPPGMEC (medadmgujarat.org) | P1 | 2025 + 2026 R1 | AIR | ✅ | 5,861 (2025) + 2,329 (2026 R1) | 3 rounds + stray; 7 govt colleges linked; closing ranks match ACPPGMEC's official last-merit table (5/5). Archive back to 2021 available (compiled closures) |
 | 11 | Madhya Pradesh | DME MP (dme.mponline.gov.in) | P1 | 2025 + 2026 R1 | AIR | ✅ | 3,082 (2025) + 1,110 (2026 R1) | Round 1, Round 2, mop-up (2025) + 2026 Round 1; govt + private colleges; 16 govt colleges + 8 district hospitals linked to MCC codes. 2025 mop-up PDF no longer linked on DME site — taken from Medical Dialogues' copy of the official PDF. 2025 stray round list not found yet. Opening/closing rank PDFs also downloaded (not used) |
-| 12 | Haryana | DMER Haryana / UHSR | P2 | 2025 | | ⏳ | | |
+| 12 | Haryana | DMER Haryana (hry.online-counselling.co.in) | P2 | 2025 R1 | AIR | ✅ | 450 (R1 only) | Portal reset for 2026 and file links are 10-minute signed URLs; 2025 Round 1 from Collegedunia's copy of the portal PDF. Rounds 2/3/stray not found. IS = in-service, IP = institutional preference. Closing ranks match public 2025 statewide cutoffs (5/5). 2026 MD/MS counselling not started yet (only MDS on the portal) |
 | 13 | Bihar | BCECEB (PGMAC) | P2 | 2025 | | ⏳ | | |
 | 14 | Punjab | BFUHS | P2 | 2025 | | ⏳ | | |
 | 15 | Odisha | DMET Odisha | P2 | 2025 | | ⏳ | | |

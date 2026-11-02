@@ -69,7 +69,7 @@ export default function SourcesPage() {
         </p>
         <h2>Current limits</h2>
         <ul>
-          <li>MCC counselling (All India, deemed, central universities, DNB) plus state counselling 2025 for Maharashtra, Karnataka, Kerala, Andhra Pradesh, Rajasthan, Telangana, Gujarat and Madhya Pradesh (2026 Round 1 too for Gujarat and Madhya Pradesh). Other states are being added.</li>
+          <li>MCC counselling (All India, deemed, central universities, DNB) plus state counselling 2025 for Maharashtra, Karnataka, Kerala, Andhra Pradesh, Rajasthan, Telangana, Gujarat and Madhya Pradesh (2026 Round 1 too for Gujarat and Madhya Pradesh), and Haryana Round 1 2025. Other states are being added.</li>
           <li>Maharashtra lists show the state merit number; the All India Rank comes from the State CET Cell’s Common State Merit List.</li>
           <li>Karnataka (KEA) lists print the All India Rank directly. Private colleges in Karnataka do not take part in MCC counselling, so they have no MCC fee profile.</li>
           <li>Kerala (CEE) lists print the All India Rank. For Kerala’s in-service quotas we show the All India Rank; CEE ranks those seats on its separate service list.</li>
@@ -78,6 +78,7 @@ export default function SourcesPage() {
           <li>Telangana (KNRUHS) lists print the All India Rank. Women-only seats are shown with the general seats of the same category.</li>
           <li>Gujarat (ACPPGMEC) lists print the All India Rank. “University Quota” seats are reserved for graduates of the same university.</li>
           <li>Madhya Pradesh (DME MP) lists print the All India Rank. “MP graduates” seats in private colleges are reserved for doctors who did MBBS in Madhya Pradesh; the 2025 mop-up list is no longer linked on the DME site, so it comes from Medical Dialogues’ copy of the official PDF.</li>
+          <li>Haryana (DMER) lists print the All India Rank. Only Round 1 of 2025 is available: the counselling portal was reset for 2026, so it comes from Collegedunia’s copy of the portal’s PDF. “In-service” seats are for Haryana Government doctors; “institutional preference” seats are for doctors who did MBBS in Haryana.</li>
           <li>{Math.max(...d.years)} has {d.rounds.filter((r) => r.counselling === 'MCC' && r.year === Math.max(...d.years)).map((r) => r.label).join(', ')} so far.</li>
           <li>Institute names change between years, so each season is compared on its own.</li>
           <li>Fees, stipends and bonds are not included yet.</li>

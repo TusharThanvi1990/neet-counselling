@@ -417,7 +417,41 @@ const mpCourse = (course: string, subject: string) => {
   if (/DIP/i.test(course)) return `(NBEMS-DIPLOMA) ${s}`;
   return `${course.trim()} ${s}`;
 };
-const STATE_FILES = readdirSync('data/parsed').filter((f) => /^(mh|ka|kl|ap|rj|tg|gj|mp)20\d\d_[a-z0-9_]+\.json$/.test(f) && !/merit|_oc$/.test(f)).map((f) => f.replace('.json', ''));
+// Haryana (DMER): college name (letters only) → [display name, MCC code].
+const HR_INST: Record<string, [string, string]> = {
+  panditbhagwatdayalsharmapgims: ['Pt BD Sharma PGIMS, Rohtak', '700374'],
+  bhagatphoolsinghgmc: ['BPS Government Medical College for Women, Khanpur Kalan', '700378'],
+  shkmgmcnalharnuh: ['SHKM Government Medical College, Nalhar (Nuh)', '700491'],
+  esicfaridabad: ['ESIC Medical College & Hospital, Faridabad', '701500'],
+  kcgmckarnal: ['Kalpana Chawla Government Medical College, Karnal', '701698'],
+  generalhospitalpanchkulaharyana: ['General Hospital, Panchkula', '700724'],
+  districtcivilhospitalmaharajaagarsenhisarharyana: ['Maharaja Agrasen District Civil Hospital, Hisar', '700738'],
+  civilhospitalgurugramharyana: ['Civil Hospital, Gurugram', '701549'],
+  civilhospitalfaridabadharyana: ['Civil Hospital, Faridabad', '700737'],
+  civilhospitalpalwalharyana: ['Civil Hospital, Palwal', '701547'],
+  civilhospitalambalacanttambalaharyana: ['Civil Hospital, Ambala Cantt', '701310'],
+  civilhospitalrohtakharyana: ['Civil Hospital, Rohtak', '700744'],
+  civilhospitalbahadurgarhjhajjarharyana: ['Civil Hospital, Bahadurgarh (Jhajjar)', '700740'],
+  sgtmedicalcollegeresearchinstitutebudheragurugram: ['SGT Medical College & Research Institute, Gurugram', ''],
+  maharajaagrasenmedicalcollege: ['Maharaja Agrasen Medical College, Agroha', ''],
+  worldcollegeofmedsciresjhajjar: ['World College of Medical Sciences & Research, Jhajjar', ''],
+  adeshmedicalcollegekurukshetra: ['Adesh Medical College, Kurukshetra', ''],
+  alfalahuniversityfaridabad: ['Al-Falah School of Medical Sciences, Faridabad', ''],
+  ncmedicalcollegeisranapanipat: ['NC Medical College, Israna (Panipat)', ''],
+};
+const HR_CAT: Record<string, string> = { UR: 'Open', BCA: 'BC-A', BCB: 'BC-B', SC: 'SC', SCD: 'SC (Deprived)', EWS: 'EWS' };
+/** "UR IP IS PWD", "BCA IS", "Mgmt" … → [quota suffix, seat category]. IS = in-service (Haryana Govt doctors);
+ *  IP = institutional preference (MBBS from a Haryana college); ESM/FF (ex-servicemen / freedom fighter wards) not modelled. */
+const hrSeat = (code: string): [string, string] => {
+  const t = code.toUpperCase().split(/\s+/);
+  if (t[0] === 'MGMT') return ['Management', 'Open'];
+  if (t[0] === 'NRI') return ['NRI', 'Open'];
+  if (t[0] === 'MINORITY') return ['Minority', 'Open'];
+  const seat = (HR_CAT[t[0]] ?? t[0]) + (t.includes('PWD') ? ' PwD' : '');
+  return [t.includes('IS') ? 'In-service' : t.includes('IP') ? 'State Quota (institutional preference)' : 'State Quota', seat];
+};
+const hrCourse = (c: string) => c.replace(/^Post MBBS DNB\s*-\s*/i, '(NBEMS) ').replace(/^Post MBBS Diploma\s*-\s*/i, '(NBEMS-DIPLOMA) ').replace(/^(MD|MS)\s*-\s*/, '$1 ');
+const STATE_FILES = readdirSync('data/parsed').filter((f) => /^(mh|ka|kl|ap|rj|tg|gj|mp|hr)20\d\d_[a-z0-9_]+\.json$/.test(f) && !/merit|_oc$/.test(f)).map((f) => f.replace('.json', ''));
 
 // ---- rounds ----
 const files = readdirSync('data/parsed').filter((f) => /^mcc20\d\d_[a-z0-9]+\.json$/.test(f)).map((f) => f.replace('.json', ''))
@@ -442,6 +476,14 @@ rounds.forEach((rd, ri) => {
       const ii = instIndex(`MH ${r.institute}`, rd.year, { display: code ? codeName(code) : r.institute.replace(/\s+/g, ' '), code, state: 'Maharashtra' });
       const [q, seat] = mhSeat(r.allottedCategory);
       rows.push(ri, r.rank, ii, course.get(normCourse(MH_DIPLOMA[r.course] ?? r.course)), quota.get(`Maharashtra ${q}`), acat.get(seat), ccat.get(mhCandidate(r.candidateCategory)), r.page);
+      continue;
+    }
+    if (rd.counselling === 'Haryana') {
+      const k = r.institute.toLowerCase().replace(/[^a-z]/g, ''), [display, code] = HR_INST[k] ?? [r.institute, ''];
+      if (!HR_INST[k]) unknownMp.add(`HR ${r.institute}`);
+      const ii = instIndex(`HR ${k}`, rd.year, { display, code, state: 'Haryana' });
+      const [q, seat] = hrSeat(r.allottedCategory);
+      rows.push(ri, r.rank, ii, course.get(normCourse(hrCourse(r.course))), quota.get(`Haryana ${q}`), acat.get(seat), ccat.get(seat.startsWith('Open') ? 'Not stated' + (seat.endsWith('PwD') ? ' PwD' : '') : seat), r.page);
       continue;
     }
     if (rd.counselling === 'Madhya Pradesh') {
