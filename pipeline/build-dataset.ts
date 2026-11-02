@@ -474,7 +474,56 @@ const bhSeat = (cat: string, inst: [string, string] | undefined): [string, strin
   return [inst?.[1] ? 'State Quota' : 'Private (state quota)', BH_CAT[c] ?? c];
 };
 const bhCourse = (type: string, b: string) => (/^DIPLOMA/i.test(type) ? MH_DIPLOMA[b] ?? `Diploma ${b.replace(/^DIP/i, '')}` : `MD/MS ${({ 'F.M.T.': 'Forensic Medicine', RADIOONCOLOGY: 'Radiation Oncology' } as Record<string, string>)[b] ?? b}`);
-const STATE_FILES = readdirSync('data/parsed').filter((f) => /^(mh|ka|kl|ap|rj|tg|gj|mp|hr|bh)20\d\d_[a-z0-9_]+\.json$/.test(f) && !/merit|_oc$/.test(f)).map((f) => f.replace('.json', ''));
+// Punjab (BFUHS): the list cells often repeat or pick up text from the row above, so a college is the longest of these
+// name keys found inside the cell's letters. [key, display name, MCC code, government?]
+const PB_INST: [string, string, string, boolean][] = [
+  ['governmentmedicalcollegepatiala', 'Government Medical College, Patiala', '700339', true],
+  ['governmentmedicalcollegeamritsar', 'Government Medical College, Amritsar', '700341', true],
+  ['gurugobindsinghmedicalcollegefaridkot', 'Guru Gobind Singh Medical College, Faridkot', '700342', true],
+  ['drbrambedkarstateinstitute', 'Dr BR Ambedkar State Institute of Medical Sciences, Mohali', '903369', true],
+  ['netajisubhasnationalinstituteofsports', 'Netaji Subhas National Institute of Sports, Patiala', '700344', true],
+  ['homibhabhacancerhospital', 'Homi Bhabha Cancer Hospital, Sangrur', '701509', true],
+  ['instituteofmentalhealth', 'Institute of Mental Health, Amritsar', '701014', true],
+  ['sblscivilhospital', 'SBLS Civil Hospital, Jalandhar', '701025', true], ['jbmmdistricthospital', 'JBMM District Hospital, Amritsar', '701024', true],
+  ['matakaushalya', 'Mata Kaushalya Government Hospital, Patiala', '701021', true], ['lordmahavircivilhospital', 'Lord Mahavir Civil Hospital, Ludhiana', '701020', true],
+  ['shaheedbhaimanisingh', 'Shaheed Bhai Mani Singh District Hospital, Bathinda', '701027', true],
+  ['districthospitalfaridkot', 'District Hospital, Faridkot', '701561', true], ['civilhospitalgurdaspur', 'Civil Hospital, Gurdaspur', '901690', true],
+  ['civilhospitalkapurthala', 'Civil Hospital, Kapurthala', '901845', true], ['civilhospitalmalerkotla', 'Civil Hospital, Malerkotla', '904218', true],
+  ['civilhospitalropar', 'Civil Hospital, Ropar', '904220', true], ['disricthospitalfatehgarhsahib', 'District Hospital, Fatehgarh Sahib', '901700', true],
+  ['disricthospitalmainbazaarmoga', 'District Hospital, Moga', '904229', true], ['disricthospitaltarntaran', 'District Hospital, Tarn Taran', '904228', true],
+  ['districthospitalnawanshahar', 'District Hospital, Nawanshahr', '', true], ['districthospitalphasesasnagar', 'District Hospital, SAS Nagar (Mohali)', '901699', true],
+  ['sdhrajpura', 'Sub-Divisional Hospital, Rajpura', '904327', true],
+  ['srigururamdasinstitute', 'Sri Guru Ram Das Institute of Medical Sciences and Research, Amritsar', '', false],
+  ['dayanandmedicalcollege', 'Dayanand Medical College and Hospital, Ludhiana', '', false],
+  ['christianmedicalcollegeludhiana', 'Christian Medical College, Ludhiana', '', false],
+  ['adeshinstituteofmedicalsciences', 'Adesh Institute of Medical Sciences & Research, Bathinda', '', false],
+  ['giansagarmedicalcollege', 'Gian Sagar Medical College & Hospital, Banur', '', false],
+];
+const pbInst = (cell: string) => {
+  const k = cell.toLowerCase().replace(/[^a-z]/g, '');
+  return PB_INST.filter(([key]) => k.includes(key)).sort((a, b) => b[0].length - a[0].length)[0];
+};
+const PB_CAT: [RegExp, string][] = [[/^ews/i, 'EWS'], [/scheduled\s*caste/i, 'SC'], [/backward/i, 'BC'], [/./, 'Open']];
+/** BFUHS quota + category → [quota suffix, seat category]. PCMS doctors (incentive marks on the state merit list) get
+ *  their own quota; IP = institutional preference (MBBS from a Punjab university). */
+const pbSeat = (quota: string, cat: string, govt: boolean, inService: boolean): [string, string] => {
+  const seat = PB_CAT.find(([re]) => re.test(cat.trim()))![1], q = quota.toLowerCase();
+  if (/nri/.test(q)) return ['NRI', 'Open'];
+  if (/management/.test(q)) return ['Management', 'Open'];
+  if (/minority|^a$/.test(q)) return ['Minority', 'Open'];
+  if (/open\s*merit/.test(q)) return ['Private (open to all)', seat];
+  if (inService) return ['In-service (incentive marks)', seat];
+  const base = govt ? 'State Quota' : 'Private (state quota)';
+  return [/\bIP\b|\(IP\)/.test(cat) ? `${base} (institutional preference)` : base, seat];
+};
+const PB_SHORT: Record<string, string> = { DA: 'Diploma in Anaesthesiology', DCH: 'Diploma in Child Health' };
+const pbCourse = (c: string) => {
+  const [prog, name] = c.split('|');
+  if (PB_SHORT[name]) return PB_SHORT[name];
+  if (/^PostGraduationDiploma/i.test(name)) return `Diploma ${name.replace(/^PostGraduationDiplomain/i, '')}`;
+  return prog === 'DNB' ? `(NBEMS) ${name}` : prog === 'Diploma' ? `(NBEMS-DIPLOMA) ${name}` : `MD/MS ${name}`;
+};
+const STATE_FILES = readdirSync('data/parsed').filter((f) => /^(mh|ka|kl|ap|rj|tg|gj|mp|hr|bh|pb)20\d\d_[a-z0-9_]+\.json$/.test(f) && !/merit|_oc$/.test(f)).map((f) => f.replace('.json', ''));
 
 // ---- rounds ----
 const files = readdirSync('data/parsed').filter((f) => /^mcc20\d\d_[a-z0-9]+\.json$/.test(f)).map((f) => f.replace('.json', ''))
@@ -499,6 +548,15 @@ rounds.forEach((rd, ri) => {
       const ii = instIndex(`MH ${r.institute}`, rd.year, { display: code ? codeName(code) : r.institute.replace(/\s+/g, ' '), code, state: 'Maharashtra' });
       const [q, seat] = mhSeat(r.allottedCategory);
       rows.push(ri, r.rank, ii, course.get(normCourse(MH_DIPLOMA[r.course] ?? r.course)), quota.get(`Maharashtra ${q}`), acat.get(seat), ccat.get(mhCandidate(r.candidateCategory)), r.page);
+      continue;
+    }
+    if (rd.counselling === 'Punjab') {
+      const m = pbInst(r.institute);
+      if (!m) { unknownMp.add(`PB ${r.institute}`); continue; }
+      const ii = instIndex(`PB ${m[0]}`, rd.year, { display: m[1], code: m[2], state: 'Punjab' });
+      const [q, seat] = pbSeat(r.quota, r.allottedCategory, m[3], r.inService);
+      const cand = /scheduled/i.test(r.candidateCategory) ? 'SC' : /backward|^bc/i.test(r.candidateCategory) ? 'BC' : /^ews/i.test(r.candidateCategory) ? 'EWS' : 'General';
+      rows.push(ri, r.rank, ii, course.get(normCourse(pbCourse(r.course))), quota.get(`Punjab ${q}`), acat.get(seat), ccat.get(cand), r.page);
       continue;
     }
     if (rd.counselling === 'Bihar') {
