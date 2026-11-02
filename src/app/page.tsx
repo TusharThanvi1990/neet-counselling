@@ -16,7 +16,7 @@ const FEATURES = [
 const FAQ = [
   ['Where does the data come from?', 'Every number comes from documents MCC publishes: round-wise allotment results, seat matrices and institute profiles. Each closing rank links to the page of the official PDF it came from.'],
   ['How accurate is the college predictor?', 'It compares your rank with the last rank MCC actually allotted for each seat in past rounds. Cutoffs move every year with seats and competition, so treat the labels as a guide, not a guarantee.'],
-  ['Does it cover state quota counselling?', 'State counselling 2025 for Maharashtra, Karnataka, Kerala, Andhra Pradesh, Rajasthan, Telangana, Gujarat, Madhya Pradesh, Bihar and Punjab is included (Haryana Round 1 too), plus 2026 Round 1 for Gujarat, Madhya Pradesh and Punjab, with every allotment shown by All India Rank. More states are being added. MCC counselling (All India Quota, deemed and central universities, DNB) is fully covered.'],
+  ['Does it cover state quota counselling?', 'State counselling 2025 for Maharashtra, Karnataka, Kerala, Andhra Pradesh, Rajasthan, Telangana, Gujarat, Madhya Pradesh, Bihar, Punjab and Chhattisgarh is included (Haryana Round 1 too), plus 2026 Round 1 for Gujarat, Madhya Pradesh, Punjab and Chhattisgarh, with every allotment shown by All India Rank. More states are being added. MCC counselling (All India Quota, deemed and central universities, DNB) is fully covered.'],
   ['Is it free?', 'Yes, all tools are free to use during the current season.'],
   ['Which rounds are included?', 'Rounds 1–3 and the stray rounds from 2023, 2024 and 2025, plus 2026 rounds as MCC publishes them.'],
 ];

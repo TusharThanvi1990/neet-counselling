@@ -32,11 +32,11 @@ Every state follows the same steps:
 | 12 | Haryana | DMER Haryana (hry.online-counselling.co.in) | P2 | 2025 R1 | AIR | ✅ | 450 (R1 only) | Portal reset for 2026 and file links are 10-minute signed URLs; 2025 Round 1 from Collegedunia's copy of the portal PDF. Rounds 2/3/stray not found. IS = in-service, IP = institutional preference. Closing ranks match public 2025 statewide cutoffs (5/5). 2026 MD/MS counselling not started yet (only MDS on the portal) |
 | 13 | Bihar | BCECEB (PGMAC) | P2 | 2025 R2–stray | AIR | ✅ | 1,319 | Revised Round 2, revised Round 3, stray (bceceboard.bihar.gov.in/pdf_Result/…PGMAC25_ALT_R*.pdf). Round 1 was withdrawn/re-issued and is no longer on the site. Govt + private (state, NRI, Muslim/Sikh minority) seats; 9 govt colleges linked. Closing ranks match public 2025 cutoffs (8/8). Women-only seats merged into their category |
 | 14 | Punjab | BFUHS | P2 | 2025 R1–R2 + 2026 R1 | Merit no. + roll no. → AIR via merit lists | ✅ | 644 (2025) + 546 (2026 R1) | 2025 R1 (revised) and R2 (revised) from Medical Dialogues' copies; R3/stray lists not found. 2025 R1 merit list gone, so 141 of 510 R1 allotments have no AIR and are dropped. PCMS (incentive marks) split into in-service quota. PDF text is messy (doubled bold glyphs, overlapping cells) — colleges matched by name key. 2026 R1 provisional list (02-11-2026) included |
-| 15 | Odisha | DMET Odisha | P2 | 2025 | | ⏳ | | |
+| 15 | Odisha | DMET Odisha (dmetodisha.in) | P2 | 2025 | | ⛔ | | 2025 allotment PDFs removed from DOWNLOADSPGM_22 (site reset for 2026); no third-party copies found; Web Archive offline — retry. 2026 seat matrix out 30-10-2026, Round 1 allotment due |
 | 16 | Delhi | MCC (DU / IP University quota) | P2 | 2025 | AIR | ⏳ | | Possibly already in our MCC data as quotas; check |
 | 17 | Puducherry | CENTAC | P2 | 2025 | | ⏳ | | |
 | 18 | Assam | DME Assam | P2 | 2025 | | ⏳ | | |
-| 19 | Chhattisgarh | DME Chhattisgarh | P2 | 2025 | | ⏳ | | |
+| 19 | Chhattisgarh | DME CG (cgdme.admissions.nic.in) | P2 | 2025 + 2026 R1 | AIR | ✅ | 543 (2025) + 278 (2026 R1) | 2025 R1/R2 cancelled 22-01-2026 and re-run as combined R1&R2 (shown as Round 1), then mop-up, stray, extended stray. In-service (bonus marks) own quota. 7 govt colleges linked. Matches official OR-CR (7/7 via state rank) |
 | 20 | Jharkhand | JCECEB | P2 | 2025 | | ⏳ | | |
 | 21 | Uttarakhand | HNBUMU | P2 | 2025 | | ⏳ | | |
 | 22 | Himachal Pradesh | AMRU | P3 | 2025 | | ⏳ | | |

@@ -523,7 +523,32 @@ const pbCourse = (c: string) => {
   if (/^PostGraduationDiploma/i.test(name)) return `Diploma ${name.replace(/^PostGraduationDiplomain/i, '')}`;
   return prog === 'DNB' ? `(NBEMS) ${name}` : prog === 'Diploma' ? `(NBEMS-DIPLOMA) ${name}` : `MD/MS ${name}`;
 };
-const STATE_FILES = readdirSync('data/parsed').filter((f) => /^(mh|ka|kl|ap|rj|tg|gj|mp|hr|bh|pb)20\d\d_[a-z0-9_]+\.json$/.test(f) && !/merit|_oc$/.test(f)).map((f) => f.replace('.json', ''));
+// Chhattisgarh (DME CG): name key found in the institute cell → [display name, MCC code, government?].
+const CG_INST: [string, string, string, boolean][] = [
+  ['jawaharlalnehrumemorial', 'Pt JNM Medical College, Raipur', '700316', true],
+  ['chhattisgarhinstituteofmedicalsciences', 'Chhattisgarh Institute of Medical Sciences, Bilaspur', '700319', true],
+  ['lakhiramagrawal', 'Late Shri Lakhiram Agrawal Memorial Government Medical College, Raigarh', '700534', true],
+  ['baliramkashyap','Late Baliram Kashyap Memorial Government Medical College, Jagdalpur', '700538', true],
+  ['atalbiharivajpayee', 'Bharat Ratna Late Shri Atal Bihari Vajpayee Memorial Medical College, Rajnandgaon', '701498', true],
+  ['devendrakumarisinghdeo', 'Rajmata Smt Devendra Kumari Singhdeo Government Medical College, Ambikapur', '701708', true],
+  ['bisahudasmahant', 'Late Bisahu Das Mahant Memorial Medical College, Korba', '904557', true],
+  ['shribalajiinstitute', 'Shri Balaji Institute of Medical Science, Raipur', '', false],
+  ['shankaracharya', 'Shri Shankaracharya Institute of Medical Sciences, Bhilai', '', false],
+  ['raipurinstituteofmedicalsciences', 'Raipur Institute of Medical Sciences, Raipur', '', false],
+];
+const cgInst = (cell: string) => { const k = cell.toLowerCase().replace(/[^a-z]/g, ''); return CG_INST.find(([key]) => k.includes(key)); };
+const CG_CAT: Record<string, string> = { UR: 'Open', OBC: 'OBC', SC: 'SC', ST: 'ST', EWS: 'EWS' };
+/** "State Institutional Quota" = MBBS from a Chhattisgarh college; "State Open Quota" = open to other candidates too.
+ *  In-service doctors (bonus marks) get their own quota. Female-reserved seats are shown with their category. */
+const cgSeat = (quota: string, cat: string, govt: boolean, inService: boolean): [string, string] => {
+  const q = quota.replace(/\s+/g, '').toLowerCase(), c = CG_CAT[cat.split('-')[0].toUpperCase()] ?? cat;
+  if (q.startsWith('nri')) return ['NRI', 'Open'];
+  if (inService) return ['In-service (bonus marks)', c];
+  const base = govt ? 'State Quota' : 'Private (state quota)';
+  return [q.includes('open') ? `${base} (open)` : `${base} (institutional)`, c];
+};
+const cgCourse = (p: string) => (/\bPMR\b/i.test(p) ? 'MD Physical Medicine & Rehabilitation' : /DERM|SKIN|VENE/i.test(p) ? 'MD Dermatology' : p);
+const STATE_FILES = readdirSync('data/parsed').filter((f) => /^(mh|ka|kl|ap|rj|tg|gj|mp|hr|bh|pb|cg)20\d\d_[a-z0-9_]+\.json$/.test(f) && !/merit|_oc$/.test(f)).map((f) => f.replace('.json', ''));
 
 // ---- rounds ----
 const files = readdirSync('data/parsed').filter((f) => /^mcc20\d\d_[a-z0-9]+\.json$/.test(f)).map((f) => f.replace('.json', ''))
@@ -548,6 +573,15 @@ rounds.forEach((rd, ri) => {
       const ii = instIndex(`MH ${r.institute}`, rd.year, { display: code ? codeName(code) : r.institute.replace(/\s+/g, ' '), code, state: 'Maharashtra' });
       const [q, seat] = mhSeat(r.allottedCategory);
       rows.push(ri, r.rank, ii, course.get(normCourse(MH_DIPLOMA[r.course] ?? r.course)), quota.get(`Maharashtra ${q}`), acat.get(seat), ccat.get(mhCandidate(r.candidateCategory)), r.page);
+      continue;
+    }
+    if (rd.counselling === 'Chhattisgarh') {
+      const m = cgInst(r.institute);
+      if (!m) { unknownMp.add(`CG ${r.institute}`); continue; }
+      const ii = instIndex(`CG ${m[0]}`, rd.year, { display: m[1], code: m[2], state: 'Chhattisgarh' });
+      const [q, seat] = cgSeat(r.quota, r.allottedCategory, m[3], r.inService);
+      const cc = (r.candidateCategory || '').toUpperCase(), cand = cc === 'GN' || !cc ? 'General' : CG_CAT[cc] ?? cc;
+      rows.push(ri, r.rank, ii, course.get(normCourse(cgCourse(r.course))), quota.get(`Chhattisgarh ${q}`), acat.get(seat), ccat.get(cand + (r.pwd ? ' PwD' : '')), r.page);
       continue;
     }
     if (rd.counselling === 'Punjab') {
