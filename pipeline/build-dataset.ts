@@ -587,7 +587,7 @@ const jkSeat = (sli: string, inst: string, inService: boolean): [string, string]
   return [/ASCOMS/i.test(inst) ? 'Private (state quota)' : 'State Quota', jkCat(sli)];
 };
 const jkCourse = (c: string) => c.replace(/^(MD|MS)\s*\/\s*(MD|MS)\s*/i, 'MD/MS ').replace(/^PG\s*Diploma\s*/i, 'Diploma ').replace(/^(MD|MS)(?=[A-Z])/, '$1 ').replace(/\bPediatric/i, 'Paediatric');
-const STATE_FILES = readdirSync('data/parsed').filter((f) => /^(mh|ka|kl|ap|rj|tg|gj|mp|hr|bh|pb|cg|hp|jk)20\d\d_[a-z0-9_]+\.json$/.test(f) && !/merit|_oc$/.test(f)).map((f) => f.replace('.json', ''));
+const STATE_FILES = readdirSync('data/parsed').filter((f) => /^(mh|ka|kl|ap|rj|tg|gj|mp|hr|bh|pb|cg|hp|jk|ga)20\d\d_[a-z0-9_]+\.json$/.test(f) && !/merit|_oc$/.test(f)).map((f) => f.replace('.json', ''));
 
 // ---- rounds ----
 const files = readdirSync('data/parsed').filter((f) => /^mcc20\d\d_[a-z0-9]+\.json$/.test(f)).map((f) => f.replace('.json', ''))
@@ -612,6 +612,12 @@ rounds.forEach((rd, ri) => {
       const ii = instIndex(`MH ${r.institute}`, rd.year, { display: code ? codeName(code) : r.institute.replace(/\s+/g, ' '), code, state: 'Maharashtra' });
       const [q, seat] = mhSeat(r.allottedCategory);
       rows.push(ri, r.rank, ii, course.get(normCourse(MH_DIPLOMA[r.course] ?? r.course)), quota.get(`Maharashtra ${q}`), acat.get(seat), ccat.get(mhCandidate(r.candidateCategory)), r.page);
+      continue;
+    }
+    if (rd.counselling === 'Goa') {
+      const ii = instIndex('GA GMC', rd.year, { display: 'Goa Medical College, Bambolim', code: '700479', state: 'Goa' });
+      const c = r.allottedCategory.toUpperCase().replace(/^DR-/, ''), seat = ({ GEN: 'Open', OBC: 'OBC', SC: 'SC', ST: 'ST', EWS: 'EWS' } as Record<string, string>)[c] ?? c;
+      rows.push(ri, r.rank, ii, course.get(normCourse(`MD/MS ${r.course}`)), quota.get('Goa State Quota'), acat.get(seat), ccat.get(seat === 'Open' ? 'General' : seat), r.page);
       continue;
     }
     if (rd.counselling === 'Jammu & Kashmir') {

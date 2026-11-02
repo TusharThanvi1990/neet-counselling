@@ -41,12 +41,12 @@ Every state follows the same steps:
 | 21 | Uttarakhand | HNBUMU (meta-secure.com portal) | P2 | 2025 | | ⛔ | | 2025 results were on the external counselling portal, now running 2026. Take 2026 Round 1 |
 | 22 | Himachal Pradesh | AMRU (amruhp.ac.in) | P3 | 2025 | Merit no. + application no. → AIR via merit lists | ✅ | 396 | Rounds 1–3, stray, 2nd stray (final allocations). In-service (incentive marks) own quota. 6 govt colleges linked. Closing ranks match public 2025 cutoffs (9/9). Files found via the site's WordPress media API |
 | 23 | Jammu & Kashmir | JKBOPEE (jkbopee.gov.in) | P3 | 2025 | AIR in some rounds, else roll → AIR via merit list | ✅ | 844 | Rounds 1–3, physical (mop-up), stray, stray 2, plus ASCOMS Hindu-minority/NRI lists. In-service (DA marks) own quota. 7 govt colleges linked. Matches public 2025 cutoffs (6/6). 14 R3 candidates lack a rank |
-| 24 | Goa | DTE Goa (GMC) | P3 | 2025 | | ⏳ | | |
-| 25 | Chandigarh | GMCH-32 | P3 | 2024–25 | | ⏳ | | |
-| 26 | Manipur | RIMS / JNIMS committee | P3 | 2025 | | ⏳ | | |
-| 27 | Tripura | DME Tripura (TRMCC) | P3 | 2025 | | ⏳ | | |
-| 28 | Sikkim | H&FW Sikkim (SMIMS) | P3 | 2025 | | ⏳ | | |
-| 29 | Meghalaya | NEIGRIHMS | P3 | 2024–25 | | ⏳ | | |
+| 24 | Goa | DTE Goa (dte.goa.gov.in) | P3 | 2025 R2–R3 + 2026 R1 | AIR (R3 via reg. no. from R2) | ✅ | 82 (2025) + 72 (2026 R1) | Goa Medical College state quota. 2025 Round 1 file no longer on the site. SR (seat retained) and OCNA rows skipped |
+| 25 | Chandigarh | GMCH-32 (gmch.gov.in) | P3 | 2025 | | ⛔ | | 2025 result PDFs no longer listed (only 2026 application form); site blocks direct downloads from here. Take 2026 rounds |
+| 26 | Manipur | State PG committee (JNIMS/RIMS) | P3 | 2025 | | ⛔ | | No PG allotment lists published on the health directorate site (UG only). RIMS/JNIMS AIQ seats are in the MCC data |
+| 27 | Tripura | DME Tripura (dme.tripura.gov.in) | P3 | 2025 | | ⛔ | | Notification archive has no 2025 PG lists (2023 then 2026). AGMC AIQ seats are in the MCC data |
+| 28 | Sikkim | H&FW / HRDD Sikkim (SMIMS) | P3 | 2025 | | ⛔ | | No official 2025 list found; tiny private-college pool |
+| 29 | Meghalaya | NEIGRIHMS | P3 | 2025 | | ⛔ | | NE-open state pool is tiny (8 allotted in R1); no list found. NEIGRIHMS AIQ seats are in the MCC data |
 
 ## Other data (after the P1 states)
 

@@ -104,6 +104,7 @@ $TSX pipeline/states/punjab.ts        # reads data/raw/states/punjab/pb20xx_*.pd
 $TSX pipeline/states/chhattisgarh.ts  # reads data/raw/states/chhattisgarh/cg20xx_*.pdf
 $TSX pipeline/states/himachal.ts      # reads data/raw/states/himachal/hp2025_*.pdf (+ merit lists for AIR)
 $TSX pipeline/states/jk.ts            # reads data/raw/states/jk/jk2025_*.pdf (+ merit list for AIR)
+$TSX pipeline/states/goa.ts           # reads data/raw/states/goa/ga20xx_*.pdf
 python -I pipeline/states/andhra.py   # fetches the Dr NTR UHS last-rank table (no PDF)
 npm run data:build                    # or $TSX pipeline/build-dataset.ts
 ```
