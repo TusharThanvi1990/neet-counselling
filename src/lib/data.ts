@@ -8,7 +8,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-export type Round = { id: string; year: number; label: string; url: string; count: number; counselling: string };
+/** kind = 'closing ranks' when the board publishes only the last rank per seat type, not every allotment. */
+export type Round = { id: string; year: number; label: string; url: string; count: number; counselling: string; kind?: string };
 /** "MCC Round 2", "Maharashtra Stray". */
 export const roundTitle = (r: Round) => `${r.counselling} ${r.label}`;
 export type Institute = { id: string; name: string; full: string; state: string; code: string };

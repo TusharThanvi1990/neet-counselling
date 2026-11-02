@@ -24,7 +24,7 @@ export default function SourcesPage() {
           <thead><tr><th>Season</th><th>Counselling</th><th>Round</th><th className="num">Allotments</th><th>Official PDF</th></tr></thead>
           <tbody>
             {[...d.rounds].reverse().map((r) => (
-              <tr key={r.id}><td>{r.year}</td><td>{r.counselling}</td><td>{r.label}</td><td className="num">{fmt(r.count)}</td>
+              <tr key={r.id}><td>{r.year}</td><td>{r.counselling}</td><td>{r.label}</td><td className="num">{fmt(r.count)}{r.kind ? ` ${r.kind}` : ''}</td>
                 <td><a href={r.url} target="_blank" rel="noopener">Open PDF</a></td></tr>
             ))}
           </tbody>
@@ -69,10 +69,12 @@ export default function SourcesPage() {
         </p>
         <h2>Current limits</h2>
         <ul>
-          <li>MCC counselling (All India, deemed, central universities, DNB) plus Maharashtra, Karnataka and Kerala state counselling 2025. Other states are being added.</li>
+          <li>MCC counselling (All India, deemed, central universities, DNB) plus Maharashtra, Karnataka, Kerala, Andhra Pradesh and Rajasthan state counselling 2025. Other states are being added.</li>
           <li>Maharashtra lists show the state merit number; the All India Rank comes from the State CET Cell’s Common State Merit List.</li>
           <li>Karnataka (KEA) lists print the All India Rank directly. Private colleges in Karnataka do not take part in MCC counselling, so they have no MCC fee profile.</li>
           <li>Kerala (CEE) lists print the All India Rank. For Kerala’s in-service quotas we show the All India Rank; CEE ranks those seats on its separate service list.</li>
+          <li>Andhra Pradesh (Dr NTR UHS) publishes only the last (closing) All India Rank for each seat type and round, not every allotment, so its rows are closing ranks.</li>
+          <li>Rajasthan lists give the state merit number and NEET roll number; the All India Rank comes from the board’s State Merit Lists. In-service doctors get bonus marks on the state merit list, so their allotments are shown under a separate “In-service (bonus marks)” quota.</li>
           <li>{Math.max(...d.years)} has {d.rounds.filter((r) => r.year === Math.max(...d.years)).map((r) => r.label).join(', ')} so far.</li>
           <li>Institute names change between years, so each season is compared on its own.</li>
           <li>Fees, stipends and bonds are not included yet.</li>

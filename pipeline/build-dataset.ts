@@ -99,7 +99,7 @@ const SPECIALTY: [RegExp, string][] = [
   [/cardiovascular|thoracic/, 'Cardiothoracic Surgery (6-yr)'], [/neurosurgery/, 'Neurosurgery (6-yr)'],
   [/paediatricsurgery/, 'Paediatric Surgery (6-yr)'], [/plastic/, 'Plastic Surgery (6-yr)'],
   [/generalmedicine/, 'General Medicine'], [/generalsurgery/, 'General Surgery'], [/trauma/, 'Traumatology & Surgery'],
-  [/obst|gyna|obgy/, 'Obstetrics & Gynaecology'], [/paediatric|childhealth/, 'Paediatrics'],
+  [/obst|gyna|gyne|obgy/, 'Obstetrics & Gynaecology'], [/paediatric|childhealth/, 'Paediatrics'],
   [/radiationmedicine/, 'Radiation Medicine'], [/radio-?therap|radiation/, 'Radiation Oncology'], [/radio-?diag|radiology/, 'Radiodiagnosis'],
   [/derm|d\.d\.v\.l|venere|skin/, 'Dermatology'], [/ortho/, 'Orthopaedics'], [/ophthal|opthal/, 'Ophthalmology'],
   [/otorhino|oto-rhino|e\.?n\.?t\b|\bent\b/, 'ENT'], [/anaesth|anesth/, 'Anaesthesiology'], [/psychiat|psycholog/, 'Psychiatry'],
@@ -107,7 +107,7 @@ const SPECIALTY: [RegExp, string][] = [
   [/forensic/, 'Forensic Medicine'], [/community|preventive|publichealth|epidemiolog|p\.s\.m/, 'Community Medicine'],
   [/administration|admn/, 'Hospital Administration'], [/immuno|transfusion/, 'Immunohaematology & Transfusion'],
   [/microbio|bacterio/, 'Microbiology'], [/laboratory/, 'Laboratory Medicine'], [/patholog/, 'Pathology'], [/pharmacol/, 'Pharmacology'],
-  [/physiolog/, 'Physiology'], [/bio-?chem/, 'Biochemistry'], [/anatomy/, 'Anatomy'], [/physicalmed|phy\.medicine|rehab/, 'Physical Medicine & Rehab'],
+  [/physiolog/, 'Physiology'], [/bio-?chem/, 'Biochemistry'], [/anatomy/, 'Anatomy'], [/physicalmed|phy\.medicine|phy\.med|rehab/, 'Physical Medicine & Rehab'],
   [/geriatric|geritric/, 'Geriatrics'], [/palliative/, 'Palliative Medicine'], [/nuclear/, 'Nuclear Medicine'], [/sport/, 'Sports Medicine'],
   [/tropical/, 'Tropical Medicine'], [/aerospace/, 'Aerospace Medicine'], [/diabetolog/, 'Diabetology'],
   [/^medicine$/, 'General Medicine'], [/^surgery$/, 'General Surgery'], // state lists' short names
@@ -264,18 +264,84 @@ const klSeat = (cat: string): [string, string] => {
   return ['State Quota', KL_CATS[c] ?? c];
 };
 const klCandidate = (cat: string) => (cat === 'General' ? 'General' : cat === 'EW' ? 'EWS' : KL_CATS[cat] ?? cat);
-const STATE_FILES = readdirSync('data/parsed').filter((f) => /^(mh|ka|kl)20\d\d_[a-z0-9_]+\.json$/.test(f) && !/merit/.test(f)).map((f) => f.replace('.json', ''));
+// Andhra Pradesh (Dr NTR UHS): college code → MCC institute code (government colleges).
+const AP_CODES: Record<string, string> = {
+  M001: '700475', M002: '700469', M003: '700474', M004: '700470', M005: '700471', M006: '700472', M008: '700473', M018: '700486',
+  M019: '700485', M022: '700487', M025: '701720', M031: '904578', M032: '904570', M033: '904559', M034: '904577', M035: '904579',
+  M036: '901808',
+};
+/** Dr NTR UHS seat (CQ/MQ/CA-SF) + sub category + candidate area → quota suffix.
+ *  Competent-authority (CQ) seats are reserved by local area: AU (Andhra University region), SVU (Sri Venkateswara University
+ *  region); AP / APNL / Others are the unreserved seats open across the state. */
+const apQuota = (seat: string, sub: string, area: string) => {
+  if (sub === 'Service') return 'In-service';
+  if (seat === 'MQ') return sub === 'NRI' ? 'NRI' : sub === 'Institutional' ? 'Institutional' : 'Management';
+  if (seat === 'CA-SF') return 'Self-finance';
+  return area === 'AU' ? 'State Quota (AU local)' : area === 'SVU' ? 'State Quota (SVU local)' : 'State Quota (unreserved)';
+};
+const apSeat = (cat: string) => {
+  const c = cat.toUpperCase().replace(/\s+/g, '');
+  if (c === 'OC') return 'Open';
+  if (c === 'OC-PH') return 'Open PwD';
+  if (/^BC[A-E]$/.test(c)) return `BC-${c[2]}`;
+  if (/^SC\d$/.test(c)) return 'SC';
+  if (c === 'ST') return 'ST';
+  return 'Open'; // Management / NRI / Institutional / Self-Finance / MINORITY are quota names, not categories
+};
+// Rajasthan: college name (letters only) → MCC institute code (government colleges and the district hospitals that
+// take in-service diploma/DNB candidates).
+const RJ_CODES: Record<string, string> = {
+  smsmedicalcollegejaipur: '700327', jlnmcajmer: '700311', spmcbikaner: '700317', rntmcudaipur: '700332', govtmedicalcollegekota: '700334',
+  drsnmcjodhpur: '700308', jhalawarmedicalcollegejhalawar: '700337', ruhscollegeofmedicalsciences: '700524', gmcpali: '901805',
+  gmcbhilwara: '901863', shrijagannathpahadiyamedicalcollegebharatpurorgmcbharatpur: '901806', esicmedicalcollegeandhospitalalwar: '904560',
+  gmcchuru: '901803', gmcdungarpur: '901860', geetanjalimedicalcollegehospitaludaipur: '902746',
+  skhospitalsikar: '701077', ghbarmer: '701060', ghsawaimadhopur: '701061', governmentbdkhospitaljhunjhunu: '701064',
+  districthospitaldholpur: '701059', dhbundi: '701057', dhnagaur: '701062', ghkarauli: '701080', dhbaran: '701078', dhtonk: '701326',
+  dhhanumangarh: '701067', dhsriganganagar: '701071', mghbhilwara: '701065', governmenthospitalalwar: '701073',
+  govtdbgeneraldistricthospitalchuru: '701058', shriharideojoshigeneralhospitaldungarpur: '701076', govtrdbpjaipuriahospitaljaipur: '701045',
+  dhchittorgarh: '701081', dhsirohi: '701072', dhpratapgarh: '701068', dhdausa: '701079', dhrajsamand: '701070',
+};
+const RJ_SEAT: Record<string, string> = { GENERAL: 'Open', OBCNCL: 'OBC', SC: 'SC', ST: 'ST', EWS: 'EWS', MBCNCL: 'MBC' };
+/** Seat type → quota. "AI" seats in private colleges are open to candidates from any state. */
+const rjQuota = (t: string) => (/^AI$/i.test(t) ? 'Private (open to all)' : /manage/i.test(t) ? 'Management' : 'State Quota');
+const rjCourse = (c: string) => c.replace(/^Post\s*MBBS\s*Diploma\s*\(?\s*([^)]*)\)?/i, 'Diploma in $1').replace(/^(MD|MS)\s*\(\s*(.*)\)$/i, '$1 $2');
+const spaced = (s: string) => s.replace(/([a-z.,&)])([A-Z(])/g, '$1 $2').replace(/,(?=\S)/g, ', ').replace(/\s+/g, ' ').trim();
+const RJ_NAMES: Record<string, string> = {
+  smsmedicalcollegejaipur: 'SMS Medical College, Jaipur', jlnmcajmer: 'JLN Medical College, Ajmer', spmcbikaner: 'SP Medical College, Bikaner',
+  rntmcudaipur: 'RNT Medical College, Udaipur', drsnmcjodhpur: 'Dr SN Medical College, Jodhpur', govtmedicalcollegekota: 'Government Medical College, Kota',
+  mghbhilwara: 'MG Hospital, Bhilwara', rbmhospitalbharatpur: 'RBM Hospital, Bharatpur', skhospitalsikar: 'SK Hospital, Sikar',
+  shrijagannathpahadiyamedicalcollegebharatpurorgmcbharatpur: 'Shri Jagannath Pahadiya Medical College, Bharatpur',
+  ruhscollegeofmedicalsciences: 'RUHS College of Medical Sciences, Jaipur',
+  governmentbdkhospitaljhunjhunu: 'Government BDK Hospital, Jhunjhunu', govtamritkaurhospitalbeawar: 'Government Amrit Kaur Hospital, Beawar',
+  esicmedicalcollegeandhospitalalwar: 'ESIC Medical College and Hospital, Alwar', governmenthospitalalwar: 'Government Hospital, Alwar',
+  drsstantiamedicalcollegehospitalanaresearchcentersriganganagar: 'Dr S S Tantia Medical College, Hospital and Research Center, Sri Ganganagar',
+  govtrdbpjaipuriahospitaljaipur: 'Government RDBP Jaipuria Hospital, Jaipur', jhalawarmedicalcollegejhalawar: 'Jhalawar Medical College, Jhalawar',
+  govtdistricthospitalkekriajmer: 'Government District Hospital, Kekri (Ajmer)', shriharideojoshigeneralhospitaldungarpur: 'Shri Hari Deo Joshi General Hospital, Dungarpur',
+};
+/** Rajasthan lists glue words together; expand the abbreviations and pick the best-spaced spelling seen. */
+const rjBest = new Map<string, string>();
+const rjDisplay = (raw: string, nk: string) => {
+  if (RJ_NAMES[nk]) return RJ_NAMES[nk];
+  const best = rjBest.get(nk) ?? raw;
+  const s = spaced(best).replace(/\.$/, '');
+  return s.replace(/^DH\s*/, 'District Hospital, ').replace(/^GH\s*/, 'Government Hospital, ').replace(/^GMC\s*/, 'Government Medical College, ');
+};
+const STATE_FILES = readdirSync('data/parsed').filter((f) => /^(mh|ka|kl|ap|rj)20\d\d_[a-z0-9_]+\.json$/.test(f) && !/merit/.test(f)).map((f) => f.replace('.json', ''));
 
 // ---- rounds ----
 const files = readdirSync('data/parsed').filter((f) => /^mcc20\d\d_[a-z0-9]+\.json$/.test(f)).map((f) => f.replace('.json', ''))
   .filter((f) => SOURCES[f]);
-type RoundInfo = { id: string; year: number; label: string; url: string; count: number; counselling: string };
+type RoundInfo = { id: string; year: number; label: string; url: string; count: number; counselling: string; kind?: string };
 const rounds: RoundInfo[] = [
   ...files.map((f) => ({ id: f, year: Number(f.slice(3, 7)), label: SOURCES[f][0], url: U + SOURCES[f][1], count: 0, counselling: 'MCC' })),
-  ...STATE_FILES.map((f) => { const d = load(`data/parsed/${f}.json`); return { id: f, year: d.year, label: d.round, url: d.url, count: 0, counselling: d.counselling }; }),
+  ...STATE_FILES.map((f) => { const d = load(`data/parsed/${f}.json`); return { id: f, year: d.year, label: d.round, url: d.url, count: 0, counselling: d.counselling, ...(d.kind ? { kind: d.kind } : {}) }; }),
 ].sort((a, b) => a.year - b.year || (a.counselling === 'MCC' ? 0 : 1) - (b.counselling === 'MCC' ? 0 : 1) || a.counselling.localeCompare(b.counselling)
   || ROUND_ORDER.indexOf(a.label) - ROUND_ORDER.indexOf(b.label));
 const rows: number[] = [];
+for (const rd of rounds.filter((x) => x.counselling === 'Rajasthan')) for (const r of load(`data/parsed/${rd.id}.json`).rows) {
+  const nk = r.institute.toLowerCase().replace(/[^a-z]/g, ''), cur = rjBest.get(nk);
+  if (!cur || (r.institute.match(/ /g)?.length ?? 0) > (cur.match(/ /g)?.length ?? 0)) rjBest.set(nk, r.institute);
+}
 rounds.forEach((rd, ri) => {
   const d = load(`data/parsed/${rd.id}.json`);
   for (const r of d.rows) {
@@ -284,6 +350,23 @@ rounds.forEach((rd, ri) => {
       const ii = instIndex(`MH ${r.institute}`, rd.year, { display: code ? codeName(code) : r.institute.replace(/\s+/g, ' '), code, state: 'Maharashtra' });
       const [q, seat] = mhSeat(r.allottedCategory);
       rows.push(ri, r.rank, ii, course.get(normCourse(MH_DIPLOMA[r.course] ?? r.course)), quota.get(`Maharashtra ${q}`), acat.get(seat), ccat.get(mhCandidate(r.candidateCategory)), r.page);
+      continue;
+    }
+    if (rd.counselling === 'Rajasthan') {
+      const nk = r.institute.toLowerCase().replace(/[^a-z]/g, '');
+      const code = RJ_CODES[nk] ?? '';
+      const ii = instIndex(`RJ ${nk}`, rd.year, { display: rjDisplay(r.institute, nk), code, state: 'Rajasthan' });
+      const seat = RJ_SEAT[r.allottedCategory.toUpperCase().replace(/\s+/g, '')] ?? r.allottedCategory;
+      const cs = RJ_SEAT[r.candidateCategory.toUpperCase().replace(/\s+/g, '')] ?? r.candidateCategory, cand = cs === 'Open' ? 'General' : cs;
+      rows.push(ri, r.rank, ii, course.get(normCourse(rjCourse(r.course))), quota.get(`Rajasthan ${r.inService ? 'In-service (bonus marks)' : rjQuota(r.quota)}`), acat.get(seat), ccat.get(cand), r.page);
+      continue;
+    }
+    if (rd.counselling === 'Andhra Pradesh') {
+      const code = AP_CODES[r.collegeCode] ?? '';
+      const ii = instIndex(`AP ${r.collegeCode || r.institute}`, rd.year, { display: r.institute.replace(/[.\s]+$/, ''), code, state: 'Andhra Pradesh' });
+      const q = r.allottedCategory === 'MINORITY' ? 'Minority' : apQuota(r.seat, r.sub, r.area);
+      const seat = apSeat(r.allottedCategory);
+      rows.push(ri, r.rank, ii, course.get(normCourse(r.course)), quota.get(`Andhra Pradesh ${q}`), acat.get(seat), ccat.get(seat === 'Open' ? 'Not stated' : seat), r.page);
       continue;
     }
     if (rd.counselling === 'Kerala') {
@@ -332,7 +415,7 @@ const QUOTA_LABEL: Record<string, string> = { 'Self-Financed Merit Seat': 'Deeme
 
 const data = {
   meta: { builtAt: new Date().toISOString(), portal: 'https://mcc.nic.in/pg-medical-counselling/', archive: 'https://mcc.nic.in/archive-pg/' },
-  rounds: rounds.map(({ id, year, label, url, count, counselling }) => ({ id, year, label, url, count, counselling })),
+  rounds: rounds.map(({ id, year, label, url, count, counselling, kind }) => ({ id, year, label, url, count, counselling, ...(kind ? { kind } : {}) })),
   // [id, display name, full name as printed by MCC, state, MCC institute code or '']
   inst: inst.map(([display, full, state, code]) => [instId(full), display, full, state, code]),
   // [MCC institute code, name, state, types]

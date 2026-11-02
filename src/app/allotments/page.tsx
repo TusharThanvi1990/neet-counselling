@@ -62,7 +62,7 @@ export default async function AllotmentsPage({ searchParams }: { searchParams: P
         </table>
         <div className="more">
           {f.page > 1 && <Link className="btn" href={hrefWith('/allotments', sp, { page: f.page - 1 })}>← Previous</Link>}
-          <span>{fmt(res.total)} allotments in {round.year} {round.counselling} {round.label}{pages > 1 ? ` · page ${f.page} of ${fmt(pages)}` : ''}</span>
+          <span>{fmt(res.total)} {round.kind ?? 'allotments'} in {round.year} {round.counselling} {round.label}{pages > 1 ? ` · page ${f.page} of ${fmt(pages)}` : ''}</span>
           {f.page < pages && <Link className="btn" href={hrefWith('/allotments', sp, { page: f.page + 1 })}>Next →</Link>}
         </div>
       </div>
