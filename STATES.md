@@ -39,7 +39,7 @@ Every state follows the same steps:
 | 19 | Chhattisgarh | DME CG (cgdme.admissions.nic.in) | P2 | 2025 + 2026 R1 | AIR | ✅ | 543 (2025) + 278 (2026 R1) | 2025 R1/R2 cancelled 22-01-2026 and re-run as combined R1&R2 (shown as Round 1), then mop-up, stray, extended stray. In-service (bonus marks) own quota. 7 govt colleges linked. Matches official OR-CR (7/7 via state rank) |
 | 20 | Jharkhand | JCECEB (neetpg.jceceb.co.in) | P2 | 2025 | | ⛔ | | 2025 allotments were on the counselling portal, now reset for 2026 (merit list out 28-10-2026). Take 2026 Round 1 |
 | 21 | Uttarakhand | HNBUMU (meta-secure.com portal) | P2 | 2025 | | ⛔ | | 2025 results were on the external counselling portal, now running 2026. Take 2026 Round 1 |
-| 22 | Himachal Pradesh | AMRU | P3 | 2025 | | ⏳ | | |
+| 22 | Himachal Pradesh | AMRU (amruhp.ac.in) | P3 | 2025 | Merit no. + application no. → AIR via merit lists | ✅ | 396 | Rounds 1–3, stray, 2nd stray (final allocations). In-service (incentive marks) own quota. 6 govt colleges linked. Closing ranks match public 2025 cutoffs (9/9). Files found via the site's WordPress media API |
 | 23 | Jammu & Kashmir | JKBOPEE | P3 | 2025 | | ⏳ | | |
 | 24 | Goa | DTE Goa (GMC) | P3 | 2025 | | ⏳ | | |
 | 25 | Chandigarh | GMCH-32 | P3 | 2024–25 | | ⏳ | | |

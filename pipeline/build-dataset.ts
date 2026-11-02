@@ -63,7 +63,7 @@ const ALIASES: [RegExp, string][] = [
   [/guwahati|dibrugarh|silchar/i, 'Assam'],
   [/pondicherry|puducherry/i, 'Puducherry'],
   [/churu/i, 'Rajasthan'], [/palakkad/i, 'Kerala'], [/kannauj|fatehpur/i, 'Uttar Pradesh'], [/almora/i, 'Uttarakhand'],
-  [/chikkaballapur|chikkamagaluru|karnata/i, 'Karnataka'], [/anantnag|baramulla|j&k/i, 'Jammu And Kashmir'], [/korba|c\.g\./i, 'Chhattisgarh'],
+  [/chikkaballapur|chikkamagaluru|karnata/i, 'Karnataka'], [/anantnag|baramulla|j&k/i, 'Jammu And Kashmir'], [/korba|\bc\.g\./i, 'Chhattisgarh'],
   [/imphal/i, 'Manipur'], [/shillong/i, 'Meghalaya'], [/agartala/i, 'Tripura'], [/gangtok/i, 'Sikkim'], [/panaji|bambolim/i, 'Goa'],
 ];
 const stateFromText = (s: string) => {
@@ -548,7 +548,27 @@ const cgSeat = (quota: string, cat: string, govt: boolean, inService: boolean): 
   return [q.includes('open') ? `${base} (open)` : `${base} (institutional)`, c];
 };
 const cgCourse = (p: string) => (/\bPMR\b/i.test(p) ? 'MD Physical Medicine & Rehabilitation' : /DERM|SKIN|VENE/i.test(p) ? 'MD Dermatology' : p);
-const STATE_FILES = readdirSync('data/parsed').filter((f) => /^(mh|ka|kl|ap|rj|tg|gj|mp|hr|bh|pb|cg)20\d\d_[a-z0-9_]+\.json$/.test(f) && !/merit|_oc$/.test(f)).map((f) => f.replace('.json', ''));
+// Himachal Pradesh (AMRU): name key in the institute cell → [display name, MCC code, government?].
+const HP_INST: [string, string, string, boolean][] = [
+  ['indiragandhimedicalcollegeshimla', 'Indira Gandhi Medical College, Shimla', '700379', true],
+  ['rajendraprasad', 'Dr Rajendra Prasad Government Medical College, Tanda (Kangra)', '700380', true],
+  ['lalbahadurshastri', 'Shri Lal Bahadur Shastri Government Medical College, Ner Chowk (Mandi)', '700748', true],
+  ['radhakrishanan', 'Dr Radhakrishnan Government Medical College, Hamirpur', '700750', true],
+  ['yashwantparmar', 'Dr Yashwant Singh Parmar Government Medical College, Nahan', '901862', true],
+  ['jawaharlalnehru', 'Pt Jawahar Lal Nehru Government Medical College, Chamba', '904567', true],
+  ['maharishimarkandeshwar', 'Maharishi Markandeshwar Medical College, Kumarhatti (Solan)', '', false],
+];
+const hpInst = (cell: string) => { const k = cell.toLowerCase().replace(/[^a-z]/g, ''); return HP_INST.find(([key]) => k.includes(key)); };
+/** AMRU admission type + category → [quota suffix, seat category]. In-service doctors get incentive marks on the merit list. */
+const hpSeat = (type: string, cat: string): [string, string] => {
+  const t = type.replace(/\s+/g, '').toLowerCase(), c = cat.replace(/\s+/g, '').toLowerCase();
+  const seat = /^sc/.test(c) ? 'SC' : /^st/.test(c) ? 'ST' : /economic/.test(c) ? 'EWS' : /obc|backward/.test(c) ? 'OBC' : /physically/.test(c) ? 'Open PwD' : 'Open';
+  if (/nri/.test(t)) return ['NRI', 'Open'];
+  if (/management/.test(t)) return ['Management', seat];
+  if (/in-?service/.test(t)) return ['In-service (incentive marks)', seat];
+  return ['State Quota', seat];
+};
+const STATE_FILES = readdirSync('data/parsed').filter((f) => /^(mh|ka|kl|ap|rj|tg|gj|mp|hr|bh|pb|cg|hp)20\d\d_[a-z0-9_]+\.json$/.test(f) && !/merit|_oc$/.test(f)).map((f) => f.replace('.json', ''));
 
 // ---- rounds ----
 const files = readdirSync('data/parsed').filter((f) => /^mcc20\d\d_[a-z0-9]+\.json$/.test(f)).map((f) => f.replace('.json', ''))
@@ -573,6 +593,15 @@ rounds.forEach((rd, ri) => {
       const ii = instIndex(`MH ${r.institute}`, rd.year, { display: code ? codeName(code) : r.institute.replace(/\s+/g, ' '), code, state: 'Maharashtra' });
       const [q, seat] = mhSeat(r.allottedCategory);
       rows.push(ri, r.rank, ii, course.get(normCourse(MH_DIPLOMA[r.course] ?? r.course)), quota.get(`Maharashtra ${q}`), acat.get(seat), ccat.get(mhCandidate(r.candidateCategory)), r.page);
+      continue;
+    }
+    if (rd.counselling === 'Himachal Pradesh') {
+      const m = hpInst(r.institute);
+      if (!m) { unknownMp.add(`HP ${r.institute}`); continue; }
+      const ii = instIndex(`HP ${m[0]}`, rd.year, { display: m[1], code: m[2], state: 'Himachal Pradesh' });
+      const [q, seat] = hpSeat(r.quota, r.allottedCategory);
+      const deg = r.course.replace(/^DNB\s+/i, '(NBEMS) ');
+      rows.push(ri, r.rank, ii, course.get(normCourse(deg)), quota.get(`Himachal Pradesh ${q}`), acat.get(seat), ccat.get(seat === 'Open' ? 'Not stated' : seat.replace('Open PwD', 'Not stated PwD')), r.page);
       continue;
     }
     if (rd.counselling === 'Chhattisgarh') {
