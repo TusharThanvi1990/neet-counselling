@@ -69,7 +69,7 @@ export default function SourcesPage() {
         </p>
         <h2>Current limits</h2>
         <ul>
-          <li>MCC counselling (All India, deemed, central universities, DNB) plus state counselling 2025 for Maharashtra, Karnataka, Kerala, Andhra Pradesh, Rajasthan, Telangana, Gujarat, Madhya Pradesh, Bihar, Punjab, Chhattisgarh and Himachal Pradesh (2026 Round 1 too for Gujarat, Madhya Pradesh, Punjab and Chhattisgarh), and Haryana Round 1 2025. Other states are being added.</li>
+          <li>MCC counselling (All India, deemed, central universities, DNB) plus state counselling 2025 for Maharashtra, Karnataka, Kerala, Andhra Pradesh, Rajasthan, Telangana, Gujarat, Madhya Pradesh, Bihar, Punjab, Chhattisgarh, Himachal Pradesh and Jammu & Kashmir (2026 Round 1 too for Gujarat, Madhya Pradesh, Punjab and Chhattisgarh), and Haryana Round 1 2025. Other states are being added.</li>
           <li>Maharashtra lists show the state merit number; the All India Rank comes from the State CET Cell’s Common State Merit List.</li>
           <li>Karnataka (KEA) lists print the All India Rank directly. Private colleges in Karnataka do not take part in MCC counselling, so they have no MCC fee profile.</li>
           <li>Kerala (CEE) lists print the All India Rank. For Kerala’s in-service quotas we show the All India Rank; CEE ranks those seats on its separate service list.</li>
@@ -83,6 +83,7 @@ export default function SourcesPage() {
           <li>Punjab (BFUHS) lists give the state merit number and NEET roll number; the All India Rank comes from BFUHS merit lists. The 2025 Round 1 merit list is no longer published, so about a quarter of 2025 Round 1 allotments (candidates absent from the later merit lists) have no All India Rank and are left out. PCMS doctors get incentive marks and are shown under a separate in-service quota. 2025 lists come from Medical Dialogues’ copies of the BFUHS PDFs.</li>
           <li>Chhattisgarh (DME) lists print the All India Rank. Its 2025 Rounds 1 and 2 were cancelled after a rules change and re-run as one combined round, shown here as Round 1. In-service doctors get bonus marks and are shown under a separate quota; “institutional” seats are for doctors who did MBBS in Chhattisgarh.</li>
           <li>Himachal Pradesh (AMRU) lists give the state merit number and application number; the All India Rank comes from AMRU’s merit lists. In-service doctors get incentive marks and are shown under a separate quota.</li>
+          <li>Jammu &amp; Kashmir (JKBOPEE) lists print the NEET rank in some rounds; for the others it comes from JKBOPEE’s merit list by roll number (14 Round 3 candidates added after the percentile cut have no rank and are left out). RBA = residents of backward areas, ALC/IB = line of control / international border; in-service doctors with DA marks have their own quota.</li>
           <li>{Math.max(...d.years)} has {d.rounds.filter((r) => r.counselling === 'MCC' && r.year === Math.max(...d.years)).map((r) => r.label).join(', ')} so far.</li>
           <li>Institute names change between years, so each season is compared on its own.</li>
           <li>Fees, stipends and bonds are not included yet.</li>

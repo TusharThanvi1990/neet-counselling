@@ -40,7 +40,7 @@ Every state follows the same steps:
 | 20 | Jharkhand | JCECEB (neetpg.jceceb.co.in) | P2 | 2025 | | ⛔ | | 2025 allotments were on the counselling portal, now reset for 2026 (merit list out 28-10-2026). Take 2026 Round 1 |
 | 21 | Uttarakhand | HNBUMU (meta-secure.com portal) | P2 | 2025 | | ⛔ | | 2025 results were on the external counselling portal, now running 2026. Take 2026 Round 1 |
 | 22 | Himachal Pradesh | AMRU (amruhp.ac.in) | P3 | 2025 | Merit no. + application no. → AIR via merit lists | ✅ | 396 | Rounds 1–3, stray, 2nd stray (final allocations). In-service (incentive marks) own quota. 6 govt colleges linked. Closing ranks match public 2025 cutoffs (9/9). Files found via the site's WordPress media API |
-| 23 | Jammu & Kashmir | JKBOPEE | P3 | 2025 | | ⏳ | | |
+| 23 | Jammu & Kashmir | JKBOPEE (jkbopee.gov.in) | P3 | 2025 | AIR in some rounds, else roll → AIR via merit list | ✅ | 844 | Rounds 1–3, physical (mop-up), stray, stray 2, plus ASCOMS Hindu-minority/NRI lists. In-service (DA marks) own quota. 7 govt colleges linked. Matches public 2025 cutoffs (6/6). 14 R3 candidates lack a rank |
 | 24 | Goa | DTE Goa (GMC) | P3 | 2025 | | ⏳ | | |
 | 25 | Chandigarh | GMCH-32 | P3 | 2024–25 | | ⏳ | | |
 | 26 | Manipur | RIMS / JNIMS committee | P3 | 2025 | | ⏳ | | |

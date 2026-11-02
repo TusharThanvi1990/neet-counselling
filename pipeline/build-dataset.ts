@@ -568,7 +568,26 @@ const hpSeat = (type: string, cat: string): [string, string] => {
   if (/in-?service/.test(t)) return ['In-service (incentive marks)', seat];
   return ['State Quota', seat];
 };
-const STATE_FILES = readdirSync('data/parsed').filter((f) => /^(mh|ka|kl|ap|rj|tg|gj|mp|hr|bh|pb|cg|hp)20\d\d_[a-z0-9_]+\.json$/.test(f) && !/merit|_oc$/.test(f)).map((f) => f.replace('.json', ''));
+// Jammu & Kashmir (JKBOPEE): institute code → [display name, MCC code].
+const JK_INST: Record<string, [string, string]> = {
+  'GMC-SRINAGAR': ['Government Medical College, Srinagar', '701703'], 'GMC-JAMMU': ['Government Medical College, Jammu', '701706'],
+  'SKIMS-SRINAGAR': ['Sher-i-Kashmir Institute of Medical Sciences, Srinagar', '701711'], 'GMC-ANANTNAG': ['Government Medical College, Anantnag', '904588'],
+  'GMC-BARAMULLA': ['Government Medical College, Baramulla', '904589'], 'GMC-RAJOURI': ['Government Medical College, Rajouri', '904633'],
+  'GMC-KATHUA': ['Government Medical College, Kathua', '904634'], 'ASCOMS-JAMMU': ['Acharya Shri Chander College of Medical Sciences (ASCOMS), Jammu', ''],
+};
+/** JKBOPEE reservation codes. RBA = residents of backward areas; ALC = actual line of control / international border;
+ *  ST-1 / ST-2 are the two scheduled-tribe groups; STK / STL are left as printed (meaning not stated in the lists). */
+const JK_CAT: Record<string, string> = { OM: 'Open', OMSP: 'Open', SC: 'SC', OBC: 'OBC', EWS: 'EWS', RBA: 'RBA', ALC: 'ALC/IB', ST1: 'ST-1', STI: 'ST-1', ST2: 'ST-2', STII: 'ST-2' };
+const jkCat = (c: string) => JK_CAT[c.toUpperCase().replace(/[^A-Z0-9]/g, '')] ?? c;
+const jkSeat = (sli: string, inst: string, inService: boolean): [string, string] => {
+  const c = sli.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (c === 'NRI') return ['NRI', 'Open'];
+  if (c === 'HM') return ['Minority (Hindu)', 'Open'];
+  if (inService) return ['In-service (bonus marks)', jkCat(sli)];
+  return [/ASCOMS/i.test(inst) ? 'Private (state quota)' : 'State Quota', jkCat(sli)];
+};
+const jkCourse = (c: string) => c.replace(/^(MD|MS)\s*\/\s*(MD|MS)\s*/i, 'MD/MS ').replace(/^PG\s*Diploma\s*/i, 'Diploma ').replace(/^(MD|MS)(?=[A-Z])/, '$1 ').replace(/\bPediatric/i, 'Paediatric');
+const STATE_FILES = readdirSync('data/parsed').filter((f) => /^(mh|ka|kl|ap|rj|tg|gj|mp|hr|bh|pb|cg|hp|jk)20\d\d_[a-z0-9_]+\.json$/.test(f) && !/merit|_oc$/.test(f)).map((f) => f.replace('.json', ''));
 
 // ---- rounds ----
 const files = readdirSync('data/parsed').filter((f) => /^mcc20\d\d_[a-z0-9]+\.json$/.test(f)).map((f) => f.replace('.json', ''))
@@ -593,6 +612,14 @@ rounds.forEach((rd, ri) => {
       const ii = instIndex(`MH ${r.institute}`, rd.year, { display: code ? codeName(code) : r.institute.replace(/\s+/g, ' '), code, state: 'Maharashtra' });
       const [q, seat] = mhSeat(r.allottedCategory);
       rows.push(ri, r.rank, ii, course.get(normCourse(MH_DIPLOMA[r.course] ?? r.course)), quota.get(`Maharashtra ${q}`), acat.get(seat), ccat.get(mhCandidate(r.candidateCategory)), r.page);
+      continue;
+    }
+    if (rd.counselling === 'Jammu & Kashmir') {
+      const k = r.institute.toUpperCase().replace(/\s+/g, ''), m = JK_INST[k];
+      if (!m) unknownMp.add(`JK ${r.institute}`);
+      const ii = instIndex(`JK ${k}`, rd.year, { display: m?.[0] ?? r.institute, code: m?.[1] ?? '', state: 'Jammu And Kashmir' });
+      const [q, seat] = jkSeat(r.allottedCategory, r.institute, r.inService);
+      rows.push(ri, r.rank, ii, course.get(normCourse(jkCourse(r.course))), quota.get(`Jammu & Kashmir ${q}`), acat.get(seat), ccat.get(jkCat(r.candidateCategory).replace(/^Open$/, 'General')), r.page);
       continue;
     }
     if (rd.counselling === 'Himachal Pradesh') {
