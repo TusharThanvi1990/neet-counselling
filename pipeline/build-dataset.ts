@@ -326,7 +326,28 @@ const rjDisplay = (raw: string, nk: string) => {
   const s = spaced(best).replace(/\.$/, '');
   return s.replace(/^DH\s*/, 'District Hospital, ').replace(/^GH\s*/, 'Government Hospital, ').replace(/^GMC\s*/, 'Government Medical College, ');
 };
-const STATE_FILES = readdirSync('data/parsed').filter((f) => /^(mh|ka|kl|ap|rj)20\d\d_[a-z0-9_]+\.json$/.test(f) && !/merit/.test(f)).map((f) => f.replace('.json', ''));
+// Telangana (KNRUHS): college code → MCC institute code (government colleges).
+const TG_CODES: Record<string, string> = {
+  'NIMS(001)': '700484', 'GAND(010)': '700481', 'OMCH(011)': '700483', 'KKTI(012)': '700482', 'GVNZ(013)': '700518', 'GMCM(014)': '700536',
+  'RADL(015)': '700535', 'SGMC(017)': '701700', 'GMSR(018)': '701716', 'GMNL(019)': '701702', 'SIMS(021)': '904639',
+};
+/** KNRUHS "Adm Details" (e.g. NS-BCB-FEM-MRC-P1, MQ1-UNR-MSM-P3) → [quota suffix, seat category].
+ *  NS/S = non-service / in-service; MQ1/MQ2/MQ3 = management / NRI / institutional; MSM = Muslim minority college;
+ *  FEM marks women's seats (not modelled); PHO marks PwD seats. */
+const tgSeat = (adm: string): [string, string] => {
+  const t = adm.toUpperCase().split('-').slice(0, -1);
+  const pwd = t.includes('PHO');
+  if (/^MQ\d/.test(t[0])) return [t[0] === 'MQ2' ? 'NRI' : t[0] === 'MQ3' ? 'Institutional' : 'Management', 'Open'];
+  const q = t[0] === 'S' ? 'In-service' : t[1] === 'MIN' ? 'Minority' : 'State Quota';
+  const c = t[1] ?? 'OPEN';
+  const seat = c === 'OPEN' || c === 'MIN' ? 'Open' : /^BC[A-E]$/.test(c) ? `BC-${c[2]}` : /^SC\d$/.test(c) ? 'SC' : c === 'ST' ? 'ST' : c === 'EWS' ? 'EWS' : c;
+  return [q, seat + (pwd ? ' PwD' : '')];
+};
+const tgCandidate = (c: string) => (c === 'OC' ? 'General' : /^BC[A-E]$/.test(c) ? `BC-${c[2]}` : /^SC\d$/.test(c) ? 'SC' : c === 'BC' ? 'OBC' : c || 'Not stated');
+const titleCase = (s: string) => s.toLowerCase().replace(/\b([a-z])/g, (m) => m.toUpperCase()).replace(/\b(Esi|Mnr|Cmr|Trr|Rvm|Dr V R K|Hyd|Sci|Med|Inst)\b/g, (m) => ({ Esi: 'ESI', Mnr: 'MNR', Cmr: 'CMR', Trr: 'TRR', Rvm: 'RVM', 'Dr V R K': 'Dr VRK', Hyd: 'Hyderabad', Sci: 'Sciences', Med: 'Medical', Inst: 'Institute of' } as Record<string, string>)[m] ?? m).replace(/Institute of Of/g, 'Institute of');
+const TG_DIPLOMA: Record<string, string> = { DTCD: 'Diploma in Tuberculosis and Chest Diseases', DPH: 'Diploma in Public Health', DO: 'Diploma in Ophthalmology', DPM: 'Diploma in Psychiatry', DCH: 'Diploma in Child Health', DA: 'Diploma in Anaesthesiology', DGO: 'Diploma in Obstetrics and Gynaecology', DLO: 'Diploma in Otorhinolaryngology', DMRD: 'Diploma in Radiodiagnosis', DCP: 'Diploma in Clinical Pathology' };
+const tgCourse = (c: string) => TG_DIPLOMA[c.trim().toUpperCase()] ?? c.replace(/\bDVL\b/i, 'Dermatology').replace(/^(MD|MS)\s*\((.*)\)$/i, '$1 $2').replace(/^(DIP|DIPLOMA)\s*\(?\s*(.*?)\)?$/i, 'Diploma in $2');
+const STATE_FILES = readdirSync('data/parsed').filter((f) => /^(mh|ka|kl|ap|rj|tg)20\d\d_[a-z0-9_]+\.json$/.test(f) && !/merit/.test(f)).map((f) => f.replace('.json', ''));
 
 // ---- rounds ----
 const files = readdirSync('data/parsed').filter((f) => /^mcc20\d\d_[a-z0-9]+\.json$/.test(f)).map((f) => f.replace('.json', ''))
@@ -350,6 +371,13 @@ rounds.forEach((rd, ri) => {
       const ii = instIndex(`MH ${r.institute}`, rd.year, { display: code ? codeName(code) : r.institute.replace(/\s+/g, ' '), code, state: 'Maharashtra' });
       const [q, seat] = mhSeat(r.allottedCategory);
       rows.push(ri, r.rank, ii, course.get(normCourse(MH_DIPLOMA[r.course] ?? r.course)), quota.get(`Maharashtra ${q}`), acat.get(seat), ccat.get(mhCandidate(r.candidateCategory)), r.page);
+      continue;
+    }
+    if (rd.counselling === 'Telangana') {
+      const code = TG_CODES[r.collegeCode] ?? '';
+      const ii = instIndex(`TG ${r.collegeCode}`, rd.year, { display: titleCase(r.institute), code, state: 'Telangana' });
+      const [q, seat] = tgSeat(r.allottedCategory);
+      rows.push(ri, r.rank, ii, course.get(normCourse(tgCourse(r.course))), quota.get(`Telangana ${q}`), acat.get(seat), ccat.get(tgCandidate(r.candidateCategory)), r.page);
       continue;
     }
     if (rd.counselling === 'Rajasthan') {

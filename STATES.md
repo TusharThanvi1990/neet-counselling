@@ -25,7 +25,7 @@ Every state follows the same steps:
 | 5 | Kerala | CEE Kerala | P1 | 2025 | AIR | ✅ | 2,879 | 3 phases + stray; 12 govt colleges/cancer centres linked to MCC codes; matches CEE's official last-rank table (11/12 spot checks; in-service quota uses CEE's service rank) |
 | 6 | Rajasthan | Rajasthan NEET PG Board (SMS Medical College) | P1 | 2025 | State merit no. + roll no. → AIR via State Merit Lists | ✅ | 3,447 | 3 rounds + stray; rajpgneet2025.in offline (503), PDFs from Internet Archive copies of official URLs; in-service (bonus marks) split into own quota; 17 govt colleges + 20 district hospitals linked; seat category = Allotted Category column (differs from findmybranch, which appears to group by candidate category) |
 | 7 | West Bengal | WBMCC | P1 | 2025 | | ⛔ | | 2025 PG archive page has notices only; result PDFs not linked. Web Archive lookup was down (503) — retry |
-| 8 | Telangana | KNRUHS | P1 | 2025 | | 🔧 | | College-wise allotment lists for CQ + MQ, all phases, found on knruhs admission-notification pages 25–40 |
+| 8 | Telangana | KNRUHS | P1 | 2025 | AIR | ✅ | 4,111 | CQ + MQ college-wise lists, 3 phases + additional mop-up + stray (in-service mop-up included); 11 govt colleges linked; matches findmybranch closing ranks (7/7 checks) |
 | 9 | Andhra Pradesh | Dr NTR UHS | P1 | 2025 | AIR (closing ranks only) | ✅ | 2,614 closing ranks | Official last-rank table (drntr.uhsap.in/index/adms_lastranks), per seat type × category × local area × round; 17 govt colleges linked |
 | 10 | Gujarat | ACPGMEC | P1 | 2025 | | ⏳ | | |
 | 11 | Madhya Pradesh | DME MP | P1 | 2025 | | ⏳ | | |
