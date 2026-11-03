@@ -19,7 +19,8 @@ const ROUNDS: [string, number, string, string, string][] = [ // [out, year, labe
   ['wb2025_r2', 2025, 'Round 2', 'wb2025_r2_result', C + '2025/12/20251224980923146.pdf'],
   ['wb2025_stray', 2025, 'Stray', 'wb2025_stray_result', C + '2026/02/202602272073540219.pdf'],
   // 2024: Internet Archive copies of wbmcc.nic.in/PGMed/Documents result PDFs (text PDFs, grids written by pipeline/grid-json.ts).
-  // The Round 1 file was never captured. The Round 2 list includes Round 1 seats that were kept.
+  // The Round 2 list includes Round 1 seats that were kept (skipped there, since Round 1 is now present).
+  ['wb2024_r1', 2024, 'Round 1', 'wb2024_r1_result', 'https://web.archive.org/web/20241202222356/https://wbmcc.nic.in/PGMed/Documents/WBPG_MED_Result_R1_2024_fbhdhfhgafhf654654hgvhg65.pdf'],
   ['wb2024_r2', 2024, 'Round 2', 'wb2024_r2_result', 'https://web.archive.org/web/20250116113513/https://wbmcc.nic.in/PGMed/Documents/WBPG_MED_Result_R2_2024_asdasd3463464ghkjjhkfgjh.pdf'],
   ['wb2024_r3', 2024, 'Round 3', 'wb2024_r3_result', 'https://web.archive.org/web/20250321232238/https://wbmcc.nic.in/PGMed/Documents/WBPG_MED_Result_R3_2024_dfdsfdsfdsf4567657ghjhgj.pdf'],
   ['wb2024_stray', 2024, 'Stray', 'wb2024_stray_result', 'https://web.archive.org/web/20250226054001/https://wbmcc.nic.in/PGMed/Documents/WBPG_MED_Result_Stray_Round_2024_asdasd343534fgjfgjhg.pdf'],
