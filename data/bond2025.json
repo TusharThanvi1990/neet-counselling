@@ -2,6 +2,46 @@
   "note": "PG service bond and seat-leaving penalties for state-quota seats at government colleges, as written in each state's official counselling brochure. Private colleges generally do not impose a service bond.",
   "states": [
     {
+      "state": "Andhra Pradesh",
+      "service": "Non-service candidates: 1 year Government service within 18 months of the PG degree. In-service candidates: 10 years",
+      "penalty": "₹40,00,000 (non-service, G.O.Ms.No.251 dt 02-10-2022); ₹50,00,000 plus pay received (in-service)",
+      "notes": "In-service candidates' certificates are held by the sponsoring authority until the 10 years are served.",
+      "source": "Dr NTR UHS PG (Competent Authority) prospectus 2025-26, §4.3 and §5",
+      "url": "https://aimsrchittoor.edu.in/wp-content/uploads/2025/09/PG-Prospectus-CQ-2025-26.pdf"
+    },
+    {
+      "state": "Haryana",
+      "service": "No post-PG service bond in the admission procedure; seat-leaving bond only",
+      "penalty": "Leaving the course midway: ₹10,00,000, the current year's fee plus 50% of next year's, and debarred from PG admission in Haryana for 3 years",
+      "notes": "Applies to management seats too. ESIC Faridabad has its own bond.",
+      "source": "Haryana Govt Gazette 185-2025, procedure for admission to MD/MS 2025, §12",
+      "url": "https://dmer.haryana.gov.in/uploads/cand_images/Gazette_185-2025_Ext_25664.pdf"
+    },
+    {
+      "state": "Himachal Pradesh",
+      "service": "Direct candidates: 2 years including 1 year field posting; in-service (GDO) candidates: 4 years (5 if sponsored outside the State)",
+      "penalty": "As per the bond in the prospectus",
+      "notes": "Applies to PG in Government Medical Colleges.",
+      "source": "AMRU PG MD/MS/DNB Prospectus 2026, PG policy annexure",
+      "url": "https://amruhp.ac.in/wp-content/uploads/2026/10/Final-Merged-PG-MD-MS-DNB-Prospectus-2026-22-10-2026.pdf"
+    },
+    {
+      "state": "Kerala",
+      "service": "1 year as Senior Resident in Kerala Medical Education Service immediately after the course (all general merit and AIQ candidates in Kerala)",
+      "penalty": "Liquidated damages as per the bond",
+      "notes": "Two bonds on ₹200 Kerala stamp paper at joining. Super-speciality: total bonded service up to 2 years.",
+      "source": "CEE Kerala PG Medical 2025 prospectus, §11",
+      "url": "https://cee.kerala.gov.in/pgm2025/pdf/prospectus.pdf"
+    },
+    {
+      "state": "Madhya Pradesh",
+      "service": "Rural service bond and seat-leaving bond at admission (amounts set in the MP Medical Education Admission Rules 2018)",
+      "penalty": "As per the Admission Rules; affidavit for upgrade on 0.5% of the bond amount",
+      "notes": "",
+      "source": "DME MP notice on PG bonds, 02-11-2026",
+      "url": "https://dme.mponline.gov.in/ql_dme/DMECounselling_Public/DMEPG/2026/Bond%20notice_58.pdf"
+    },
+    {
       "state": "Maharashtra",
       "service": "1 year social responsibility service (Govt of Maharashtra, local self-government or defence) after PG from a Government / Municipal Corporation college",
       "penalty": "₹50,00,000 for not serving",
@@ -18,36 +58,12 @@
       "url": "https://medicaldialogues.in/pdf_upload/20241030100242pg-cq-prospectus-2024-25-ok-259150.pdf"
     },
     {
-      "state": "Kerala",
-      "service": "1 year as Senior Resident in Kerala Medical Education Service immediately after the course (all general merit and AIQ candidates in Kerala)",
-      "penalty": "Liquidated damages as per the bond",
-      "notes": "Two bonds on ₹200 Kerala stamp paper at joining. Super-speciality: total bonded service up to 2 years.",
-      "source": "CEE Kerala PG Medical 2025 prospectus, §11",
-      "url": "https://cee.kerala.gov.in/pgm2025/pdf/prospectus.pdf"
-    },
-    {
       "state": "West Bengal",
       "service": "3 years (degree) / 2 years (diploma) to Govt of West Bengal after the course, open-category candidates",
       "penalty": "Leaving mid-course: ₹5,00,000 (degree) / ₹2,00,000 (diploma); not serving: penalty fixed by the State",
       "notes": "No discontinuation bond for DNB seats. In-service candidates follow TR rules.",
       "source": "WBMCC Notice cum Information Bulletin, WB PG Medical 2026",
       "url": "https://cdnbbsr.s3waas.gov.in/s3aae8d1e00b15a30e5901227e97ffbef7/uploads/2026/10/2026101495338605.pdf"
-    },
-    {
-      "state": "Himachal Pradesh",
-      "service": "Direct candidates: 2 years including 1 year field posting; in-service (GDO) candidates: 4 years (5 if sponsored outside the State)",
-      "penalty": "As per the bond in the prospectus",
-      "notes": "Applies to PG in Government Medical Colleges.",
-      "source": "AMRU PG MD/MS/DNB Prospectus 2026, PG policy annexure",
-      "url": "https://amruhp.ac.in/wp-content/uploads/2026/10/Final-Merged-PG-MD-MS-DNB-Prospectus-2026-22-10-2026.pdf"
-    },
-    {
-      "state": "Madhya Pradesh",
-      "service": "Rural service bond and seat-leaving bond at admission (amounts set in the MP Medical Education Admission Rules 2018)",
-      "penalty": "As per the Admission Rules; affidavit for upgrade on 0.5% of the bond amount",
-      "notes": "",
-      "source": "DME MP notice on PG bonds, 02-11-2026",
-      "url": "https://dme.mponline.gov.in/ql_dme/DMECounselling_Public/DMEPG/2026/Bond%20notice_58.pdf"
     }
   ]
 }
