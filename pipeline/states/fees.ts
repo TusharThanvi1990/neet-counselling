@@ -253,6 +253,27 @@ college('up2026_minority', {
   ],
 });
 
+// Maharashtra private colleges: Fees Regulating Authority approved MD/MS fees, read from FRA's own fee search
+// (mahafra.org → api.mahafraportal.org inst_fees_report_api, saved as data/parsed/fees_mh_fra2024.json). FRA's API returns
+// nothing for 2025-26 and 2026-27 (server error on their side), so these are the 2024-25 approved tuition fees.
+// One MD/MS fee per college; applies to state, institutional and minority seats (not NRI).
+{
+  const fra = JSON.parse(readFileSync('data/parsed/fees_mh_fra2024.json', 'utf8'));
+  const MAP: Record<string, string[]> = {
+    MBBS0001: ['MH KJMC MUMBAI'], MBBS0002: ['MH TERNA NEW MUMBAI'], MBBS0003: ['MH MIMER TALEGAON P'], MBBS0004: ['MH VPS NASIK'], MBBS0005: ['MH ACPM DHULE'],
+    MBBS0006: ['MH NKP Salve NAGPUR'], MBBS0007: ['MH PDMC AMRAVATI'], MBBS0009: ['MH VVPF AHMEDNAGAR', 'MH VVPF AHILYANAGA'], MBBS0011: ['MH UPMC JALGAON'],
+    MBBS0014: ['MH IIMSR JALNA'], MBBS0015: ['MH SMBT NANDIHILLS'], MBBS0016: ['MH BK WALAWAL RATNAGIRI'], MBBS1147: ['MH VEDANTA MC PALGHAR'],
+    MDMS0008: ['MH SANJEEVAN MIRAJ'], MDMS0010: ['MH BHMS MUMBAI'],
+  };
+  const colleges: CollegeFees[] = [];
+  for (const c of fra.colleges) {
+    const r = c.rows.find((x: any) => x.status === 'Approved'), fee = Number(r?.tution_fees_fra);
+    if (!fee) continue;
+    for (const inst of MAP[c.inst_id] ?? []) colleges.push({ inst, name: c.fra_name, fees: { seat: [fee, fee, fee] } });
+  }
+  college('mh2024', { state: 'Maharashtra', year: 2024, label: 'Maharashtra FRA approved MD/MS tuition fee 2024-25 (mahafra.org)', source: 'https://mahafra.org/', quotas: { seat: '^(State Quota|Institutional|Minority)$' }, colleges });
+}
+
 // Bihar: each private college's PGMAC-2025 fee letter to BCECEB (bceceboard.bihar.gov.in/pdf_Web/PGMAC25_FSTR.pdf, scans,
 // transcribed from the page images). Yearly tuition for general / minority seats; NRI fees are in US dollars and not recorded.
 const bh = (o: Record<string, number>) => ({ gen: Object.fromEntries(Object.entries(o).map(([k, v]) => [k, v * L])) });
