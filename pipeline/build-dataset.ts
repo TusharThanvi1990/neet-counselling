@@ -866,6 +866,8 @@ rounds.forEach((rd, ri) => {
     const ci = courseIdx.get(normCourse(/^Diploma/i.test(name) ? name : gjCourse(name)));
     if (ii == null || ci == null) { miss++; continue; }
     for (const [k, label] of Object.entries(GJF)) if (r[k]) { setFee(ii, ci, quota.get(label), r[k], gj.year, 'Gujarat ACPPGMEC fee structure'); n++; }
+    // University quota and in-service seats are sub-quotas of the government-quota seats and pay the GQ fee.
+    if (r.GQ) for (const label of ['Gujarat University Quota', 'Gujarat In-service']) { setFee(ii, ci, quota.get(label), r.GQ, gj.year, 'Gujarat ACPPGMEC fee structure (government-quota fee)'); n++; }
   }
   console.log(`fees: Gujarat ${n} (${miss} fee rows without a matching college/course); total ${fees.size}`);
   // Rajasthan government colleges (Rajasthan NEET PG Board fee table 2025, data/raw/states/rajasthan/rj2025_fees_govt.pdf):
@@ -905,7 +907,7 @@ rounds.forEach((rd, ri) => {
     }
     if (state === 'Telangana' && full.startsWith('TG ')) {
       const r = tgBy.get(full.slice(3)); if (!r) continue;
-      const cat = /State Quota|Minority/.test(label) ? 0 : /Management/.test(label) ? 1 : -1;
+      const cat = /State Quota|Minority|In-service/.test(label) ? 0 : /Management/.test(label) ? 1 : -1;
       if (cat < 0) continue;
       const pair = g === 'pre' ? r.nonClinical : g === 'para' ? r.para : r.clinical;
       setFee(ii, ci, qi, pair[cat], 2025, 'Telangana G.O.Ms.No.107 (2023-26 fee order)'); tgn++;
