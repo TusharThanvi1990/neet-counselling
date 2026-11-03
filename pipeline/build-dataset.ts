@@ -680,7 +680,7 @@ const WB_INST: [string, string, string, boolean][] = [
   ['PRAFULLACHANDRASEN', 'Prafulla Chandra Sen Government Medical College, Arambagh', '', true], ['ISLAMPURSUBDIVISIONAL', 'Islampur Sub-Divisional Hospital', '', true],
   ['KPCMEDICAL', 'KPC Medical College, Kolkata', '', false], ['IQCITY', 'IQ City Medical College, Durgapur', '', false],
   ['GOURIDEVI', 'Gouri Devi Institute of Medical Sciences, Durgapur', '', false], ['JAGANNATHGUPTA', 'Jagannath Gupta Institute of Medical Sciences, Budge Budge', '', false],
-  ['RAMAKRISHNAMISSION', 'Ramakrishna Mission Seva Pratishthan, Kolkata', '', false], ['SHRRAMKRISHNA', 'Shri Ramkrishna Institute of Medical Sciences & Sanaka Hospitals, Durgapur', '', false],
+  ['RAMAKRISHNAMISSION', 'Ramakrishna Mission Seva Pratishthan, Kolkata', '', false], ['RAMKRISHNAMISSIONSEVA', 'Ramakrishna Mission Seva Pratishthan, Kolkata', '', false], ['SHRRAMKRISHNA', 'Shri Ramkrishna Institute of Medical Sciences & Sanaka Hospitals, Durgapur', '', false],
   ['ICAREINSTITUTE', 'ICARE Institute of Medical Sciences & Research, Haldia', '', false], ['JISSCHOOL', 'JIS School of Medical Science & Research, Howrah', '', false],
 ];
 const wbKey = (s: string) => s.toUpperCase().replace(/[^A-Z]/g, '').replace(/OE(?=(MEDICAL|POST|CHILD|HYGIENE|PAED|TROPICAL))/g, 'OF').replace(/GOUR[IL]DEV[IL]/, 'GOURIDEVI').replace(/SHR[IL]RAM/, 'SHRRAM');
