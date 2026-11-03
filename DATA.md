@@ -68,7 +68,8 @@ All ranks shown on the site are All India Ranks. Where a state prints only its o
 | File | Covers | Status |
 |---|---|---|
 | `data/raw/nbems/neetpg2026_result.pdf` | every NEET PG 2026 roll no. → All India Rank and score | 📥 downloaded 2026-11-03 (natboard.edu.in/pdoof/), use for any 2026 list that prints only roll numbers |
-| NEET PG 2025 full result | every 2025 roll no. → rank | ⛔ removed from natboard, not in the Internet Archive. Blocks Tamil Nadu 2025 |
+| NEET PG 2025 full result | every 2025 roll no. → rank | ✅ found via CollegeDekho's copy; the original is still on natboard.edu.in (natboard-data/pdf/NEETPG2025RESULT/…). 230,096 candidates → data/raw/nbems/neetpg2025_air.json (pipeline/nbems-result.ts). Unblocked Tamil Nadu 2025 |
+| NEET PG 2024 full result | every 2024 roll no. → percentile + rank | ✅ NBEMS PDF (1,442 pages, unaltered NBEMS headers) via Zynerd's copy. Unblocks Punjab, Odisha, J&K 2024 |
 | State merit lists (UP, Assam, Odisha, Rajasthan, Punjab, HP, J&K, Maharashtra) | that state's candidates | ✅ stored next to each state's PDFs |
 
 ## 5. Next checks

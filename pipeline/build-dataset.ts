@@ -166,6 +166,23 @@ const instIndex = (full: string, year: number, given?: { display: string; code: 
 };
 
 // ---- state counselling (see pipeline/states/*) ----
+// Tamil Nadu (Selection Committee): college names are matched to MCC codes by name; diplomas are abbreviated.
+const TN_DIP: Record<string, string> = { 'D.A.': 'Diploma in Anaesthesiology', 'D.C.H.': 'Diploma in Child Health', 'D.C.P.': 'Diploma in Clinical Pathology',
+  'D.D.V.L.': 'Diploma in Dermatology, Venereology and Leprosy', 'D.G.O': 'Diploma in Obstetrics and Gynaecology', 'D.L.O.': 'Diploma in Otorhinolaryngology',
+  'D.O.': 'Diploma in Ophthalmology', 'D.ORTHO': 'Diploma in Orthopaedics' };
+const tnCourse = (c: string) => { const t = c.replace(/\s+K A P$/, '').trim(); return TN_DIP[t] ?? t.replace(/^M\. D\. \(P\.M\.R\)$/, 'M.D. Physical Medicine and Rehabilitation').replace(/^M\. D\./, 'M.D.'); };
+// names the generic matcher misses; colleges not listed here and not matched are state-only private colleges with no MCC code
+const TN_CODES: Record<string, string> = {
+  'VISWANATHAN GOVERNMENT MEDICAL COLLEGE, TRICHY': '700352', 'MOHAN KUMARAMANGALAM MEDICAL COLLEGE, SALEM': '700350',
+  'ESI-PGIMSR,ESI HOSPITAL,K.K NAGAR,CHENNAI': '700353', 'CANCER INSTITUTE, ADAYAR': '701542', 'SANKARA NETHRALAYA, CHENNAI': '901768',
+  'GOVT. THIRUVALLUR MEDICAL COLLEGE HOSPITAL,': '904561', 'CUDDALORE MEDICAL COLLEGE, ANNAMALAINAGAR': '700544',
+  'DHANALAKSHMI SRINIVASAN INSTITUTE OF MEDICAL SCIENCES AND HOSPITAL, PERAMBALUR': '905684',
+  'DHANALAKSHMI SRINIVASAN INSTITUTE OF MEDICAL SCIENCES AND HOSPITAL, PERAMBALUR (PRIVATE UNIVERSITY)': '905684',
+  'KARPAGA VINAYAGA INSTITUTE OF MEDICAL SCIENCES,MADURANTHAGAM': '905716', 'ST.PETERS MEDICAL COLLEGE HOSPITAL AND RESEARCH INSTITUTE, KRISHNAGIRI': '905712',
+};
+const TN_COMM: Record<string, string> = { OC: 'General', BC: 'BC', BCM: 'BC (Muslim)', 'MBC&DNC': 'MBC/DNC', MBC: 'MBC/DNC', SC: 'SC', SCA: 'SC (Arunthathiyar)', ST: 'ST' };
+const tnQuota = (q: string, inService: boolean) => (q === 'MQ' ? 'Management' : q === 'NRI' ? 'NRI' : inService ? 'Government quota (in-service, incentive marks)' : 'Government quota');
+
 // Maharashtra college abbreviations → MCC institute codes (government colleges that also offer AIQ seats).
 const MH_CODES: Record<string, string> = {
   'GSMC MUMBAI': '700310', 'GMC MUMBAI': '700305', 'GMC NAGPUR': '700303', 'LTMC MUMBAI': '700307', 'BJMC PUNE': '700301',
@@ -678,7 +695,7 @@ const wbCourse = (c: string) => {
   if (/^DIP/.test(k)) return ({ 'OBSTETRICS & GYNAECOLOGY': 'Diploma in Obstetrics and Gynaecology', OPHTHALMOLOGY: 'Diploma in Ophthalmology', PAEDIATRICS: 'Diploma in Child Health', ANAESTHESIOLOGY: 'Diploma in Anaesthesiology' } as Record<string, string>)[spec] ?? `Diploma in ${spec}`;
   return `MD/MS ${spec}`;
 };
-const STATE_FILES = readdirSync('data/parsed').filter((f) => /^(mh|ka|kl|ap|rj|tg|gj|mp|hr|bh|pb|cg|hp|jk|ga|up|as|od|wb)20\d\d_[a-z0-9_]+\.json$/.test(f) && !/merit|_oc$/.test(f)).map((f) => f.replace('.json', ''));
+const STATE_FILES = readdirSync('data/parsed').filter((f) => /^(mh|ka|kl|ap|rj|tg|gj|mp|hr|bh|pb|cg|hp|jk|ga|up|as|od|wb|tn)20\d\d_[a-z0-9_]+\.json$/.test(f) && !/merit|_oc$/.test(f)).map((f) => f.replace('.json', ''));
 
 // ---- rounds ----
 const files = readdirSync('data/parsed').filter((f) => /^mcc20\d\d_[a-z0-9]+\.json$/.test(f)).map((f) => f.replace('.json', ''))
@@ -803,6 +820,17 @@ rounds.forEach((rd, ri) => {
       const ii = instIndex(`HR ${k}`, rd.year, { display, code, state: 'Haryana' });
       const [q, seat] = hrSeat(r.allottedCategory);
       rows.push(ri, r.rank, ii, course.get(normCourse(hrCourse(r.course))), quota.get(`Haryana ${q}`), acat.get(seat), ccat.get(seat.startsWith('Open') ? 'Not stated' + (seat.endsWith('PwD') ? ' PwD' : '') : seat), r.page);
+      continue;
+    }
+    if (rd.counselling === 'Tamil Nadu') {
+      const code = TN_CODES[r.institute] ?? codeFor(r.institute, rd.year);
+      const ii = instIndex(`TN ${r.institute}`, rd.year, { display: code ? codeName(code) : titleCase(r.institute.replace(/,(?=\S)/g, ', ')), code, state: 'Tamil Nadu' });
+      // GQ lists do not say which communal slot a seat was filled in; it is filed under the allottee's community (OC = Open),
+      // so closing ranks read "last rank at which a candidate of this community got the seat".
+      const comm = TN_COMM[r.candidateCategory] ?? (r.candidateCategory || 'Not stated');
+      const seat = (r.quota === 'GQ' ? (comm === 'General' ? 'Open' : comm) : (r.allottedCategory || 'Open')) + (r.pwd ? ' PwD' : '');
+      const cand = comm + (r.pwd ? ' PwD' : '');
+      rows.push(ri, r.rank, ii, course.get(normCourse(tnCourse(r.course))), quota.get(`Tamil Nadu ${tnQuota(r.quota, r.inService)}`), acat.get(seat), ccat.get(cand), r.page);
       continue;
     }
     if (rd.counselling === 'Madhya Pradesh') {
