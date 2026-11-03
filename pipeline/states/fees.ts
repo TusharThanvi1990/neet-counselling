@@ -221,6 +221,38 @@ college('up2025', {
   ] as [string, string, Pick<CollegeFees, 'fees' | 'courseFees'>][]).map(([inst, name, f]) => ({ inst, name, ...f })),
 });
 
+// Uttar Pradesh minority private colleges: "UP NEET PG-2026 fee structure, minority private medical colleges" (upneet.gov.in,
+// home-page notices; scanned college letters for session 2026-27, transcribed from the page images). Same fee for minority and
+// general private seats at these colleges.
+const L2 = (o: Record<string, number>) => ({ seat: o });
+college('up2026_minority', {
+  state: 'Uttar Pradesh', year: 2026, label: 'UP NEET PG 2026 minority college fee structures (upneet.gov.in)',
+  source: 'https://upneet.gov.in/',
+  quotas: { seat: '^(Minority|Private \\(state quota\\))$' },
+  colleges: [
+    { inst: 'UP careerinstituteofmedicalscienceslko', name: 'Career Institute of Medical Sciences & Hospital, Lucknow', courseFees: L2({
+      'General Medicine': 4215000, Orthopaedics: 4065000, 'Obstetrics & Gynaecology': 4140000, 'General Surgery': 3710000, Radiodiagnosis: 4430000, Psychiatry: 2880000,
+      ENT: 2000000, Dermatology: 4240000, 'Respiratory Medicine': 3765000, Ophthalmology: 3000000, Anaesthesiology: 2000000, Paediatrics: 3590000,
+      'Community Medicine': 400000, Pathology: 1000000, Pharmacology: 200000, Microbiology: 200000, Physiology: 200000, Biochemistry: 200000, Anatomy: 200000 }) },
+    { inst: 'UP fhmedicalcollegehospitalagra', name: 'F.H. Medical College & Hospital, Etmadpur, Agra', courseFees: L2({
+      Anaesthesiology: 2350000, 'General Medicine': 4200000, Orthopaedics: 4100000, 'General Surgery': 3650000, Psychiatry: 2800000, Paediatrics: 4000000,
+      Ophthalmology: 3650000, 'Obstetrics & Gynaecology': 4200000, Radiodiagnosis: 4250000, Dermatology: 4250000, ENT: 2500000, 'Respiratory Medicine': 3650000,
+      Pathology: 1250000, Microbiology: 250000, 'Community Medicine': 250000 }) },
+    { inst: 'UP integralinstituteofmedicalscienceslucknow', name: 'Integral Institute of Medical Sciences & Research, Lucknow', courseFees: L2({
+      'Obstetrics & Gynaecology': 3995000, Paediatrics: 3895000, Dermatology: 4195000, Psychiatry: 2595000, 'General Surgery': 3495000, 'General Medicine': 3995000,
+      Ophthalmology: 3595000, Orthopaedics: 3995000, Radiodiagnosis: 4195000, Anaesthesiology: 2195000, ENT: 2395000,
+      Pathology: 1200000, Biochemistry: 280000, Microbiology: 280000, 'Community Medicine': 280000 }) },
+    { inst: 'UP teerthankermahaveeruniversitymoradabad', name: 'Teerthanker Mahaveer Medical College & Research Centre, Moradabad', courseFees: L2({
+      Radiodiagnosis: 3990000, Dermatology: 3990000, 'General Medicine': 3990000, Orthopaedics: 3720000, Paediatrics: 3810000, 'Obstetrics & Gynaecology': 3810000,
+      Ophthalmology: 3240000, 'Respiratory Medicine': 3060000, 'General Surgery': 3150000, ENT: 2430000, Psychiatry: 2520000, Anaesthesiology: 2250000,
+      Pathology: 1260000, Biochemistry: 10000, Microbiology: 10000, 'Community Medicine': 10000, Pharmacology: 10000, Anatomy: 10000, Physiology: 10000, 'Forensic Medicine': 10000 }) },
+    { inst: 'UP eramedicalcollegelucknow', name: "Era's Lucknow Medical College & Hospital", courseFees: L2({
+      'Obstetrics & Gynaecology': 3980000, Paediatrics: 3610000, 'Respiratory Medicine': 3200000, Dermatology: 3990000, Psychiatry: 2590000, 'General Surgery': 3200000,
+      'General Medicine': 3960000, Ophthalmology: 3580000, Orthopaedics: 3980000, Radiodiagnosis: 3995000, Anaesthesiology: 2350000, ENT: 2450000,
+      Pathology: 1090000, 'Community Medicine': 10000, Microbiology: 10000, Pharmacology: 10000, Biochemistry: 10000, Anatomy: 10000, Physiology: 10000 }) },
+  ],
+});
+
 // Bihar: each private college's PGMAC-2025 fee letter to BCECEB (bceceboard.bihar.gov.in/pdf_Web/PGMAC25_FSTR.pdf, scans,
 // transcribed from the page images). Yearly tuition for general / minority seats; NRI fees are in US dollars and not recorded.
 const bh = (o: Record<string, number>) => ({ gen: Object.fromEntries(Object.entries(o).map(([k, v]) => [k, v * L])) });
