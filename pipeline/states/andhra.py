@@ -9,7 +9,7 @@ other filter returns the whole table:
 Each row is the last (closing) All India Rank for that seat type in that round, not an individual allotment.
 No candidate data is published or kept.
 
-Usage: python -I pipeline/states/andhra.py   (writes data/raw/states/andhra/lastranks_2025.html and data/parsed/ap2025_r*.json)
+Usage: python -I pipeline/states/andhra.py [2025-26|2024-25|...]   (writes data/raw/states/andhra/lastranks_<year>.html and data/parsed/ap<year>_r*.json)
 """
 import html, http.cookiejar, json, os, re, sys, urllib.parse, urllib.request
 
@@ -45,16 +45,19 @@ def postback(s, field, value):
     return get(f)
 
 
+ACYEAR = sys.argv[1] if len(sys.argv) > 1 else '2025-26'
+Y = ACYEAR[:4]
 os.makedirs(RAW, exist_ok=True)
 s = get()
-s = postback(s, 'Acyear', '2025-26')
+print('years offered:', [v for v, _ in options(s, P + 'Acyear')])
+s = postback(s, 'Acyear', ACYEAR)
 s = postback(s, 'course', 'M2')  # MEDICAL PG
 inst_codes = {html.unescape(t).strip(): v for v, t in options(s, P + 'instname') if v != '0'}
 f = form(s)
 f['__EVENTTARGET'] = ''
 f['ctl00$ContentPlaceHolder1$Button1'] = 'View Results'
 s = get(f)
-open(f'{RAW}/lastranks_2025.html', 'w', encoding='utf-8').write(s)
+open(f'{RAW}/lastranks_{Y}.html', 'w', encoding='utf-8').write(s)
 
 table = max(re.findall(r'<table[^>]*>(.*?)</table>', s, re.S), key=len)
 cells = [[re.sub(r'\s+', ' ', html.unescape(re.sub(r'<[^>]+>', '', c))).strip() for c in re.findall(r'<t[hd][^>]*>(.*?)</t[hd]>', r, re.S)]
@@ -75,9 +78,9 @@ for c in cells[1:]:
 LABEL = {'1': 'Round 1', '2': 'Round 2', '3': 'Round 3', '4': 'Stray'}
 for r, rows in sorted(rounds.items()):
     rows.sort(key=lambda x: x['rank'])
-    json.dump({'source': URL, 'url': URL, 'counselling': 'Andhra Pradesh', 'kind': 'closing ranks', 'year': 2025, 'round': LABEL.get(r, f'Round {r}'), 'rows': rows},
-              open(f'data/parsed/ap2025_r{r}.json', 'w', encoding='utf-8'))
-    print(f'ap2025_r{r}: {len(rows)} closing ranks')
+    json.dump({'source': URL, 'url': URL, 'counselling': 'Andhra Pradesh', 'kind': 'closing ranks', 'year': int(Y), 'round': LABEL.get(r, f'Round {r}'), 'rows': rows},
+              open(f'data/parsed/ap{Y}_r{r}.json', 'w', encoding='utf-8'))
+    print(f'ap{Y}_r{r}: {len(rows)} closing ranks')
 sys.stdout.reconfigure(encoding='utf-8')
 for k in ['seat', 'sub', 'allottedCategory', 'area', 'instType']:
     vals = {}

@@ -30,7 +30,7 @@ const SM_SOURCES: Record<string, string> = {
   sm2025_aiq: '2025/10/202510281305634189.pdf', sm2025_central: '2025/10/20251028847832917.pdf', sm2025_deemed: '2025/11/20251119105316139.pdf', sm2025_dnb: '2025/11/20251119228358966.pdf',
   sm2026_aiq: '2026/10/202610151676193504.pdf', sm2026_central: '2026/10/202610151906520168.pdf', sm2026_deemed: '2026/10/20261015907178910.pdf', sm2026_dnb: '2026/10/202610151482599908.pdf',
 };
-const ROUND_ORDER = ['Round 1', 'Round 2', 'Round 3', 'Mop-up', 'Additional mop-up', 'Stray', 'Stray 2', 'Special stray', 'Special stray 2'];
+const ROUND_ORDER = ['Round 1', 'Round 2', 'Round 3', 'Mop-up', 'Additional mop-up', 'Stray', 'Stray 2', 'Special stray', 'Special stray 2', 'Final (all rounds)'];
 
 const STATES = ['Andaman And Nicobar Islands', 'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chandigarh', 'Chhattisgarh',
   'Dadra And Nagar Haveli', 'Daman And Diu', 'Delhi', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jammu And Kashmir', 'Jharkhand',

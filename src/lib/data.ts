@@ -126,7 +126,7 @@ export const ROUND_SETS: { id: RoundSet; label: string }[] = [
   { id: 'r1', label: 'Round 1 only' },
   { id: 'all', label: 'All rounds incl. stray' },
 ];
-const ROUND_LABELS: Record<RoundSet, string[] | null> = { r1: ['Round 1'], main: ['Round 1', 'Round 2', 'Round 3'], all: null };
+const ROUND_LABELS: Record<RoundSet, string[] | null> = { r1: ['Round 1'], main: ['Round 1', 'Round 2', 'Round 3', 'Final (all rounds)'], all: null };
 
 export function roundIds(d: Dataset, year: number, set: RoundSet): Set<number> {
   const allow = ROUND_LABELS[set];
