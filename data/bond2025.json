@@ -18,6 +18,30 @@
       "url": "https://bceceboard.bihar.gov.in/pdf_Pros/PROS_PGMAC26.pdf"
     },
     {
+      "state": "Chhattisgarh",
+      "service": "2 years under the Chhattisgarh Health & Family Welfare Department after the PG course, for MD/MS admissions to government medical colleges (state quota and All India quota)",
+      "penalty": "Service bond ₹50,00,000 (unreserved) / ₹40,00,000 (reserved). Leaving the seat after the last date of admission: ₹25,00,000 (unreserved) / ₹20,00,000 (reserved)",
+      "notes": "A student declared medically unfit by the State Medical Board during the course can be exempted from the bond.",
+      "source": "Chhattisgarh Medical Postgraduate Admission Rules (CG NEET PG MD/MS Rules & Regulations, DME), rule 15",
+      "url": "https://cdnbbsr.s3waas.gov.in/s34b4edc2630fe75800ddc29a7b4070add/uploads/2025/11/202610251927471635.pdf"
+    },
+    {
+      "state": "Goa",
+      "service": "1 year with the Government of Goa after the course (Goa Medical College or any government hospital in Goa), if called upon within 6 months of completing the PG course",
+      "penalty": "Resigning or discontinuing the course, or not serving the bond: ₹50,00,000, recoverable from the candidate and sureties. On cancelling an allotted seat, the ₹2,000 admission fee and 10% of tuition are kept",
+      "notes": "Temporary exemption for higher studies needs a bank guarantee of ₹10,00,000 (degree) or ₹7,00,000 (diploma), forfeited if the candidate does not report back within a month. Original documents are held by the Dean until the bond service is done.",
+      "source": "Goa rules for admission to PG Degree/Diploma courses at Goa Medical College, rules (3), (15)-(17), DTE Goa",
+      "url": "https://dte.goa.gov.in/sites/default/files/pgmedicalrules.pdf"
+    },
+    {
+      "state": "Gujarat",
+      "service": "At least 1 year (365 working days, leave not counted) of rural service for the State Government after the PG course, for students admitted to government medical colleges",
+      "penalty": "Bond of ₹40,00,000, submitted to the Dean at admission: ₹10,00,000 as a bank or property guarantee (valid 7 years) plus a ₹30,00,000 undertaking on ₹300 stamp paper",
+      "notes": "SC/ST students on free-ship cards at self-financing colleges sign a separate rural-service bond (GR of the same date). AIQ students in Gujarat government colleges are covered by a 14-09-2022 notice; an earlier notice exempted them.",
+      "source": "Gujarat Health & Family Welfare Dept resolution MCG/1019/1643/J dt 30-01-2020, listed on the ACPPGMEC notifications page",
+      "url": "http://www.medadmgujarat.org/pg/pdf2019/PGNotification/bond_gr_state.pdf"
+    },
+    {
       "state": "Haryana",
       "service": "No post-PG service bond in the admission procedure; seat-leaving bond only",
       "penalty": "Leaving the course midway: ₹10,00,000, the current year's fee plus 50% of next year's, and debarred from PG admission in Haryana for 3 years",
@@ -32,6 +56,22 @@
       "notes": "Applies to PG in Government Medical Colleges.",
       "source": "AMRU PG MD/MS/DNB Prospectus 2026, PG policy annexure",
       "url": "https://amruhp.ac.in/wp-content/uploads/2026/10/Final-Merged-PG-MD-MS-DNB-Prospectus-2026-22-10-2026.pdf"
+    },
+    {
+      "state": "Jammu & Kashmir",
+      "service": "No general post-PG service bond in the JKBOPEE MD/MS selection notification. Candidates from the UT of Ladakh submit a service bond, on a form provided by their college",
+      "penalty": "Not stated in the notification. Admission obtained by false information is cancelled under SRO 158 of 1995 (rule 12) read with SRO 168 of 2014; under SRO 48 of 2018 no other PG course may be taken during the course",
+      "notes": "In-service candidates follow their department's study-leave rules.",
+      "source": "JKBOPEE Notification on the Provisional Selection List, NEET MD/MS/PG Diploma 2025 (Round 1), Note-I and documents list item xiii",
+      "url": "https://jkbopee.gov.in/Pdf/Downloader.ashx?nid=17308&type=n"
+    },
+    {
+      "state": "Karnataka",
+      "service": "Post-PG compulsory service terms are in KEA's PGNEET-2025 e-information bulletin, which is not online any more; not confirmed from an official copy",
+      "penalty": "Seat cancellation (KEA chart): after Round 1 admission ₹25,000 clinical / ₹10,000 pre- or para-clinical; before the Round 2 joining deadline ₹1,50,000 clinical / ₹60,000 diploma / ₹10,000 pre-para; after the Round 2 deadline (before mop-up) ₹7,00,000 clinical / ₹3,00,000 diploma / ₹10,000 pre-para; after the mop-up allotment ₹18,00,000 clinical, ₹6,00,000 diploma, ₹2,00,000 para-clinical, ₹1,00,000 pre-clinical, ₹75,000 para-clinical diploma, plus forfeiture of fees paid and a 3-year bar from PG counselling; after the stray round or leaving mid-course: all of that plus the entire course fee",
+      "notes": "Candidates who cancel in any of these stages cannot take part in later rounds.",
+      "source": "KEA No. ED/KEA/ADMN/CR-13/2025 dt 28-11-2025, PGNEET-2025 seat cancellation penalty amount chart",
+      "url": "https://cetonline.karnataka.gov.in/keawebentry456/pgetmed2025/PGNEET_2025_ADMISSION_TO_PG_MEDICAL_SEAT_CANCELLATION_PENALTY_AMOUNT_CHARTenglish.pdf"
     },
     {
       "state": "Kerala",
@@ -56,6 +96,14 @@
       "notes": "Private unaided colleges may not impose a bond or demand bank guarantees (circular 19-05-2018). In-service candidates: 1 year in a Government Medical College in addition to their DHS bond.",
       "source": "State CET Cell NEET-PG 2025 Information Brochure, §20.3–20.5",
       "url": "https://statecetcell.s3.ap-south-1.amazonaws.com/PGM-25/NEET+PG+2025+IB.pdf"
+    },
+    {
+      "state": "Odisha",
+      "service": "2 years in any health institution of the State after the course, for all admissions to government medical colleges (state quota and All India quota). Senior residency, tutor or faculty posts under the State Government count. Released if the State gives no appointment within 6 months of finishing",
+      "penalty": "Not serving: double the stipend/salary received during the course, and certificates are withheld until the bond is met. Leaving the course midway: ₹10,00,000 plus the stipend/salary received so far",
+      "notes": "Going straight on to higher study (super-speciality etc.) suspends the bond until return, on an affidavit. Bond on ₹21 stamp paper with two sureties, collected at provisional admission.",
+      "source": "Odisha Health & FW Dept resolution No. HFW-ME-II-MISC-0128-2019 / 32988 dt 07-12-2021 (posted on the DMET Odisha PG notifications page)",
+      "url": "https://dmetodisha.in/PGMCC_Static/DOWNLOADSPGM_22/Modified%20Bond%20PG%20SS_32988%209.12.2021.pdf"
     },
     {
       "state": "Punjab",
