@@ -517,12 +517,17 @@ const PB_INST: [string, string, string, boolean][] = [
   ['srigururamdasinstitute', 'Sri Guru Ram Das Institute of Medical Sciences and Research, Amritsar', '', false],
   ['dayanandmedicalcollege', 'Dayanand Medical College and Hospital, Ludhiana', '', false],
   ['christianmedicalcollegeludhiana', 'Christian Medical College, Ludhiana', '', false],
+  ['christianmedicalcollegehospitalludhiana', 'Christian Medical College, Ludhiana', '', false],
+  ['civilhospitaljalandharroadhoshiarpur', 'Civil Hospital, Hoshiarpur', '901691', true], ['civilhospitalpathankot', 'Civil Hospital, Pathankot', '901692', true],
+  ['civilhospitalbarnala', 'Civil Hospital, Barnala', '901846', true], ['disricthospitalfazilka', 'District Hospital, Fazilka', '904226', true],
   ['adeshinstituteofmedicalsciences', 'Adesh Institute of Medical Sciences & Research, Bathinda', '', false],
   ['giansagarmedicalcollege', 'Gian Sagar Medical College & Hospital, Banur', '', false],
 ];
+// bold cells come out with doubled glyphs ("GGoovveerrnnmmeenntt", "MMeeddiicacall"); collapse repeats on both sides before matching
+const pbNorm = (s: string) => s.toLowerCase().replace(/[^a-z]/g, '').replace(/(.)\1+/g, '$1').replace(/(..)\1+/g, '$1').replace(/inst(?!itute)of/g, 'instituteof');
 const pbInst = (cell: string) => {
-  const k = cell.toLowerCase().replace(/[^a-z]/g, '');
-  return PB_INST.filter(([key]) => k.includes(key)).sort((a, b) => b[0].length - a[0].length)[0];
+  const k = pbNorm(cell);
+  return PB_INST.filter(([key]) => k.includes(pbNorm(key))).sort((a, b) => b[0].length - a[0].length)[0];
 };
 const PB_CAT: [RegExp, string][] = [[/^ews/i, 'EWS'], [/scheduled\s*caste/i, 'SC'], [/backward/i, 'BC'], [/./, 'Open']];
 /** BFUHS quota + category → [quota suffix, seat category]. PCMS doctors (incentive marks on the state merit list) get
@@ -531,16 +536,19 @@ const pbSeat = (quota: string, cat: string, govt: boolean, inService: boolean): 
   const seat = PB_CAT.find(([re]) => re.test(cat.trim()))![1], q = quota.toLowerCase();
   if (/nri/.test(q)) return ['NRI', 'Open'];
   if (/management/.test(q)) return ['Management', 'Open'];
-  if (/minority|^a$/.test(q)) return ['Minority', 'Open'];
+  if (/minority|^[ab]$/.test(q)) return ['Minority', 'Open'];
   if (/open\s*merit/.test(q)) return ['Private (open to all)', seat];
   if (inService) return ['In-service (incentive marks)', seat];
   const base = govt ? 'State Quota' : 'Private (state quota)';
   return [/\bIP\b|\(IP\)/.test(cat) ? `${base} (institutional preference)` : base, seat];
 };
-const PB_SHORT: Record<string, string> = { DA: 'Diploma in Anaesthesiology', DCH: 'Diploma in Child Health' };
+const PB_SHORT: Record<string, string> = { DA: 'Diploma in Anaesthesiology', DCH: 'Diploma in Child Health', PGDSM: 'Diploma in Sports Medicine' };
 const pbCourse = (c: string) => {
-  const [prog, name] = c.split('|');
+  const [prog, raw] = c.split('|');
+  // doubled bold glyphs ("_PPaaeeddiiaattrriicscs") → collapse repeats
+  const name = /(.)\1(.)\2(.)\3/.test(raw ?? '') ? raw.replace(/(.)\1/g, '$1').replace(/(..)\1/g, '$1').replace(/^_+/, '') : raw;
   if (PB_SHORT[name]) return PB_SHORT[name];
+  if (prog === 'PGDiploma') return `Diploma ${name}`;
   if (/^PostGraduationDiploma/i.test(name)) return `Diploma ${name.replace(/^PostGraduationDiplomain/i, '')}`;
   return prog === 'DNB' ? `(NBEMS) ${name}` : prog === 'Diploma' ? `(NBEMS-DIPLOMA) ${name}` : `MD/MS ${name}`;
 };
