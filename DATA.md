@@ -54,7 +54,7 @@ All ranks shown on the site are All India Ranks. Where a state prints only its o
 
 | Data | Status | Notes |
 |---|---|---|
-| Fees per college | 🟡 | Yearly tuition per college × branch × quota, shown in the predictor. Sources: MCC institute profiles (MCC seats, government colleges in every state); state orders: Karnataka (KEA lists), Gujarat (ACPPGMEC), Rajasthan (govt + 6 private colleges), Andhra Pradesh (NTRUHS A/B/C), Telangana (G.O.Ms.107), Madhya Pradesh (DME fee report), West Bengal (fee committee memo), Bihar (8 college letters), Punjab (Govt corrigendum 2025), Himachal (AMRU prospectus). NRI fees in US$ are not recorded. ⛔ Kerala fee PDFs removed. Still to do: Maharashtra (FRA, per college), Uttar Pradesh (per-college scans), Chhattisgarh (no fee file found on CGDME), Haryana, Odisha private, J&K private, Telangana govt colleges without MCC code, 6 newer Telangana colleges (not in the fee order) |
+| Fees per college | 🟡 | Yearly tuition per college × branch × quota, shown in the predictor (8,100+ state fees + MCC profile fees). Official sources per state are named in pipeline/states/fees.ts and build-dataset.ts. ⛔ No official document: Kerala self-financing (fee notice removed), Chhattisgarh private colleges (CGDME has no fee file), ASCOMS Jammu, Telangana Category C (only "up to 3× B") and Telangana government colleges ("as notified", not published), MCC DNB hospitals (no fee declared to MCC). Maharashtra uses FRA 2024-25 approved fees (FRA's API returns nothing for 2025-26). NRI fees in US$ not recorded |
 | State-specific categories in the predictor | ✅ | "State category" picker (e.g. Karnataka Cat-2A, Maharashtra NT-C, Telangana BC-B) applies to that state's quotas. Not yet in the saved-list page |
 | Stipend and service bond by state | 🟡 | ✅ Stipend by state (government colleges, from MCC profiles) on Colleges & Fees. ⬜ Bond rules: not in any data source; needs each state's government order / brochure (manual research) |
 | Round calendar / key dates | ✅ | /calendar from MCC's 2026 schedules (data/calendar2026.json); update when MCC revises |
@@ -87,21 +87,21 @@ All ranks shown on the site are All India Ranks. Where a state prints only its o
 MCC              12370/21022  58%   no-MCC-code colleges: 0/304
 Karnataka         2405/ 2405 100%   no-MCC-code colleges: 1747/1747
 Andhra Pradesh    1202/ 1425  84%   no-MCC-code colleges: 864/991
-Gujarat            821/ 1210  67%   no-MCC-code colleges: 653/924
-Telangana          638/ 1205  52%   no-MCC-code colleges: 446/979
-Maharashtra        453/ 1088  41%   no-MCC-code colleges: 0/598
+Gujarat           1195/ 1210  98%   no-MCC-code colleges: 912/924
+Telangana          693/ 1205  57%   no-MCC-code colleges: 501/979
+Maharashtra        775/ 1088  71%   no-MCC-code colleges: 322/598
 Rajasthan          597/  920  64%   no-MCC-code colleges: 188/384
 Madhya Pradesh     674/  718  93%   no-MCC-code colleges: 375/410
-Uttar Pradesh      311/  711  43%   no-MCC-code colleges: 0/379
-Kerala             198/  613  32%   no-MCC-code colleges: 0/410
+Uttar Pradesh      675/  711  94%   no-MCC-code colleges: 364/379
+Kerala             202/  613  32%   no-MCC-code colleges: 0/410
 West Bengal        364/  442  82%   no-MCC-code colleges: 134/172
 Bihar              285/  354  80%   no-MCC-code colleges: 154/223
 Punjab             352/  353  99%   no-MCC-code colleges: 165/166
-Haryana            100/  278  35%   no-MCC-code colleges: 0/138
+Haryana            202/  278  72%   no-MCC-code colleges: 102/138
 Chhattisgarh       103/  224  45%   no-MCC-code colleges: 0/111
 Himachal Pradesh   118/  130  90%   no-MCC-code colleges: 30/42
 Assam              129/  129 100%   no-MCC-code colleges: 0/0
 Jammu & Kashmir     91/  123  73%   no-MCC-code colleges: 0/32
-Odisha              76/  101  75%   no-MCC-code colleges: 0/19
+Odisha              87/  101  86%   no-MCC-code colleges: 11/19
 Goa                 22/   22 100%   no-MCC-code colleges: 0/0
 ```
