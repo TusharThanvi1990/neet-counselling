@@ -179,7 +179,7 @@ const MH_CODES: Record<string, string> = {
 const MH_DIPLOMA: Record<string, string> = {
   'D.A.': 'Diploma in Anaesthesiology', 'D.P.H.': 'Diploma in Public Health', 'D.V.D.': 'Diploma in Dermatology', 'D.G.O.': 'Diploma in Obstetrics and Gynaecology',
   'D.M.R.D.': 'Diploma in Radiodiagnosis', 'D.C.H.': 'Diploma in Child Health', 'D.P.M.': 'Diploma in Psychiatry', 'D.D. (DIABET)': 'Diploma in Diabetology',
-  'D.O.': 'Diploma in Ophthalmology', 'D.ORTHO': 'Diploma in Orthopaedics', 'D.L.O.': 'Diploma in Otorhinolaryngology', 'D.C.P.': 'Diploma in Clinical Pathology',
+  'D.O.': 'Diploma in Ophthalmology', 'D.ORTHO': 'Diploma in Orthopaedics', 'D.L.O.': 'Diploma in Otorhinolaryngology', 'D.O.R.L.': 'Diploma in Otorhinolaryngology', 'D.C.P.': 'Diploma in Clinical Pathology',
   'D.F.M.': 'Diploma in Forensic Medicine', 'D.M.R.T.': 'Diploma in Radiotherapy', 'D.T.C.D.': 'Diploma in Tuberculosis and Chest Diseases',
 };
 // Maharashtra seat codes → [quota suffix, seat category]

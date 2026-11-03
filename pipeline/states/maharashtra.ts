@@ -14,16 +14,30 @@ import { readPages } from '../engine';
 import { pageLines, type Line } from '../textlines';
 
 const RAW = 'data/raw/state';
-const S3 = 'https://statecetcell.s3.ap-south-1.amazonaws.com/PGM-25/';
-const ROUNDS: [string, string, string][] = [ // [file, round label, official PDF]
-  ['mh2025_r1', 'Round 1', 'SelList_R1.pdf'],
-  ['mh2025_r2', 'Round 2', 'SelList_R2.pdf'],
-  ['mh2025_r3', 'Round 3', 'Revised_SelList_R3.pdf'],
-  ['mh2025_stray', 'Stray', 'SelList_stray.pdf'],
-  ['mh2025_stray2', 'Special stray', 'SelList_SVR2.pdf'],
+type YearCfg = { year: number; base: string; rounds: [string, string, string][]; merits: string[]; meritRe: RegExp; form: string };
+const YEARS: YearCfg[] = [
+  { year: 2025, base: 'https://statecetcell.s3.ap-south-1.amazonaws.com/PGM-25/', form: '258',
+    rounds: [ // [file, round label, official PDF]
+      ['mh2025_r1', 'Round 1', 'SelList_R1.pdf'],
+      ['mh2025_r2', 'Round 2', 'SelList_R2.pdf'],
+      ['mh2025_r3', 'Round 3', 'Revised_SelList_R3.pdf'],
+      ['mh2025_stray', 'Stray', 'SelList_stray.pdf'],
+      ['mh2025_stray2', 'Special stray', 'SelList_SVR2.pdf'],
+    ],
+    // Common Provisional State Merit List (round 1, then CAP round 3 which covers all rounds; the later list wins)
+    merits: ['mh2025_merit_r1', 'mh2025_merit'], meritRe: /^\d+\s+[\d.]+\s+(\d+)\s+-?\d+\s+\d{11}\b.*?\b(258\d{6})\b/ },
+  // 2024 (medical2024.mahacet.org NEET-PGM-2024): the Round 3 list was overwritten on the portal by the special stray list of the
+  // same name, and only the Round 1 common merit list is still online, so candidates who registered later have no AIR.
+  { year: 2024, base: 'https://medical2024.mahacet.org/NEET-PGM-2024/instructions-downloadFile/', form: '247',
+    rounds: [
+      ['mh2024_r1', 'Round 1', 'Revisedpgmr1SelList.pdf'],
+      ['mh2024_r2', 'Round 2', 'SelList-R2.pdf'],
+      ['mh2024_stray', 'Stray', 'PGM-SelList-R4.pdf'],
+      ['mh2024_sstray', 'Special stray', 'SelList.pdf'],
+      ['mh2024_sstray2', 'Special stray 2', 'SelList%20splstray%28R2%29.pdf'],
+    ],
+    merits: ['mh2024_merit_r1'], meritRe: /^\d+\s+(\d+)\s+[\d.]+\s+\d{11}\b.*?\b(247\d{6})\b/ },
 ];
-const MERIT = 'mh2025_merit'; // Common Provisional State Merit List (CAP round 3), covers all rounds' candidates
-const MERIT_R1 = 'mh2025_merit_r1';
 
 async function lines(file: string) {
   const out: { page: number; line: Line }[] = [];
@@ -33,18 +47,19 @@ async function lines(file: string) {
 const textOf = (l: Line) => l.words.map((w) => w.text).join(' ');
 
 // ---- merit list: FormNo → AIR ----
+type Cols = { cat: number; code: number; college: number; quota: number };
+for (const Y of YEARS) {
 const air = new Map<string, number>();
-for (const f of [MERIT_R1, MERIT]) { // the later list wins where both have a candidate
+for (const f of Y.merits) { // the later list wins where both have a candidate
   for (const { line } of await lines(f)) {
-    const m = textOf(line).match(/^\d+\s+[\d.]+\s+(\d+)\s+-?\d+\s+\d{11}\b.*?\b(258\d{6})\b/);
+    const m = textOf(line).match(Y.meritRe);
     if (m) air.set(m[2], Number(m[1]));
   }
 }
-console.log(`merit list: ${air.size} candidates with an All India Rank`);
+console.log(`${Y.year} merit list: ${air.size} candidates with an All India Rank`);
 
 // ---- selection lists ----
-type Cols = { cat: number; code: number; college: number; quota: number };
-for (const [file, label, pdf] of ROUNDS) {
+for (const [file, label, pdf] of Y.rounds) {
   const rows: any[] = [];
   let cols: Cols | null = null, noSeat = 0, noAir = 0;
   for (const { page, line } of await lines(file)) {
@@ -54,7 +69,7 @@ for (const [file, label, pdf] of ROUNDS) {
       cols = { cat: x('Cat'), code: x('Code'), college: x('College'), quota: x('Quota') };
       continue;
     }
-    const m = t.match(/^\d+\s+[\d.]+\s+(258\d{6})\b/);
+    const m = t.match(new RegExp(`^\\d+\\s+[\\d.]+\\s+(${Y.form}\\d{6})\\b`));
     if (!m || !cols) continue;
     if (/Choice Not Available|Disqualified|Not Eligible/i.test(t)) { noSeat++; continue; }
     const tol = 6, c = cols;
@@ -74,6 +89,7 @@ for (const [file, label, pdf] of ROUNDS) {
     });
   }
   rows.sort((a, b) => a.rank - b.rank);
-  writeFileSync(`data/parsed/${file}.json`, JSON.stringify({ source: pdf, url: S3 + pdf, counselling: 'Maharashtra', year: 2025, round: label, extractedAt: new Date().toISOString(), rows }));
+  writeFileSync(`data/parsed/${file}.json`, JSON.stringify({ source: pdf, url: Y.base + pdf, counselling: 'Maharashtra', year: Y.year, round: label, extractedAt: new Date().toISOString(), rows }));
   console.log(`${file}: allotments=${rows.length} noSeat=${noSeat} withoutAIR=${noAir}`);
+}
 }

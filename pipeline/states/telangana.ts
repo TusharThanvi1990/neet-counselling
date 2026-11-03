@@ -29,6 +29,15 @@ const ROUNDS: [string, string, [string, string, string][]][] = [
   ['tg2025_r3', 'Round 3', [['tg2025_cq_r3', 'CQ', `20260217051913${CQ}COLLEGE WISE ALLOTMENT LIST IN MOP-UP PHASE OF COUNSELLING.pdf`], ['tg2025_cq_r3ins', 'CQ', ''], ['tg2025_mq_r3', 'MQ', `20260217203157${MQ}COLLEGE WISE REVISED ALLOTMENTS IN MOP UP PHASE OF COUNSELLING.pdf`]]],
   ['tg2025_r4', 'Additional mop-up', [['tg2025_cq_r4', 'CQ', ''], ['tg2025_mq_r4', 'MQ', '']]],
   ['tg2025_stray', 'Stray', [['tg2025_cq_stray', 'CQ', ''], ['tg2025_mq_stray', 'MQ', `20260228112314${MQ}COLLEGE WISE ALLOTMENTS IN STRAY VACANCY PHASE OF COUNSELLING.pdf`]]],
+  // 2024-25 (KNRUHS admission notifications, Jan–Mar 2025). Phases: CQ P1, P2, P3 (service, mop-up), P4 (mop-up), P5 (additional
+  // mop-up), P6 (stray), P7 (special stray), P8 (final stray); MQ P1–P6.
+  ['tg2024_r1', 'Round 1', [['tg2024_cq_r1', 'CQ', '20250101151859College_Wise_P1.pdf'], ['tg2024_mq_r1', 'MQ', '20250106123929PG MQ College_Wise_P1 (4).pdf']]],
+  ['tg2024_r2', 'Round 2', [['tg2024_cq_r2', 'CQ', '20250109085836PG CQ College_Wise_P2 (6).pdf'], ['tg2024_mq_r2', 'MQ', '20250121063829PG MQ - college_Wise_P2 (7).pdf']]],
+  ['tg2024_r3', 'Round 3', [['tg2024_cq_r3', 'CQ', '20250210054453College_Wise_P4_Revised.pdf'], ['tg2024_cq_r3ins', 'CQ', '20250128113755College_Wise_P3_service_Revised (1).pdf'], ['tg2024_mq_r3', 'MQ', '20250217103403College_Wise_P3_with_MQ3_Final.pdf']]],
+  ['tg2024_r4', 'Additional mop-up', [['tg2024_cq_r4', 'CQ', '20250215120118College_Wise_P5_c.pdf']]],
+  ['tg2024_stray', 'Stray', [['tg2024_cq_stray', 'CQ', '20250225052951PG CQ - College_Wise_P6_STRAY VACANCY PHASE.pdf'], ['tg2024_mq_stray', 'MQ', '20250225103014College_Wise_P4_with_MQ3.pdf']]],
+  ['tg2024_sstray', 'Special stray', [['tg2024_cq_sstray', 'CQ', '20250315053801College_Wise_P7_with_remarks.pdf'], ['tg2024_mq_sstray', 'MQ', '20250315112646PG MQ - College_Wise_P5_with_MQ3.pdf']]],
+  ['tg2024_sstray2', 'Special stray 2', [['tg2024_cq_sstray2', 'CQ', '20250320064255PG CQ College_Wise_P8.pdf'], ['tg2024_mq_sstray2', 'MQ', '20250320064321PG MQ College_Wise_P6.pdf']]],
 ];
 
 const tags = new Map<string, number>(), phases = new Map<string, number>();
@@ -72,7 +81,7 @@ for (const [out, label, sources] of ROUNDS) {
   }
   rows.sort((a, b) => a.rank - b.rank);
   const url = P(sources[0][2] || sources.find((s) => s[2])?.[2] || '');
-  writeFileSync(`data/parsed/${out}.json`, JSON.stringify({ source: url, url, counselling: 'Telangana', year: 2025, round: label, rows }));
+  writeFileSync(`data/parsed/${out}.json`, JSON.stringify({ source: url, url, counselling: 'Telangana', year: Number(out.slice(2, 6)), round: label, rows }));
   console.log(`${out}: ${rows.length} allotments — ${perFile.join(', ')}`);
 }
 console.log('phase tags', Object.fromEntries(phases));

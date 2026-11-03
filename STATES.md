@@ -48,6 +48,18 @@ Every state follows the same steps:
 | 28 | Sikkim | H&FW / HRDD Sikkim (SMIMS) | P3 | 2025 | | ⛔ | | No official 2025 list found; tiny private-college pool |
 | 29 | Meghalaya | NEIGRIHMS | P3 | 2025 | | ⛔ | | NE-open state pool is tiny (8 allotted in R1); no list found. NEIGRIHMS AIQ seats are in the MCC data |
 
+## Earlier years (state)
+
+| State | Years | Source / notes |
+|---|---|---|
+| Kerala | 2024 | cee.kerala.gov.in/pgm2024 allotment lists (7 rounds); 2024 lists have seat type only, no candidate category |
+| Maharashtra | 2024 | medical2024.mahacet.org NEET-PGM-2024; R3 list lost (same file name reused for special stray); only R1 merit list online |
+| Telangana | 2024 | KNRUHS admission-notification pages ~79–91 (Jan–Mar 2025), CQ P1–P8 and MQ P1–P6 college-wise lists |
+| Madhya Pradesh | 2024 | DME MP Previous Year Notification (2024): R1, R2, mop-up |
+| Gujarat | 2023, 2024 | ACPPGMEC Compiled_Closure_PG_<year>.pdf: final last rank per branch × college × quota × category |
+| Andhra Pradesh | – | last-rank tool now offers 2025-26 only |
+| Bihar, Karnataka | – | 2024 lists no longer online |
+
 ## Other data (after the P1 states)
 
 | Item | Source | Status | Notes |

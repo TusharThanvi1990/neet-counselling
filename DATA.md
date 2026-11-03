@@ -61,7 +61,7 @@ All ranks shown on the site are All India Ranks. Where a state prints only its o
 | Official notices feed + alerts | 🟡 | ✅ /notices reads MCC + 10 state sites hourly. ⬜ Other states load notices by script (linked only). ⬜ Email/push alerts |
 | INI-CET (AIIMS, JIPMER, PGIMER) | ⬜ | Gettable (AIIMS publishes round PDFs) but a separate exam with its own rank: needs its own predictor input and pages |
 | NEET MDS (dental) | ⬜ | Gettable, but a separate exam and dataset (dental colleges, MDS branches) |
-| State data before 2025 | ⬜ | Gujarat goes back to 2021 |
+| State data before 2025 | 🟡 | ✅ 2024: Kerala (7 rounds), Maharashtra (R1, R2, stray, 2 special strays; R3 list overwritten on the portal; later-round candidates without AIR because only the R1 merit list survives), Telangana (CQ+MQ, 7 phases), Madhya Pradesh (R1, R2, mop-up), Gujarat (final closing ranks). ✅ 2023: Gujarat (final closing ranks). ⛔ 2024 removed: Andhra Pradesh (last-rank tool offers only 2025-26), Bihar, Karnataka (no 2024 files linked on KEA). ⏳ Other states not yet checked |
 
 ## 4. Rank conversion sources (not shown on the site, used by the parsers)
 

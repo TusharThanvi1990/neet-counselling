@@ -25,6 +25,10 @@ const ROUNDS: [string, number, string, string][] = [
   // the official mop-up file is no longer linked on the DME site; this is Medical Dialogues' copy of the DME PDF
   ['mp2025_r3', 2025, 'Mop-up', MD + 'display-allotment-mopup-round-328500.pdf'],
   ['mp2026_r1', 2026, 'Round 1', DME + '2026/DISPLAY_ALLOTMENT_RESULT%20LIST_c_57.pdf'],
+  // 2024 (DME "Previous Year Notification" page, year 2024)
+  ['mp2024_r1', 2024, 'Round 1', DME + '2024/DME%20PG%20MD%20MS%20First%20Round%20Allotment%20Result%202024_82.pdf'],
+  ['mp2024_r2', 2024, 'Round 2', DME + '2024/Second%20Round%20Allotment%20Result%20DME%20PG%20MD_MS%202024_115.pdf'],
+  ['mp2024_r3', 2024, 'Mop-up', DME + '2024/MOP%20UP%20Round%20Allotment%20Result%20DME%20PG%202024%20(1)_130.pdf'],
 ];
 const key = (s: string) => (s ?? '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 const clean = (s: string) => (s ?? '').replace(/\s+/g, ' ').trim();
@@ -39,9 +43,9 @@ for (const [file, year, label, url] of ROUNDS) {
   for await (const pg of readPages(new Uint8Array(readFileSync(`${RAW}/${file}.pdf`)))) {
     for (const cells of gridTable(pg).rows) {
       const ks = cells.map(key);
-      if (ks.some((k) => k === 'ALLOTTEDINSTITUTENAME')) {
+      if (ks.some((k) => k === 'ALLOTTEDINSTITUTENAME' || k === 'ALLOTTEDCOLLEGE')) {
         const all = (name: string) => ks.flatMap((k, i) => (k === name ? [i] : []));
-        const course = all('ALLOTTEDCOURSE'), type = all('ALLOTTEDINSTITUTETYPE'), inst = all('ALLOTTEDINSTITUTENAME'), subj = all('ALLOTTEDSUBJECT'),
+        const course = all('ALLOTTEDCOURSE'), type = all('ALLOTTEDINSTITUTETYPE'), inst = [...all('ALLOTTEDINSTITUTENAME'), ...all('ALLOTTEDCOLLEGE')].sort((a, b) => a - b), subj = all('ALLOTTEDSUBJECT'),
           cat = all('ALLOTTEDCATEGORYCLASS');
         col = {
           air: ks.findIndex((k) => /AIRANK$/.test(k)), elig: ks.findIndex((k) => k === 'ELIGIBLECATEGORY'), ctype: ks.findIndex((k) => k === 'CANDIDATETYPE'),
