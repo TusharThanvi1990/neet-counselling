@@ -54,7 +54,7 @@ All ranks shown on the site are All India Ranks. Where a state prints only its o
 
 | Data | Status | Notes |
 |---|---|---|
-| Fees per college (state lists) | 🟡 | ✅ Karnataka (from KEA allotment rows), Gujarat (ACPPGMEC fee structure, 31 colleges), Rajasthan government colleges, shown in the predictor. ⛔ Kerala fee PDFs removed from cee.kerala.gov.in. 📥 Tamil Nadu fee PDF is a scan (needs OCR); Rajasthan private-college PDF text is jumbled. MCC fees are on the site |
+| Fees per college | 🟡 | Yearly tuition per college × branch × quota, shown in the predictor. Sources: MCC institute profiles (MCC seats, government colleges in every state); state orders: Karnataka (KEA lists), Gujarat (ACPPGMEC), Rajasthan (govt + 6 private colleges), Andhra Pradesh (NTRUHS A/B/C), Telangana (G.O.Ms.107), Madhya Pradesh (DME fee report), West Bengal (fee committee memo), Bihar (8 college letters), Punjab (Govt corrigendum 2025), Himachal (AMRU prospectus). NRI fees in US$ are not recorded. ⛔ Kerala fee PDFs removed. Still to do: Maharashtra (FRA, per college), Uttar Pradesh (per-college scans), Chhattisgarh (no fee file found on CGDME), Haryana, Odisha private, J&K private, Telangana govt colleges without MCC code, 6 newer Telangana colleges (not in the fee order) |
 | State-specific categories in the predictor | ✅ | "State category" picker (e.g. Karnataka Cat-2A, Maharashtra NT-C, Telangana BC-B) applies to that state's quotas. Not yet in the saved-list page |
 | Stipend and service bond by state | 🟡 | ✅ Stipend by state (government colleges, from MCC profiles) on Colleges & Fees. ⬜ Bond rules: not in any data source; needs each state's government order / brochure (manual research) |
 | Round calendar / key dates | ✅ | /calendar from MCC's 2026 schedules (data/calendar2026.json); update when MCC revises |
@@ -79,3 +79,29 @@ All ranks shown on the site are All India Ranks. Where a state prints only its o
 | 5 Nov 2026 | Odisha 2026 R1 (dmetodisha.in; the .gov.in site's certificate has expired) |
 | this week | Uttarakhand 2026 R1 (meta-secure.com/HNBUMU_MDMS), Tamil Nadu 2026 R1, Assam 2026 R1 |
 | after each round | MCC 2026 R2+, later 2026 rounds for UP, Gujarat, MP, Punjab, Chhattisgarh, Goa |
+
+
+### Fee coverage (college × branch × quota with a fee), 2026-11-03
+
+```
+MCC              12370/21022  58%   no-MCC-code colleges: 0/304
+Karnataka         2405/ 2405 100%   no-MCC-code colleges: 1747/1747
+Andhra Pradesh    1202/ 1425  84%   no-MCC-code colleges: 864/991
+Gujarat            821/ 1210  67%   no-MCC-code colleges: 653/924
+Telangana          638/ 1205  52%   no-MCC-code colleges: 446/979
+Maharashtra        453/ 1088  41%   no-MCC-code colleges: 0/598
+Rajasthan          597/  920  64%   no-MCC-code colleges: 188/384
+Madhya Pradesh     674/  718  93%   no-MCC-code colleges: 375/410
+Uttar Pradesh      311/  711  43%   no-MCC-code colleges: 0/379
+Kerala             198/  613  32%   no-MCC-code colleges: 0/410
+West Bengal        364/  442  82%   no-MCC-code colleges: 134/172
+Bihar              285/  354  80%   no-MCC-code colleges: 154/223
+Punjab             352/  353  99%   no-MCC-code colleges: 165/166
+Haryana            100/  278  35%   no-MCC-code colleges: 0/138
+Chhattisgarh       103/  224  45%   no-MCC-code colleges: 0/111
+Himachal Pradesh   118/  130  90%   no-MCC-code colleges: 30/42
+Assam              129/  129 100%   no-MCC-code colleges: 0/0
+Jammu & Kashmir     91/  123  73%   no-MCC-code colleges: 0/32
+Odisha              76/  101  75%   no-MCC-code colleges: 0/19
+Goa                 22/   22 100%   no-MCC-code colleges: 0/0
+```

@@ -131,6 +131,54 @@ college('hp2026', {
   ],
 });
 
+// Rajasthan private colleges: "College fee details for NEET PG admissions 2025 (as provided by the respective medical college)",
+// Rajasthan NEET PG Board (data/raw/states/rajasthan/rj2025_fees_pvt.pdf; text layer is garbled, transcribed from page images).
+// Yearly tuition as printed: AI & state-nature seats, and management seats; 0 / blank = not offered and not recorded.
+// Ananta: one row has no subject label and is left out.
+const rj = (o: Record<string, [number, number]>) => ({
+  state: Object.fromEntries(Object.entries(o).filter(([, v]) => v[0]).map(([k, v]) => [k, v[0]])),
+  mgmt: Object.fromEntries(Object.entries(o).filter(([, v]) => v[1]).map(([k, v]) => [k, v[1]])),
+});
+college('rj2025', {
+  state: 'Rajasthan', year: 2025, label: 'Rajasthan NEET PG 2025 college fee details',
+  source: 'https://rajpgneet2025.in/',
+  quotas: { state: '^(Private \\(open to all\\)|State Quota)$', mgmt: '^Management$' },
+  colleges: [
+    { inst: 'RJ americaninternationalinstituteofmedicalsciences', name: 'American International Institute of Medical Sciences, Udaipur', courseFees: rj({
+      Anaesthesiology: [2800000, 0], 'General Medicine': [3255000, 8500000], Paediatrics: [3255000, 7500000], Pathology: [1200000, 0], 'Community Medicine': [300000, 0],
+      Psychiatry: [3255000, 0], Radiodiagnosis: [3255000, 12000000], 'Respiratory Medicine': [3255000, 0], Dermatology: [3255000, 11000000], ENT: [3255000, 0],
+      'General Surgery': [3255000, 5500000], 'Obstetrics & Gynaecology': [3255000, 8000000], Ophthalmology: [3255000, 0], Orthopaedics: [3255000, 7500000] }) },
+    { inst: 'RJ anantainstituteofmedicalsciencesandresearchcentrerajsamand', name: 'Ananta Institute of Medical Sciences and Research Centre, Rajsamand', courseFees: rj({
+      Anaesthesiology: [2500000, 3255000], 'Forensic Medicine': [300000, 0], 'General Medicine': [3255000, 9000000], Pathology: [1200000, 0], 'Community Medicine': [300000, 0],
+      Psychiatry: [3255000, 0], Radiodiagnosis: [3255000, 11000000], 'Respiratory Medicine': [3255000, 0], Dermatology: [3255000, 11000000], ENT: [3255000, 0],
+      'General Surgery': [3255000, 5500000], 'Obstetrics & Gynaecology': [3255000, 8500000], Ophthalmology: [3255000, 0], Orthopaedics: [3255000, 7000000] }) },
+    { inst: 'RJ geetanjalimedicalcollegehospitaludaipur', name: 'Geetanjali Medical College & Hospital, Udaipur', courseFees: rj({
+      Anaesthesiology: [2500000, 3125000], Anatomy: [700000, 700000], Biochemistry: [700000, 700000], 'Emergency Medicine': [4500000, 5625000], 'Forensic Medicine': [700000, 700000],
+      'General Medicine': [7500000, 9375000], Microbiology: [700000, 700000], Paediatrics: [6500000, 8125000], Pathology: [1500000, 1875000], Pharmacology: [700000, 700000],
+      Physiology: [700000, 700000], 'Community Medicine': [700000, 700000], Psychiatry: [4800000, 6000000], Radiodiagnosis: [10000000, 12500000], 'Radiation Oncology': [4500000, 5625000],
+      'Respiratory Medicine': [5500000, 6875000], Dermatology: [9500000, 11875000], ENT: [4500000, 5625000], 'General Surgery': [5500000, 6875000],
+      'Obstetrics & Gynaecology': [7500000, 9375000], Ophthalmology: [5500000, 6875000], Orthopaedics: [7000000, 8750000] }) },
+    { inst: 'RJ mahatmagandhimedicalcollegeandhospitaljaipur', name: 'Mahatma Gandhi Medical College and Hospital, Jaipur', courseFees: rj({
+      Anaesthesiology: [2100000, 5875000], Biochemistry: [600000, 0], 'Emergency Medicine': [3150000, 5875000], 'Family Medicine': [1875000, 0], 'Forensic Medicine': [600000, 0],
+      'General Medicine': [5075000, 6825000], 'Immunohaematology & Transfusion': [950000, 0], 'Laboratory Medicine': [1000000, 0], Microbiology: [600000, 0],
+      'Nuclear Medicine': [2835000, 5875000], Paediatrics: [5075000, 6300000], 'Palliative Medicine': [1575000, 0], Pathology: [1575000, 0], 'Physical Medicine & Rehab': [1200000, 0],
+      'Community Medicine': [600000, 0], Psychiatry: [4200000, 6175000], Radiodiagnosis: [6300000, 7600000], 'Radiation Oncology': [2625000, 5875000], 'Respiratory Medicine': [4200000, 5875000],
+      Dermatology: [6300000, 7875000], ENT: [2625000, 5875000], 'General Surgery': [4725000, 6175000], 'Obstetrics & Gynaecology': [5075000, 7175000], Ophthalmology: [4975000, 5875000],
+      Orthopaedics: [5075000, 6550000], 'Traumatology & Surgery': [4500000, 0] }) },
+    { inst: 'RJ pacificinstituteofmedicalsciencesumardaudaipur', name: 'Pacific Institute of Medical Sciences, Umarda, Udaipur', courseFees: rj({
+      Anaesthesiology: [3500000, 6000000], Anatomy: [500000, 0], Biochemistry: [500000, 0], 'Emergency Medicine': [3500000, 0], 'Forensic Medicine': [500000, 0],
+      'General Medicine': [10000000, 13000000], Microbiology: [500000, 0], Paediatrics: [8500000, 11000000], Pathology: [2500000, 0], Pharmacology: [500000, 0], Physiology: [500000, 0],
+      'Community Medicine': [500000, 0], Psychiatry: [6000000, 0], Radiodiagnosis: [12500000, 15000000], 'Respiratory Medicine': [7500000, 10500000], Dermatology: [11500000, 14000000],
+      ENT: [5000000, 0], 'General Surgery': [6500000, 10000000], 'Obstetrics & Gynaecology': [11000000, 13000000], Ophthalmology: [7000000, 11000000], Orthopaedics: [7500000, 10500000] }) },
+    { inst: 'RJ pacificmedicalcollegehospitaludaipur', name: 'Pacific Medical College & Hospital, Udaipur', courseFees: rj({
+      Anaesthesiology: [4000000, 6000000], Anatomy: [200000, 200000], Biochemistry: [200000, 200000], 'Emergency Medicine': [5500000, 7500000], 'Forensic Medicine': [250000, 250000],
+      'General Medicine': [9500000, 13000000], Microbiology: [600000, 600000], Paediatrics: [8000000, 11500000], Pathology: [2250000, 2250000], Pharmacology: [200000, 200000],
+      Physiology: [250000, 250000], 'Community Medicine': [250000, 250000], Psychiatry: [6000000, 8000000], Radiodiagnosis: [12000000, 15000000], 'Respiratory Medicine': [7000000, 9500000],
+      Dermatology: [11000000, 13000000], ENT: [5500000, 9000000], 'General Surgery': [6000000, 8500000], 'Obstetrics & Gynaecology': [11000000, 13750000], Ophthalmology: [6000000, 8000000],
+      Orthopaedics: [7500000, 9500000] }) },
+  ],
+});
+
 // Bihar: each private college's PGMAC-2025 fee letter to BCECEB (bceceboard.bihar.gov.in/pdf_Web/PGMAC25_FSTR.pdf, scans,
 // transcribed from the page images). Yearly tuition for general / minority seats; NRI fees are in US dollars and not recorded.
 const bh = (o: Record<string, number>) => ({ gen: Object.fromEntries(Object.entries(o).map(([k, v]) => [k, v * L])) });
