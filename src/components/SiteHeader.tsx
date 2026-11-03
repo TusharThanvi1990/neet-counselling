@@ -13,6 +13,7 @@ export const NAV = [
   { href: '/seat-matrix', label: 'Seat Matrix' },
   { href: '/institutes', label: 'Colleges & Fees' },
   { href: '/rank-scan', label: 'Rank Scan' },
+  { href: '/notices', label: 'Notices' },
 ];
 
 export function Logo() {

@@ -256,3 +256,9 @@ textarea { width: 100%; min-height: 160px; font: 13px ui-monospace, Consolas, mo
   .field input, .field select, input.rank, input.short { width: 100%; min-width: 0; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* notices feed */
+.notice-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.notice-grid h3 { margin: 0 0 8px; font-size: 1rem; }
+.notice-list { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: .9rem; line-height: 1.35; }
+.link-list { columns: 2 260px; padding-left: 18px; line-height: 1.8; }
