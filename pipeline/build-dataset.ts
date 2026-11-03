@@ -912,6 +912,43 @@ rounds.forEach((rd, ri) => {
     }
   }
   console.log(`fees: Andhra Pradesh private ${apn}; Telangana private ${tgn}; total ${fees.size}`);
+  // Madhya Pradesh: DME MP fee details report (every college × subject, 2026): tuition for private / NRI / government seats.
+  {
+    const mpf = load('data/parsed/fees_mp2026.json'), courseIdx = new Map(course.arr.map((c, i) => [c, i]));
+    const byKey = new Map<string, any>();
+    let miss = 0;
+    for (const r of mpf.rows) {
+      const ii = instM.get(norm(`MP ${r['Institute Name'].toUpperCase().replace(/[^A-Z]/g, '')}`));
+      const ci = courseIdx.get(normCourse(mpCourse(r.Course, r['Subject Name'].replace(/\s+/g, ''))));
+      if (ii == null || ci == null) { miss++; continue; }
+      byKey.set(`${ii}.${ci}`, r);
+    }
+    let n = 0;
+    for (let k = 0; k < rows.length; k += 8) {
+      const ii = rows[k + 2], ci = rows[k + 3], qi = rows[k + 4], r = byKey.get(`${ii}.${ci}`), key = `${ii}.${ci}.${qi}`;
+      if (!r || fees.has(key)) continue;
+      const label = quota.arr[qi];
+      const fee = /NRI/.test(label) ? r['PVT NRI Fees'] : /Private/.test(label) ? r['PVT Tution Fees'] : /State Quota|In-service/.test(label) ? r['GOVT Tution Fees'] : 0;
+      if (fee > 0) { setFee(ii, ci, qi, fee, mpf.year, mpf.label); n++; }
+    }
+    console.log(`fees: Madhya Pradesh ${n} (${miss} fee rows without a matching college/course); total ${fees.size}`);
+  }
+  // per-college fee orders (pipeline/states/fees.ts → data/parsed/fees_college_<state>.json)
+  for (const f of readdirSync('data/parsed').filter((x) => x.startsWith('fees_college_'))) {
+    const fc = load(`data/parsed/${f}`), byInst = new Map<number, any>();
+    for (const c of fc.colleges) { const ii = instM.get(norm(c.inst)); if (ii == null) console.log(`  ${f}: no institute ${c.inst}`); else byInst.set(ii, c); }
+    const qre = Object.entries(fc.quotas as Record<string, string>).map(([k, re]) => [k, new RegExp(re)] as const);
+    let n = 0;
+    for (let k = 0; k < rows.length; k += 8) {
+      const ii = rows[k + 2], c = byInst.get(ii); if (!c) continue;
+      const ci = rows[k + 3], qi = rows[k + 4], key = `${ii}.${ci}.${qi}`; if (fees.has(key)) continue;
+      const label = quota.arr[qi].replace(`${fc.state} `, ''), kind = qre.find(([, re]) => re.test(label))?.[0];
+      const f3 = kind && c.fees[kind]; if (!f3) continue;
+      const g = group(ci), fee = g === 'clinical' ? f3[0] : g === 'para' ? f3[1] : f3[2];
+      if (fee > 0) { setFee(ii, ci, qi, fee, fc.year, fc.label); n++; }
+    }
+    console.log(`fees: ${f} ${n}; total ${fees.size}`);
+  }
   // MCC's own rounds (AIQ, deemed, central, DNB): the fee the institute declared to MCC; NRI seats use the declared NRI fee.
   const firstFee = (...v: unknown[]) => v.map(Number).find((x) => x > 1000) ?? 0;
   const MCC_QUOTAS = new Set(Object.values(QUOTA));

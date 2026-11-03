@@ -76,3 +76,34 @@ writeFileSync('data/parsed/fees_ap2025.json', JSON.stringify({
   categories: { A: { clinical: 496800, para: 155250, pre: 70380 }, B: { clinical: 993600, para: 310500, pre: 140760 }, C: { clinical: 5750000, para: 1725000, pre: 920000 } },
 }));
 console.log('fees_ap2025: category table written');
+
+/**
+ * Per-college fee orders in one shared format (data/parsed/fees_college_<state>.json), read by build-dataset.ts:
+ *   colleges: { inst: institute key as built in build-dataset (e.g. "WB GOURIDEVI"), fees: { quota kind: [clinical, para, pre] } }
+ *   quotas: quota kind → regex on the site's quota label (state prefix removed).
+ * Course groups: pre-clinical = Anatomy / Physiology / Biochemistry; para-clinical = Pathology, Microbiology, Pharmacology,
+ * Forensic Medicine, Community Medicine, Transfusion, Lab Medicine; clinical = the rest. "Non-clinical" in an order = pre + para.
+ */
+type CollegeFees = { inst: string; name: string; fees: Record<string, [number, number, number]> };
+const college = (file: string, d: { state: string; year: number; source: string; label: string; quotas: Record<string, string>; colleges: CollegeFees[] }) => {
+  writeFileSync(`data/parsed/fees_college_${file}.json`, JSON.stringify(d));
+  console.log(`fees_college_${file}: ${d.colleges.length} colleges`);
+};
+const L = 100000;
+// West Bengal: Memo No. HFW-23099/230/2025/M/SS(ME)/SPL./110/2025 dt 03.12.2025, fees approved by the Permanent Fee
+// Fixation Committee (data/raw/states/westbengal/wb2025_fees_private.pdf, a scan; read against the page image).
+// "Non-clinical" applies to pre- and para-clinical subjects. RKM Seva Pratishthan and JIS are not in the memo.
+const wbAll = (sq: number, mq: number): Record<string, [number, number, number]> => ({ state: [sq, sq, sq], mgmt: [mq, mq, mq] });
+college('wb2025', {
+  state: 'West Bengal', year: 2025, label: 'West Bengal Permanent Fee Fixation Committee (memo 03.12.2025)',
+  source: 'https://cdnbbsr.s3waas.gov.in/s3aae8d1e00b15a30e5901227e97ffbef7/uploads/2025/12/20251203260479.pdf',
+  quotas: { state: '^Private \\(state quota\\)$', mgmt: '^Management$' },
+  colleges: [
+    { inst: 'WB GOURIDEVI', name: 'Gouridevi Medical College, Durgapur', fees: wbAll(9 * L, 27 * L) },
+    { inst: 'WB SHRRAMKRISHNA', name: 'Shri Ramkrishna Institute of Medical Sciences & Sanaka Hospital, Durgapur', fees: wbAll(9 * L, 27 * L) },
+    { inst: 'WB IQCITY', name: 'IQ City Medical College', fees: { state: [9 * L, 2.16 * L, 2.16 * L], mgmt: [27 * L, 6.4 * L, 6.4 * L] } },
+    { inst: 'WB KPCMEDICAL', name: 'KPC Medical College, Jadavpur', fees: wbAll(8.5 * L, 27 * L) },
+    { inst: 'WB ICAREINSTITUTE', name: 'ICARE Institute of Medical Science and Research, Haldia', fees: { state: [9 * L, 3.9 * L, 3.9 * L], mgmt: [27 * L, 15.5 * L, 15.5 * L] } },
+    { inst: 'WB JAGANNATHGUPTA', name: 'Jagannath Gupta Institute of Medical Sciences and Hospital', fees: wbAll(9 * L, 27 * L) },
+  ],
+});
