@@ -5,6 +5,7 @@ import AutoForm from '@/components/AutoForm';
 import { getData } from '@/lib/data';
 import { INSTITUTE_TYPES, listInstitutes, MATRIX_PAGE, stipendByState, type InstituteSort } from '@/lib/institutes';
 import { fmt, hrefWith, type SearchParams } from '@/lib/url';
+import bond from '../../../data/bond2025.json';
 
 export const metadata: Metadata = { title: 'Institutes & fees' };
 
@@ -75,7 +76,18 @@ export default async function InstitutesPage({ searchParams }: { searchParams: P
           ))}</tbody>
         </table>
       </div>
-      <p className="note">Year-1 stipend each government college declared to MCC, usually per month. Service bond rules are set by each state government and are not in MCC’s data; check the state’s counselling brochure.</p>
+      <p className="note">Year-1 stipend each government college declared to MCC, usually per month.</p>
+      <h2 id="bond-by-state">Service bond by state</h2>
+      <p className="note">{bond.note}</p>
+      <div className="tablebox">
+        <table>
+          <thead><tr><th>State</th><th>Service after PG</th><th>Penalty</th><th>Source</th></tr></thead>
+          <tbody>{bond.states.map((b) => (
+            <tr key={b.state}><td>{b.state}</td><td>{b.service}{b.notes ? <div className="sub">{b.notes}</div> : null}</td><td>{b.penalty}</td>
+              <td><a href={b.url} target="_blank" rel="noopener">{b.source}</a></td></tr>
+          ))}</tbody>
+        </table>
+      </div>
     </PageShell>
   );
 }
