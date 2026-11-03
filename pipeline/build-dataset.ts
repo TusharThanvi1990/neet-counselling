@@ -964,12 +964,10 @@ rounds.forEach((rd, ri) => {
       const label = quota.arr[qi].replace(`${fc.state} `, ''), kind = qre.find(([, re]) => re.test(label))?.[0];
       if (!kind) continue;
       let fee = 0;
-      if (c.fees?.[kind]) { const f3 = c.fees[kind], g = group(ci); fee = g === 'clinical' ? f3[0] : g === 'para' ? f3[1] : f3[2]; }
-      else if (c.courseFees?.[kind] && / \(MD\/MS\)$/.test(course.arr[ci])) {
-        const spec = course.arr[ci].replace(/ \(MD\/MS\)$/, '');
-        fee = c.courseFees[kind][spec] ?? 0;
-        if (!fee) unmatchedFee.add(`${fc.state}: ${spec}`);
-      }
+      const md = / \(MD\/MS\)$/.test(course.arr[ci]), spec = course.arr[ci].replace(/ \(MD\/MS\)$/, '');
+      if (md && c.courseFees?.[kind]?.[spec] != null) fee = c.courseFees[kind][spec]; // subject-specific fee wins
+      else if (c.fees?.[kind]) { const f3 = c.fees[kind], g = group(ci); fee = g === 'clinical' ? f3[0] : g === 'para' ? f3[1] : f3[2]; }
+      else if (c.courseFees?.[kind] && md) unmatchedFee.add(`${fc.state}: ${spec}`);
       if (fee > 0) { setFee(ii, ci, qi, fee, fc.year, fc.label); n++; }
     }
     console.log(`fees: ${f} ${n}; total ${fees.size}`);

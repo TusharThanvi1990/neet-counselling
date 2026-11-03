@@ -179,6 +179,48 @@ college('rj2025', {
   ],
 });
 
+// Uttar Pradesh private non-minority colleges: Govt of UP notification 1/1036663/2025/71-4005(002)/7/2025 dt 24-07-2025,
+// Annexure-2 "MD/MS fees for session 2025-26" (scan; Medical Dialogues copy of the official PDF, transcribed from the images):
+// [clinical, pathology, non-clinical] per year; 0 = "आवश्यकता नहीं" (not required). Six gaps are filled from the later DGME
+// notice for six colleges (GS Hapur, KD Mathura, Narayana Kanpur, Saraswati Unnao, SKS Mathura, United Prayagraj), as
+// reported by Medical Dialogues (article 165137). Non-clinical = pre- and para-clinical subjects other than Pathology.
+const up = (clin: number, path: number, non: number): Pick<CollegeFees, 'fees' | 'courseFees'> => ({
+  fees: { pvt: [clin, non, non] }, ...(path ? { courseFees: { pvt: { Pathology: path } } } : {}),
+});
+college('up2025', {
+  state: 'Uttar Pradesh', year: 2025, label: 'Govt of UP MD/MS fee notification 24-07-2025 (Annexure-2)',
+  source: 'https://medicaldialogues.in/pdf_upload/docscanner-24-jul-2025-20-59-1-296823.pdf',
+  quotas: { pvt: '^Private \\(state quota\\)$' },
+  colleges: ([
+    ['UP gsmedicalcollegehapur', 'GS Medical College & Hospital, Hapur', up(3116082, 1368036, 1026562)],
+    ['UP saraswatiinstituteofmedicalscienceshapur', 'Saraswati Institute of Medical Sciences, Hapur', up(2022143, 1088846, 845377)],
+    ['UP schoolofmedicalsciencesresearchshardauniversitygnoida', 'School of Medical Sciences & Research (Sharda University), Greater Noida', up(2540649, 1368025, 977116)],
+    ['UP noidainternationalinstituteofmedicalsciencesgreaternoida', 'Noida International Institute of Medical Sciences', up(2508698, 1368036, 0)],
+    ['UP heritagemedicalcollegevaranasi', 'Heritage Institute of Medical Sciences, Varanasi', up(3042024, 1638013, 1203094)],
+    ['UP unitedmedicalcollegeprayagraj', 'United Institute of Medical Sciences, Prayagraj', up(2508698, 1723022, 1259770)],
+    ['UP mayoinstituteofmedicalsciencebarabanki', 'Mayo Institute of Medical Sciences, Barabanki', up(2030961, 1093571, 818235)],
+    ['UP tsmishramedicalcollegehospitallucknow', 'T.S. Mishra Medical College & Hospital, Lucknow', up(3116082, 1600848, 1152000)],
+    ['UP kdmedicalcollegemathura', 'Kanti Devi (K.D.) Medical College, Mathura', up(2163946, 1202199, 1026562)],
+    ['UP kmmedicalcollegemathura', 'Krishna Mohan (K.M.) Medical College, Mathura', up(2163946, 1196543, 0)],
+    ['UP ramamedicalcollegekanpur', 'Rama Medical College, Kanpur', up(3074916, 1781315, 1272368)],
+    ['UP ramamedicalcollegehospitalresearchcentrehapur', 'Rama Medical College, Hapur', up(2970734, 0, 0)],
+    ['UP shrirammurtimedicalsciencesbarilly', 'Shri Ram Murti Smarak Institute of Medical Sciences, Bareilly', up(2509957, 1351477, 965384)],
+    ['UP subharatimedicalcollegemeerut', 'Subharti Medical College, Meerut', up(1443744, 1080000, 864000)],
+    ['UP hindmedicalcollegebarabanki', 'Hind Institute of Medical Sciences, Barabanki', up(2524901, 1359562, 971116)],
+    ['UP muzaffarnagarmedicalcollegemuzaffarnagar', 'Muzaffarnagar Medical College', up(2323197, 1250889, 893521)],
+    ['UP rohilkhandmedicalcollegebareilly', 'Rohilkhand Medical College & Hospital, Bareilly', up(2309009, 1243216, 888056)],
+    ['UP hindmedicalcollegesitapur', 'Hind Institute of Medical Sciences, Sitapur', up(2449140, 1318768, 984431)],
+    ['UP rajshreemedicalresearchinstitutebareilly', 'Rajshree Medical Research Institute, Bareilly', up(2987856, 1608912, 1152000)],
+    ['UP prasadmedicalcollegelucknow', 'Prasad Institute of Medical Sciences, Lucknow', up(2163946, 0, 0)],
+    ['UP nationalcapitalmedicalcollegemeerut', 'National Capital Region Institute of Medical Sciences, Meerut', up(2759749, 1442639, 1056223)],
+    ['UP varunarjunmedicalcollegeshahajanpur', 'Varun Arjun Medical College, Shahjahanpur', up(2805739, 1442639, 1122295)],
+    ['UP venkateshwaramedicalcollegeamroha', 'Venkateshwara Institute of Medical Sciences, Gajraula', up(2163946, 1202199, 0)],
+    ['UP narainameicalcollegeresearchcentrekanpur', 'Narayana Medical College, Kanpur', up(0, 0, 1026562)],
+    ['UP saraswatimedicalcollegeunnao', 'Saraswati Medical College, Unnao', up(0, 1368036, 0)],
+    ['UP skshospitalmedicalcollegeresearchcentermathura', 'SKS Hospital Medical College, Mathura', up(2508698, 0, 1026562)],
+  ] as [string, string, Pick<CollegeFees, 'fees' | 'courseFees'>][]).map(([inst, name, f]) => ({ inst, name, ...f })),
+});
+
 // Bihar: each private college's PGMAC-2025 fee letter to BCECEB (bceceboard.bihar.gov.in/pdf_Web/PGMAC25_FSTR.pdf, scans,
 // transcribed from the page images). Yearly tuition for general / minority seats; NRI fees are in US dollars and not recorded.
 const bh = (o: Record<string, number>) => ({ gen: Object.fromEntries(Object.entries(o).map(([k, v]) => [k, v * L])) });
