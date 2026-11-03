@@ -933,6 +933,24 @@ rounds.forEach((rd, ri) => {
     }
     console.log(`fees: Madhya Pradesh ${n} (${miss} fee rows without a matching college/course); total ${fees.size}`);
   }
+  // Punjab: Govt of Punjab corrigendum MER-HTH305C/9/2024-5HB3/I/125469/2025 dt 13-06-2025 (fees from session 2025), as given
+  // in the BFUHS NEET-PG 2026 prospectus (six-month first instalment × 2) and the BFUHS notice of 28/10/2026. Basic sciences:
+  // Anatomy, Biochemistry, Transfusion, Microbiology, Pharmacology, Physiology, Community Medicine, Forensic Medicine (Pathology
+  // is clinical in Punjab). NRI fees are in US dollars and not recorded.
+  {
+    const BASIC = /^(Anatomy|Biochemistry|Immunohaematology|Microbiology|Pharmacology|Physiology|Community Medicine|Forensic Medicine) /;
+    let n = 0;
+    for (let k = 0; k < rows.length; k += 8) {
+      const ii = rows[k + 2], ci = rows[k + 3], qi = rows[k + 4], key = `${ii}.${ci}.${qi}`, [, full, state] = inst[ii];
+      if (state !== 'Punjab' || !full.startsWith('PB ') || fees.has(key) || /NRI/.test(quota.arr[qi])) continue;
+      const e = PB_INST.find(([kk]) => full === `PB ${kk}`); if (!e) continue;
+      const c = course.arr[ci], govt = e[3];
+      const fee = /\(DNB\)$/.test(c) ? (govt ? 75000 : 0) : /\(Diploma\)$/.test(c) ? (govt ? 125000 : 410000)
+        : BASIC.test(c) ? (govt ? 100000 : 275000) : (govt ? 125000 : 685000);
+      if (fee) { setFee(ii, ci, qi, fee, 2025, 'Govt of Punjab fee corrigendum 13-06-2025 (BFUHS prospectus)'); n++; }
+    }
+    console.log(`fees: Punjab ${n}; total ${fees.size}`);
+  }
   // per-college fee orders (pipeline/states/fees.ts → data/parsed/fees_college_<state>.json)
   const unmatchedFee = new Set<string>();
   for (const f of readdirSync('data/parsed').filter((x) => x.startsWith('fees_college_'))) {
