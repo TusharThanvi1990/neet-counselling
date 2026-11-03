@@ -868,6 +868,22 @@ rounds.forEach((rd, ri) => {
     for (const [k, label] of Object.entries(GJF)) if (r[k]) { setFee(ii, ci, quota.get(label), r[k], gj.year, 'Gujarat ACPPGMEC fee structure'); n++; }
   }
   console.log(`fees: Gujarat ${n} (${miss} fee rows without a matching college/course); total ${fees.size}`);
+  // Rajasthan government colleges (Rajasthan NEET PG Board fee table 2025, data/raw/states/rajasthan/rj2025_fees_govt.pdf):
+  // one yearly tuition fee per college group and seat type, the same for every branch. MCC code → [government seat, management seat].
+  const RJF: Record<string, [number, number | null]> = {
+    700327: [8053, null], 700334: [8053, null], 700311: [8053, null], 700317: [8053, null], 700332: [8053, null], 700308: [8053, null],
+    901806: [63800, 868200], 901863: [63800, 868200], 901803: [63800, 868200], 901860: [63800, 868200], 901805: [63800, 868200], 700337: [63800, 868200],
+    700524: [63800, 868200], 904560: [250000, null],
+  };
+  const govQ = new Set(['Rajasthan State Quota', 'Rajasthan In-service (bonus marks)'].map((q) => quota.get(q))), mgmtQ = quota.get('Rajasthan Management');
+  let rj = 0;
+  for (let k = 0; k < rows.length; k += 8) {
+    const ii = rows[k + 2], f = RJF[inst[ii][3]];
+    if (!f || inst[ii][2] !== 'Rajasthan' || !inst[ii][1].startsWith('RJ ')) continue;
+    const qi = rows[k + 4], fee = govQ.has(qi) ? f[0] : qi === mgmtQ ? f[1] : null;
+    if (fee && !fees.has(`${ii}.${rows[k + 3]}.${qi}`)) { setFee(ii, rows[k + 3], qi, fee, 2025, 'Rajasthan NEET PG Board fee table'); rj++; }
+  }
+  console.log(`fees: Rajasthan ${rj}; total ${fees.size}`);
 }
 
 // ---- seat matrices → [year, code index, course, quota, seat category, seats] ----
