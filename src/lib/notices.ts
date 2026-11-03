@@ -26,6 +26,7 @@ export const FEED_SOURCES: NoticeSource[] = [
   { body: 'Punjab (BFUHS)', url: 'https://admission.bfuhsonline.ac.in/mdms/mdms.asp' },
   { body: 'Andhra Pradesh (Dr NTR UHS)', url: 'https://drntr.uhsap.in/index/' },
   { body: 'Himachal Pradesh (AMRU)', url: 'https://amruhp.ac.in/' },
+  { body: 'Gujarat (ACPPGMEC)', url: 'http://medadmgujarat.ncode.in/PG/Index.aspx' },
   { body: 'Kerala (CEE)', url: 'https://cee.kerala.gov.in/pgm2026/', all: true },
   { body: 'Telangana (KNRUHS)', url: 'https://www.knruhs.telangana.gov.in/admission-notification/', rowTitle: true },
 ];
@@ -34,8 +35,7 @@ export const FEED_SOURCES: NoticeSource[] = [
 export const LINK_ONLY: NoticeSource[] = [
   { body: 'Uttar Pradesh (DGME)', url: 'https://upneet.gov.in/' },
   { body: 'Karnataka (KEA)', url: 'https://cetonline.karnataka.gov.in/kea/' },
-  { body: 'Gujarat (ACPPGMEC)', url: 'https://www.medadmgujarat.org/pgmed/' },
-  { body: 'Rajasthan (NEET PG Board)', url: 'https://rajpgneet2026.in/' },
+  { body: 'Rajasthan (Medical Education Dept)', url: 'https://medicaleducation.rajasthan.gov.in/' },
   { body: 'Odisha (DMET)', url: 'https://dmetodisha.in/' },
   { body: 'Haryana (DMER)', url: 'https://hry.online-counselling.co.in/' },
   { body: 'NBEMS (NEET PG exam)', url: 'https://natboard.edu.in/' },
