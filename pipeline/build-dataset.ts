@@ -621,7 +621,51 @@ const odCourse = (s: string, t: string) => {
   const n = ({ 'GEN MEDICINE': 'GENERAL MEDICINE', 'GEN SURGERY': 'GENERAL SURGERY', 'RESP MEDICINE': 'RESPIRATORY MEDICINE', 'COMM MEDICINE': 'COMMUNITY MEDICINE', 'OBST AND GYNE': 'OBSTETRICS & GYNAECOLOGY', PEDIATRICS: 'PAEDIATRICS', ANESTHESIOLOGY: 'ANAESTHESIOLOGY' } as Record<string, string>)[s] ?? s;
   return t === 'DNB' ? `(NBEMS) ${n}` : `MD/MS ${n}`;
 };
-const STATE_FILES = readdirSync('data/parsed').filter((f) => /^(mh|ka|kl|ap|rj|tg|gj|mp|hr|bh|pb|cg|hp|jk|ga|up|as|od)20\d\d_[a-z0-9_]+\.json$/.test(f) && !/merit|_oc$/.test(f)).map((f) => f.replace('.json', ''));
+// West Bengal (WBMCC, read by OCR): name key (letters, "OE" OCR slips fixed) → [display name, MCC code, government?].
+const WB_INST: [string, string, string, boolean][] = [
+  ['INSTITUTEOFPOSTGRADUATEMEDICALEDUCATION', 'IPGME&R and SSKM Hospital, Kolkata', '700387', true], ['MEDICALCOLLEGEKOLKATA', 'Medical College, Kolkata', '700392', true],
+  ['RGKAR', 'R G Kar Medical College, Kolkata', '700395', true], ['NILRATANSIRCAR', 'Nil Ratan Sircar Medical College, Kolkata', '700400', true],
+  ['CALCUTTANATIONAL', 'Calcutta National Medical College, Kolkata', '700398', true], ['BURDWAN', 'Burdwan Medical College', '700388', true],
+  ['BANKURA', 'Bankura Sammilani Medical College', '700402', true], ['NORTHBENGAL', 'North Bengal Medical College', '700393', true],
+  ['MIDNAPORE', 'Midnapore Medical College', '700412', true], ['MURSHIDABAD', 'Murshidabad Medical College', '700537', true],
+  ['MALDA', 'Malda Medical College', '700542', true], ['SAGOREDUTTA', 'College of Medicine & Sagore Dutta Hospital, Kolkata', '700521', true],
+  ['JNMHOSPITALKALYANI', 'College of Medicine & JNM Hospital, Kalyani', '701353', true], ['ESIPGIMSR', 'ESI-PGIMSR & ESIC Medical College, Joka', '700543', true],
+  ['SCHOOLOFTROPICAL', 'School of Tropical Medicine, Kolkata', '700397', true], ['ALLINDIAINSTITUTEOFHYGIENE', 'All India Institute of Hygiene and Public Health, Kolkata', '700404', true],
+  ['DRBCROY', 'Dr BC Roy Post Graduate Institute of Paediatric Sciences, Kolkata', '700409', true], ['INSTITUTEOFCHILDHEALTH', 'Institute of Child Health, Kolkata', '700390', true],
+  ['CHITTARANJANSEVASADAN', 'Chittaranjan Seva Sadan, Kolkata', '701299', true], ['DIAMONDHARBOUR', 'Diamond Harbour Government Medical College', '701289', true],
+  ['RAMPURHAT', 'Rampurhat Government Medical College', '701347', true], ['TAMRALIPTO', 'Tamralipto Government Medical College', '902784', true],
+  ['MAHARAJAJITENDRANARAYAN', 'Maharaja Jitendra Narayan Medical College, Cooch Behar', '701551', true], ['JALPAIGURI', 'Jalpaiguri Government Medical College', '', true],
+  ['BARASAT', 'Barasat Government Medical College', '', true], ['INFECTIOUSDISEASES', 'Infectious Diseases & Beliaghata General Hospital, Kolkata', '901717', true],
+  ['MRBANGUR', 'MR Bangur Hospital, Kolkata', '701261', true], ['ASANSOLDISTRICT', 'Asansol District Hospital', '701275', true],
+  ['DISTRICTHOSPITALHOWRAH', 'District Hospital, Howrah', '701274', true], ['DISTRICTHOSPITALNADIA', 'District Hospital, Nadia (Krishnanagar)', '701272', true],
+  ['DISTRICTHOSPITALALIPURDUAR', 'District Hospital, Alipurduar', '701397', true], ['KALNASD', 'Kalna SD & SS Hospital', '701601', true],
+  ['COMMANDHOSPITAL', 'Command Hospital (Eastern Command), Kolkata', '', true],
+  ['KPCMEDICAL', 'KPC Medical College, Kolkata', '', false], ['IQCITY', 'IQ City Medical College, Durgapur', '', false],
+  ['GOURIDEVI', 'Gouri Devi Institute of Medical Sciences, Durgapur', '', false], ['JAGANNATHGUPTA', 'Jagannath Gupta Institute of Medical Sciences, Budge Budge', '', false],
+  ['RAMAKRISHNAMISSION', 'Ramakrishna Mission Seva Pratishthan, Kolkata', '', false], ['SHRRAMKRISHNA', 'Shri Ramkrishna Institute of Medical Sciences & Sanaka Hospitals, Durgapur', '', false],
+  ['ICAREINSTITUTE', 'ICARE Institute of Medical Sciences & Research, Haldia', '', false], ['JISSCHOOL', 'JIS School of Medical Science & Research, Howrah', '', false],
+];
+const wbKey = (s: string) => s.toUpperCase().replace(/[^A-Z]/g, '').replace(/OE(?=(MEDICAL|POST|CHILD|HYGIENE|PAED|TROPICAL))/g, 'OF').replace(/GOUR[IL]DEV[IL]/, 'GOURIDEVI').replace(/SHR[IL]RAM/, 'SHRRAM');
+const wbInst = (s: string) => { const k = wbKey(s); return WB_INST.find(([key]) => k.includes(key)); };
+const wbCat = (c: string) => { const s = c.replace(/\s+/g, ' ');
+  const base = /^UR|^General/i.test(s) ? 'Open' : /^OBC-A/i.test(s) ? 'OBC-A' : /^OBC-B/i.test(s) ? 'OBC-B' : /^OBC/i.test(s) ? 'OBC' : /^EWS/i.test(s) ? 'EWS' : /^SC/i.test(s) ? 'SC' : /^ST/i.test(s) ? 'ST' : s;
+  return base + (/PwD/i.test(s) ? ' PwD' : ''); };
+const WB_SPEC: [RegExp, string][] = [
+  [/ANAESTH/, 'ANAESTHESIOLOGY'], [/GENERALMEDICINE|^MD\(?GENERAL$/, 'GENERAL MEDICINE'], [/GENERALSURGERY/, 'GENERAL SURGERY'], [/PAEDIATRIC|CHILDHEALTH/, 'PAEDIATRICS'],
+  [/RADIO-?DIAGNOSIS/, 'RADIODIAGNOSIS'], [/RADIOTHERAPY|RADIATIONONCOLOGY/, 'RADIATION ONCOLOGY'], [/OPHTHALMOLOGY/, 'OPHTHALMOLOGY'], [/GYNAE|OBSTETRIC/, 'OBSTETRICS & GYNAECOLOGY'],
+  [/ORTHOPAEDIC/, 'ORTHOPAEDICS'], [/E\.?N\.?T|OTORHINO/, 'OTORHINOLARYNGOLOGY'], [/PATHOLOGY/, 'PATHOLOGY'], [/PSYCHIATRY/, 'PSYCHIATRY'], [/COMMUNITY|PREVENTIVE/, 'COMMUNITY MEDICINE'],
+  [/RESPIRATORY|TUBERCULOSIS|PULMONA/, 'RESPIRATORY MEDICINE'], [/PHARMACOLOGY/, 'PHARMACOLOGY'], [/DERM|VENEREOLOGY/, 'DERMATOLOGY, VENEREOLOGY & LEPROSY'], [/MICROBIOLOGY/, 'MICROBIOLOGY'],
+  [/BIOCHEMISTRY/, 'BIOCHEMISTRY'], [/PHYSIOLOGY/, 'PHYSIOLOGY'], [/TRANSFUSION|IMMUNO/, 'IMMUNOHAEMATOLOGY & BLOOD TRANSFUSION'], [/PHYSICALMED|REHABILITATION/, 'PHYSICAL MEDICINE & REHABILITATION'],
+  [/FORENSIC/, 'FORENSIC MEDICINE'], [/GERIATRIC/, 'GERIATRICS'], [/ANATOMY/, 'ANATOMY'],
+];
+const wbCourse = (c: string) => {
+  const k = c.toUpperCase().replace(/\s+/g, ''), spec = WB_SPEC.find(([re]) => re.test(k))?.[1];
+  if (!spec) return c;
+  if (/^\(NBEMS/.test(k)) return `(NBEMS) ${spec}`;
+  if (/^DIP/.test(k)) return ({ 'OBSTETRICS & GYNAECOLOGY': 'Diploma in Obstetrics and Gynaecology', OPHTHALMOLOGY: 'Diploma in Ophthalmology', PAEDIATRICS: 'Diploma in Child Health', ANAESTHESIOLOGY: 'Diploma in Anaesthesiology' } as Record<string, string>)[spec] ?? `Diploma in ${spec}`;
+  return `MD/MS ${spec}`;
+};
+const STATE_FILES = readdirSync('data/parsed').filter((f) => /^(mh|ka|kl|ap|rj|tg|gj|mp|hr|bh|pb|cg|hp|jk|ga|up|as|od|wb)20\d\d_[a-z0-9_]+\.json$/.test(f) && !/merit|_oc$/.test(f)).map((f) => f.replace('.json', ''));
 
 // ---- rounds ----
 const files = readdirSync('data/parsed').filter((f) => /^mcc20\d\d_[a-z0-9]+\.json$/.test(f)).map((f) => f.replace('.json', ''))
@@ -652,6 +696,16 @@ rounds.forEach((rd, ri) => {
       const ii = instIndex('GA GMC', rd.year, { display: 'Goa Medical College, Bambolim', code: '700479', state: 'Goa' });
       const c = r.allottedCategory.toUpperCase().replace(/^DR-/, ''), seat = ({ GEN: 'Open', OBC: 'OBC', SC: 'SC', ST: 'ST', EWS: 'EWS' } as Record<string, string>)[c] ?? c;
       rows.push(ri, r.rank, ii, course.get(normCourse(`MD/MS ${r.course}`)), quota.get('Goa State Quota'), acat.get(seat), ccat.get(seat === 'Open' ? 'General' : seat), r.page);
+      continue;
+    }
+    if (rd.counselling === 'West Bengal') {
+      const m = wbInst(r.institute);
+      if (!m) { unknownMp.add(`WB ${r.institute}`); continue; }
+      const ii = instIndex(`WB ${m[0]}`, rd.year, { display: m[1], code: m[2], state: 'West Bengal' });
+      const qt = r.quota.toLowerCase();
+      const q = /nri/.test(qt) ? 'NRI' : /management/.test(qt) ? 'Management' : /in-?service/.test(qt) ? (/dnb/.test(qt) ? 'In-service (DNB)' : 'In-service') : m[3] ? 'State Quota' : 'Private (state quota)';
+      const seat = /nri|management/.test(qt) ? 'Open' : wbCat(r.allottedCategory);
+      rows.push(ri, r.rank, ii, course.get(normCourse(wbCourse(r.course))), quota.get(`West Bengal ${q}`), acat.get(seat), ccat.get(wbCat(r.candidateCategory).replace(/^Open/, 'General')), r.page);
       continue;
     }
     if (rd.counselling === 'Odisha') {

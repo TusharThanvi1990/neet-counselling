@@ -69,7 +69,7 @@ export default function SourcesPage() {
         </p>
         <h2>Current limits</h2>
         <ul>
-          <li>MCC counselling (All India, deemed, central universities, DNB) plus state counselling 2025 for Maharashtra, Karnataka, Kerala, Andhra Pradesh, Rajasthan, Telangana, Gujarat, Madhya Pradesh, Bihar, Punjab, Chhattisgarh, Himachal Pradesh, Jammu & Kashmir and Goa (2026 Round 1 too for Gujarat, Madhya Pradesh, Punjab, Chhattisgarh and Goa), Uttar Pradesh 2026 Round 1, Haryana Round 1, Assam Round 2 and Odisha Round 1 2025. Other states are being added.</li>
+          <li>MCC counselling (All India, deemed, central universities, DNB) plus state counselling 2025 for Maharashtra, Karnataka, Kerala, Andhra Pradesh, Rajasthan, Telangana, Gujarat, Madhya Pradesh, Bihar, Punjab, Chhattisgarh, Himachal Pradesh, Jammu & Kashmir and Goa (2026 Round 1 too for Gujarat, Madhya Pradesh, Punjab, Chhattisgarh and Goa), Uttar Pradesh 2026 Round 1, Haryana Round 1, Assam Round 2, Odisha Round 1 and West Bengal Round 2 + stray 2025 (West Bengal read by OCR). Other states are being added.</li>
           <li>Maharashtra lists show the state merit number; the All India Rank comes from the State CET Cell’s Common State Merit List.</li>
           <li>Karnataka (KEA) lists print the All India Rank directly. Private colleges in Karnataka do not take part in MCC counselling, so they have no MCC fee profile.</li>
           <li>Kerala (CEE) lists print the All India Rank. For Kerala’s in-service quotas we show the All India Rank; CEE ranks those seats on its separate service list.</li>

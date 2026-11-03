@@ -41,7 +41,7 @@ All ranks shown on the site are All India Ranks. Where a state prints only its o
 | **Uttar Pradesh** | ⛔ lists removed, no copies | ✅ R1 | added 2026-11-03 |
 | **Assam** | 🟡 R2 only | ⏳ | added 2026-11-03; R1/R3/stray were notices without lists |
 | **Odisha** | 🟡 R1 + upgraded R1 (admitted list) | ⏳ R1 due 5 Nov | added 2026-11-03 from Internet Archive copies |
-| West Bengal | 📥 R1, R2, R3 + stray-eligible list downloaded | ⏳ R1 due 4 Nov | PDFs use fonts with no text mapping → need OCR |
+| **West Bengal** | 🟡 R2 (all seats held after R2) + stray | ⏳ R1 due 4 Nov | added 2026-11-03. Result PDFs have no text mapping, read with NamahaPDF OCR (`pipeline/ocr-grid.ts`). R1 and R3 result files not found in any archive snapshot |
 | Tamil Nadu | ⛔ needs NBEMS 2025 result | ⏳ R1 not out (PwD list out 31 Oct) | 2025 lists give TN rank + roll no. only; the 2025 NBEMS result is offline and not archived |
 | Delhi | ✅ via MCC | ✅ via MCC | DU / IP University quotas are MCC rounds |
 | Jharkhand | ⛔ portal reset | ⏳ R1 due 3–4 Nov | |

@@ -9,7 +9,7 @@ import { fmt, hrefWith, type SearchParams } from '@/lib/url';
 
 export const metadata: Metadata = { title: 'NEET PG College Predictor' };
 
-const STATE_QUOTA = /^(Maharashtra|Karnataka|Kerala|Andhra Pradesh|Rajasthan|Telangana|Gujarat|Madhya Pradesh|Haryana|Bihar|Punjab|Chhattisgarh|Himachal Pradesh|Jammu & Kashmir|Goa|Uttar Pradesh|Assam|Odisha) /;
+const STATE_QUOTA = /^(Maharashtra|Karnataka|Kerala|Andhra Pradesh|Rajasthan|Telangana|Gujarat|Madhya Pradesh|Haryana|Bihar|Punjab|Chhattisgarh|Himachal Pradesh|Jammu & Kashmir|Goa|Uttar Pradesh|Assam|Odisha|West Bengal) /;
 
 export default async function PredictorPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const sp = await searchParams;
