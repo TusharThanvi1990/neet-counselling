@@ -542,9 +542,11 @@ const CG_CAT: Record<string, string> = { UR: 'Open', OBC: 'OBC', SC: 'SC', ST: '
  *  In-service doctors (bonus marks) get their own quota. Female-reserved seats are shown with their category. */
 const cgSeat = (quota: string, cat: string, govt: boolean, inService: boolean): [string, string] => {
   const q = quota.replace(/\s+/g, '').toLowerCase(), c = CG_CAT[cat.split('-')[0].toUpperCase()] ?? cat;
-  if (q.startsWith('nri')) return ['NRI', 'Open'];
+  if (q.startsWith('nri') || q === 'nr') return ['NRI', 'Open'];
   if (inService) return ['In-service (bonus marks)', c];
   const base = govt ? 'State Quota' : 'Private (state quota)';
+  if (q === 'gq') return [base, c]; // 2024 lists: one government quota, before the institutional/open split
+  if (q.startsWith('mgmt')) return ['Management', c];
   return [q.includes('open') ? `${base} (open)` : `${base} (institutional)`, c];
 };
 const cgCourse = (p: string) => (/\bPMR\b/i.test(p) ? 'MD Physical Medicine & Rehabilitation' : /DERM|SKIN|VENE/i.test(p) ? 'MD Dermatology' : p);

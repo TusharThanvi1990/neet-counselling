@@ -25,7 +25,14 @@ const ROUNDS: [string, number, string, string][] = [ // [file, year, round label
   ['cg2025_r4', 2025, 'Stray', B + '2026/02/202602241888559331.pdf'],
   ['cg2025_r5', 2025, 'Special stray', B + '2026/02/2026022793203666.pdf'],
   ['cg2026_r1', 2026, 'Round 1', B + '2026/10/202610311822194150.pdf'],
+  // 2024 (files found through Internet Archive listings of the DME uploads folder; still on the CDN). These lists have
+  // no remarks column, so a seat held from the previous round is spotted by roll number and dropped.
+  ['cg2024_r1', 2024, 'Round 1', B + '2024/12/2024120215.pdf'],
+  ['cg2024_r2', 2024, 'Round 2', B + '2024/12/2024121840.pdf'],
+  ['cg2024_r3', 2024, 'Mop-up', B + '2025/02/2025021050-1.pdf'],
+  ['cg2024_r4', 2024, 'Stray', B + '2025/03/2025030953.pdf'],
 ];
+const held = new Map<string, string>(); // `${year}|${roll}` → seat in the previous round (2024 only)
 const key = (s: string) => (s ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
 const clean = (s: string) => (s ?? '').replace(/\s+/g, ' ').trim();
 const bump = (m: Map<string, number>, k: string) => m.set(k, (m.get(k) ?? 0) + 1);
@@ -38,8 +45,8 @@ for (const [file, year, label, url] of ROUNDS) {
       const ks = cells.map(key);
       if (ks.some((k) => k.startsWith('allottedinstitute'))) {
         const f = (re: RegExp) => ks.findIndex((k) => re.test(k));
-        col = { inst: f(/^allottedinstitute/), prog: f(/^allottedprogram/), quota: f(/^allotedquota/), cat: f(/^allotedcat/), gender: f(/^allottedgender/),
-          rank: f(/neetrank$/), ccat: f(/^candidatecategory/), ph: f(/^ph$/), type: f(/^candidaturetype/), remark: f(/^remark/) };
+        col = { roll: f(/rollno$/), inst: f(/^allottedinstitute/), prog: f(/^(allottedprogram|appliedcourse)/), quota: f(/^allotedquota/), cat: f(/^allotedcat/), gender: f(/^allottedgender/),
+          rank: f(/(neetrank|neetoverallrank)$/), ccat: f(/^candidatecategory/), ph: f(/^ph$/), type: f(/^candidaturetype/), remark: f(/^remark/) };
         continue;
       }
       if (!col || !/^\d+$/.test(cells[0] ?? '')) continue;
@@ -50,6 +57,11 @@ for (const [file, year, label, url] of ROUNDS) {
       const remark = get(col.remark);
       bump(remarks, remark);
       if (/retain|no\s*change|not\s*upgrad|same/i.test(remark)) continue; // seat held from an earlier round
+      if (year === 2024) {
+        const k = `${year}|${get(col.roll)}`, seat = [col.inst, col.prog, col.quota, col.cat].map(get).join('|');
+        if (held.get(k) === seat) continue;
+        held.set(k, seat);
+      }
       const type = get(col.type);
       bump(quotas, get(col.quota)); bump(cats, get(col.cat)); bump(insts, get(col.inst)); bump(progs, get(col.prog)); bump(types, type);
       out.push({ rank, quota: get(col.quota), inService: /in\s*-?\s*service/i.test(type), institute: get(col.inst), course: get(col.prog), allottedCategory: get(col.cat),
