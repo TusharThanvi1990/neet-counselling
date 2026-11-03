@@ -298,6 +298,19 @@ college('hr2025', {
   ],
 });
 
+// Odisha: Govt of Odisha SD&TE notification No. SDTE-HTE-HTE-I-0010-2017/5332 dt 16-08-2025 (fees w.e.f. 2025-26,
+// odishajee.com/news_document/5332_374.pdf). Hi-Tech Bhubaneswar: Anatomy/Physiology/Biochemistry, para-clinical, clinical;
+// Hi-Tech Rourkela: para-clinical and clinical only.
+college('od2025', {
+  state: 'Odisha', year: 2025, label: 'Govt of Odisha fee notification 16-08-2025 (Hi-Tech colleges)',
+  source: 'https://odishajee.com/news_document/5332_374.pdf',
+  quotas: { all: '^(Private \\(state quota\\)|Management)$' },
+  colleges: [
+    { inst: 'OD HI-TECH MCH BHUBANESWAR', name: 'Hi-Tech Medical College & Hospital, Bhubaneswar', fees: { all: [1733500, 867000, 693500] } },
+    { inst: 'OD HI-TECH MCH ROURKELA', name: 'Hi-Tech Medical College & Hospital, Rourkela', fees: { all: [1281000, 641000, 0] } },
+  ],
+});
+
 // Bihar: each private college's PGMAC-2025 fee letter to BCECEB (bceceboard.bihar.gov.in/pdf_Web/PGMAC25_FSTR.pdf, scans,
 // transcribed from the page images). Yearly tuition for general / minority seats; NRI fees are in US dollars and not recorded.
 const bh = (o: Record<string, number>) => ({ gen: Object.fromEntries(Object.entries(o).map(([k, v]) => [k, v * L])) });
