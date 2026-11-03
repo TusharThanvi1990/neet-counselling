@@ -108,6 +108,7 @@ export default async function PredictorPage({ searchParams }: { searchParams: Pr
                     <span>{o.seatCategory} seat</span>
                     {o.state && <span>· {o.state}</span>}
                     {o.seats != null && <span>· {o.seats} seat{o.seats === 1 ? '' : 's'}</span>}
+                    {o.fee && <span title={`${o.fee.source}, ${o.fee.year}`}>· ₹{fmt(o.fee.fee)} tuition/yr</span>}
                   </div>
                 </div>
                 <div className="figures">

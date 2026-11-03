@@ -677,6 +677,12 @@ const rounds: RoundInfo[] = [
 ].sort((a, b) => a.year - b.year || (a.counselling === 'MCC' ? 0 : 1) - (b.counselling === 'MCC' ? 0 : 1) || a.counselling.localeCompare(b.counselling)
   || ROUND_ORDER.indexOf(a.label) - ROUND_ORDER.indexOf(b.label));
 const rows: number[] = [];
+// yearly tuition fee per (institute, course, quota) from state sources; the latest year wins
+const fees = new Map<string, { fee: number; year: number; src: string }>();
+const setFee = (ii: number, ci: number, qi: number, fee: number, year: number, src: string) => {
+  const k = `${ii}.${ci}.${qi}`, cur = fees.get(k);
+  if (!cur || year >= cur.year) fees.set(k, { fee, year, src });
+};
 const unknownMp = new Set<string>();
 for (const rd of rounds.filter((x) => x.counselling === 'Rajasthan')) for (const r of load(`data/parsed/${rd.id}.json`).rows) {
   const nk = r.institute.toLowerCase().replace(/[^a-z]/g, ''), cur = rjBest.get(nk);
@@ -837,7 +843,9 @@ rounds.forEach((rd, ri) => {
       const ii = instIndex(`KA ${r.collegeCode || r.institute}`, rd.year, { display: r.institute.replace(/\s+/g, ' ').replace(/\s*,\s*$/, '').replace(/,(?=\S)/g, ', '), code, state: 'Karnataka' });
       const [q, seat] = kaSeat(r.allottedCategory, r.seatType, rd.counselling.endsWith('in-service'));
       const cand = seat.startsWith('Open') ? 'Not stated' + (seat.endsWith('PwD') ? ' PwD' : '') : seat;
-      rows.push(ri, r.rank, ii, course.get(normCourse(kaCourse(r.course))), quota.get(`Karnataka ${q}`), acat.get(seat), ccat.get(cand), r.page);
+      const ci = course.get(normCourse(kaCourse(r.course))), qi = quota.get(`Karnataka ${q}`);
+      rows.push(ri, r.rank, ii, ci, qi, acat.get(seat), ccat.get(cand), r.page);
+      if (r.fee > 0) setFee(ii, ci, qi, r.fee, rd.year, 'Karnataka KEA allotment lists');
       continue;
     }
     rows.push(ri, r.rank, instIndex(r.institute, rd.year), course.get(normCourse(r.course)), quota.get(normQuota(r.quota)),
@@ -846,6 +854,21 @@ rounds.forEach((rd, ri) => {
   rd.count = d.rows.length;
   console.log(`${rd.id}: ${d.rows.length}`);
 });
+
+// ---- state fee files (pipeline/states/fees.ts) ----
+{
+  const gj = load('data/parsed/fees_gj2025.json'), courseIdx = new Map(course.arr.map((c, i) => [c, i]));
+  const GJF: Record<string, string> = { GQ: 'Gujarat State Quota', MQ: 'Gujarat Management', NQ: 'Gujarat NRI' };
+  let n = 0, miss = 0;
+  for (const r of gj.rows) {
+    const ii = instM.get(norm(`GJ ${r.collegeCode}`));
+    const name = r.course.replace(/^(MD|MS)\s*-\s*/, '').replace(/^DIPLOMA-/, '').replace(/\s*\([^)]*\)?\s*$/, '').replace(/Anesthesiology/, 'Anaesthesiology').replace(/Gynecology/, 'Gynaecology');
+    const ci = courseIdx.get(normCourse(/^Diploma/i.test(name) ? name : gjCourse(name)));
+    if (ii == null || ci == null) { miss++; continue; }
+    for (const [k, label] of Object.entries(GJF)) if (r[k]) { setFee(ii, ci, quota.get(label), r[k], gj.year, 'Gujarat ACPPGMEC fee structure'); n++; }
+  }
+  console.log(`fees: Gujarat ${n} (${miss} fee rows without a matching college/course); total ${fees.size}`);
+}
 
 // ---- seat matrices → [year, code index, course, quota, seat category, seats] ----
 const SM_CAT: Record<string, string> = { OP: 'Open', EW: 'EWS', BC: 'OBC', SC: 'SC', ST: 'ST' };
@@ -880,6 +903,8 @@ const data = {
   quota: quota.arr.map((q) => [slug(q), QUOTA_LABEL[q] ?? q]),
   acat: acat.arr, ccat: ccat.arr, rows,
   matrix: smRows,
+  // [institute, course, quota, yearly tuition fee, year, source index]
+  fees: (() => { const srcs = [...new Set([...fees.values()].map((f) => f.src))]; return { sources: srcs, rows: [...fees].map(([k, f]) => [...k.split('.').map(Number), f.fee, f.year, srcs.indexOf(f.src)]) }; })(),
   matrixSources: Object.entries(SM_SOURCES).map(([id, path]) => ({ year: Number(id.slice(2, 6)), kind: KIND_TYPE[id.slice(7)], url: U + path, seats: smCount.get(`${id.slice(2, 6)} ${id.slice(7)}`) ?? 0 })),
   profiles: Object.fromEntries(Object.entries(profiles).filter(([c]) => codeIdx.has(c))),
   profileSource: 'https://mcc.admissions.nic.in/Applicant/Report/ViewInstituteProfileDynamic.aspx?enc=b3y6S6rqn323+Rrps4aJmWq6uDzwcVyR2D994Iqx3miWKIwOHdAUl7I6zs1LI/bNq85fKhJWyvHvAMhgNvbzOg==',

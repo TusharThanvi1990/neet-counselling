@@ -104,6 +104,8 @@ export type Option = {
   branchId: string; branch: string; quotaId: string; quota: string; seatCategory: string;
   closingRank: number; openingRank: number; allotted: number; seats: number | null; margin: number;
   closingRound: string; pdf: string;
+  /** Yearly tuition fee for this college, branch and quota, where a state source lists it. */
+  fee: { fee: number; year: number; source: string } | null;
 };
 
 function toOption(g: Group, year: number, rank: number, band: Band): Option {
@@ -114,6 +116,7 @@ function toOption(g: Group, year: number, rank: number, band: Band): Option {
     branchId: course.id, branch: course.label, quotaId: quota.id, quota: quota.label, seatCategory: d.acat[g.acat],
     closingRank: g.close, openingRank: g.open, allotted: g.n, seats, margin: g.close - rank,
     closingRound: d.rounds[g.closeRound].label, pdf: pdfHref(d, g.closeRound, g.closePage),
+    fee: d.fees.get(`${g.inst}.${g.course}.${g.quota}`) ?? null,
   };
 }
 

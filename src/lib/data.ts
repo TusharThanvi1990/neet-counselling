@@ -32,6 +32,8 @@ type Raw = {
   acat: string[];
   ccat: string[];
   rows: number[];
+  /** State tuition fees: rows of [institute, course, quota, yearly fee, year, source index]. */
+  fees?: { sources: string[]; rows: number[][] };
 };
 
 export type Dataset = {
@@ -54,6 +56,8 @@ export type Dataset = {
   seatIndex: Map<string, number>;
   /** institute index → code index (-1 when the institute could not be linked to an MCC code). */
   instCode: Int32Array;
+  /** `${inst}.${course}.${quota}` → yearly tuition fee from a state source. */
+  fees: Map<string, { fee: number; year: number; source: string }>;
   /** Column arrays, one entry per allotment. */
   col: { rd: Int32Array; rank: Int32Array; inst: Int32Array; course: Int32Array; quota: Int32Array; acat: Int32Array; ccat: Int32Array; page: Int32Array };
   n: number;
@@ -103,6 +107,7 @@ export function getData(): Dataset {
     instCode: Int32Array.from(inst, (x) => (x.code ? codeIndex.get(x.code) ?? -1 : -1)),
     states: [...new Set(inst.map((i) => i.state).filter(Boolean))].sort(),
     col, n,
+    fees: new Map((raw.fees?.rows ?? []).map(([i, c, q, fee, year, src]) => [`${i}.${c}.${q}`, { fee, year, source: raw.fees!.sources[src] }])),
     index: {
       inst: new Map(inst.map((x, i) => [x.id, i])),
       course: new Map(course.map((x, i) => [x.id, i])),
