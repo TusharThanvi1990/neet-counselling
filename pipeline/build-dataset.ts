@@ -884,6 +884,27 @@ rounds.forEach((rd, ri) => {
     if (fee && !fees.has(`${ii}.${rows[k + 3]}.${qi}`)) { setFee(ii, rows[k + 3], qi, fee, 2025, 'Rajasthan NEET PG Board fee table'); rj++; }
   }
   console.log(`fees: Rajasthan ${rj}; total ${fees.size}`);
+  // Government colleges in every state: the state-quota / in-service tuition is the college's own fee, which it declares to MCC
+  // (institute profile, year-1 fee). Used only where no state source gave a fee, and never for management / NRI / private seats.
+  const govQuota = (label: string) => /State Quota|Government|In-service/.test(label) && !/Private|Management|NRI|Minority|Self-finance/.test(label);
+  // MCC's own rounds (AIQ, deemed, central, DNB): the fee the institute declared to MCC; NRI seats use the declared NRI fee.
+  const firstFee = (...v: unknown[]) => v.map(Number).find((x) => x > 1000) ?? 0;
+  const MCC_QUOTAS = new Set(Object.values(QUOTA));
+  let mcc = 0, aiq = 0;
+  for (let k = 0; k < rows.length; k += 8) {
+    const ii = rows[k + 2], code = inst[ii][3], qi = rows[k + 4], ci = rows[k + 3], label = quota.arr[qi];
+    const p = code ? profiles[code] : undefined, key = `${ii}.${ci}.${qi}`;
+    if (!p || fees.has(key)) continue;
+    if (MCC_QUOTAS.has(label)) {
+      const fee = /Non-Resident|NRI/.test(label) ? firstFee(p.nriFeeY1) : firstFee(p.feeY1, p.annualFee, p.feeAtAdmission);
+      if (fee) { setFee(ii, ci, qi, fee, 2026, 'MCC institute profile'); aiq++; }
+      continue;
+    }
+    if (!registry.get(code)?.kinds.has('aiq') || !govQuota(label)) continue;
+    const fee = firstFee(p.feeY1, p.annualFee, p.feeAtAdmission);
+    if (fee) { setFee(ii, ci, qi, fee, 2026, 'MCC institute profile (government college fee)'); mcc++; }
+  }
+  console.log(`fees: MCC seats from profiles ${aiq}; state government colleges from MCC profiles ${mcc}; total ${fees.size}`);
 }
 
 // ---- seat matrices → [year, code index, course, quota, seat category, seats] ----
