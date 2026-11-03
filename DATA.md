@@ -61,7 +61,7 @@ All ranks shown on the site are All India Ranks. Where a state prints only its o
 | Official notices feed + alerts | 🟡 | ✅ /notices reads MCC + 10 state sites hourly. ⬜ Other states load notices by script (linked only). ⬜ Email/push alerts |
 | INI-CET (AIIMS, JIPMER, PGIMER) | ⬜ | Gettable (AIIMS publishes round PDFs) but a separate exam with its own rank: needs its own predictor input and pages |
 | NEET MDS (dental) | ⬜ | Gettable, but a separate exam and dataset (dental colleges, MDS branches) |
-| State data before 2025 | 🟡 | ✅ 2024: Kerala, Maharashtra (R3 list lost; later-round candidates partly without AIR), Telangana, Madhya Pradesh, Himachal (R1–R3), West Bengal (R2, R3, stray, special stray; R1 never archived), Gujarat (final closing ranks; also 2023). ⛔ 2024: Andhra Pradesh, Bihar, Karnataka (files removed), Odisha (lists give no AIR). ⏳ Assam 2024 (site returned 404 for all files today; retry), Punjab, J&K, Chhattisgarh, Goa, Haryana, Rajasthan not yet checked |
+| State data before 2025 | 🟡 | ✅ 2024: Kerala, Maharashtra (R3 list lost; later-round candidates partly without AIR), Telangana, Madhya Pradesh, Himachal (R1–R3), West Bengal (R2, R3, stray, special stray; R1 never archived), Gujarat (final closing ranks; also 2023). ⛔ 2024: Andhra Pradesh, Bihar, Karnataka (files removed); Odisha and Punjab (2024 lists and merit lists give only state percentile / state rank, no All India Rank — NBEMS gave states percentiles in 2024). ⏳ Assam 2024 (site returned 404 for all files today; retry), J&K, Chhattisgarh, Goa, Haryana, Rajasthan not yet checked |
 
 ## 4. Rank conversion sources (not shown on the site, used by the parsers)
 
