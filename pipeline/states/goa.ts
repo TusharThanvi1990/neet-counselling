@@ -66,3 +66,51 @@ const top = (m: Map<string, number>) => Object.fromEntries([...m].sort((a, b) =>
 console.log('categories', top(cats));
 console.log('groups', top(groups));
 console.log('codes', Object.fromEntries(codesSeen));
+
+// ---- 2024 (Internet Archive copies of the DTE files; the site reuses file names every year) ----
+// The 2024 lists are cumulative: every merit-list candidate with the seat they hold after that round (Round 2's list
+// was never archived, so Round 3 changes include Round 2's). A seat counts for a round only when it differs from the
+// candidate's seat in the previous list. Header rows are split over two lines, so cells are found by content:
+// [Merit No, Reg No, (Name), NEET PG AIR, Category, (Category 2), Course code, (Allotted category), (Remarks)].
+const A = 'https://web.archive.org/web/';
+const R24: [string, string, string][] = [
+  ['ga2024_a', 'Round 1', A + '20250828102418/https://dte.goa.gov.in/sites/default/files/pgmedseatallotment2024.pdf'],
+  ['ga2024_c', 'Round 3', A + '20250828100722/https://dte.goa.gov.in/sites/default/files/pgmedallotrd3.pdf'],
+  ['ga2024_stray', 'Stray', A + '20250828102428/https://dte.goa.gov.in/sites/default/files/pgmedseatallotystrayrnd.pdf'],
+  ['ga2024_sstray', 'Special stray', A + '20250319040628/https://dte.goa.gov.in/sites/default/files/pgmedspstrayrnd.pdf'],
+];
+const OUT24: Record<string, string> = { ga2024_a: 'ga2024_r1', ga2024_c: 'ga2024_r3', ga2024_stray: 'ga2024_stray', ga2024_sstray: 'ga2024_sstray' };
+const air24 = new Map<string, number>(); // reg no → AIR, from the state merit list
+for await (const pg of readPages(new Uint8Array(readFileSync(`${RAW}/ga2024_merit.pdf`)))) {
+  for (const cells of gridTable(pg).rows) {
+    const c = cells.map(clean);
+    if (/^\d+$/.test(c[0]) && /^\d+$/.test(c[1]) && /^\d+$/.test(c[c.length - 1])) air24.set(c[1], Number(c[c.length - 1]));
+  }
+}
+console.log(`2024 merit list: ${air24.size} reg nos with an AIR`);
+const held = new Map<string, string>();
+for (const [file, label, url] of R24) {
+  const out: any[] = [];
+  let listed = 0, same = 0;
+  for await (const pg of readPages(new Uint8Array(readFileSync(`${RAW}/${file}.pdf`)))) {
+    for (const cells of gridTable(pg).rows) {
+      const c = cells.map(clean);
+      while (c.length && c[0] === '') c.shift();
+      if (!/^\d+$/.test(c[0] ?? '') || !/^\d{3}$/.test(c[1] ?? '')) continue;
+      const reg = c[1], ci = c.findIndex((x, i) => i > 1 && !!CODES[x]);
+      if (ci < 0) continue; // no seat (blank or OCNA)
+      const ri = c.findIndex((x, i) => i > 1 && /^\d+$/.test(x));
+      const rank = air24.get(reg) ?? (ri >= 0 && ri < ci ? Number(c[ri]) : 0);
+      if (!rank) continue;
+      listed++;
+      const code = c[ci], cat = c[ri + 1] || 'GEN', acat = c[ci + 1] && /^[A-Z/]{2,}$/.test(c[ci + 1]) ? c[ci + 1] : cat;
+      const seat = `${code}|${acat}`;
+      if (held.get(reg) === seat) { same++; continue; }
+      held.set(reg, seat);
+      out.push({ rank, quota: 'State', institute: 'GOA MEDICAL COLLEGE', courseCode: code, course: CODES[code], allottedCategory: acat, candidateCategory: cat, remarks: '', page: pg.index + 1 });
+    }
+  }
+  out.sort((a, b) => a.rank - b.rank);
+  writeFileSync(`data/parsed/${OUT24[file]}.json`, JSON.stringify({ source: url, url, counselling: 'Goa', year: 2024, round: label, rows: out }));
+  console.log(`${OUT24[file]}: ${out.length} new seats (${listed} listed, ${same} held from the previous list)`);
+}
