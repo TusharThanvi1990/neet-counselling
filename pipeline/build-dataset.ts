@@ -951,6 +951,17 @@ rounds.forEach((rd, ri) => {
     }
     console.log(`fees: Punjab ${n}; total ${fees.size}`);
   }
+  // Kerala government colleges: CEE PG Medical 2025 prospectus §3.1 (G.O.(Ms)No.92/2023/H&FWD dt 19-04-2023): annual tuition
+  // ₹57,890. Self-financing colleges' fees were notified separately and that notice has been removed from cee.kerala.gov.in.
+  {
+    let n = 0;
+    for (let k = 0; k < rows.length; k += 8) {
+      const ii = rows[k + 2], ci = rows[k + 3], qi = rows[k + 4], key = `${ii}.${ci}.${qi}`, [, full, state, code] = inst[ii];
+      if (state !== 'Kerala' || !full.startsWith('KL ') || !code || fees.has(key) || !/^Kerala (State Quota|In-service)$/.test(quota.arr[qi])) continue;
+      setFee(ii, ci, qi, 57890, 2025, 'CEE Kerala PG prospectus 2025 (G.O.(Ms)No.92/2023)'); n++;
+    }
+    console.log(`fees: Kerala government ${n}; total ${fees.size}`);
+  }
   // per-college fee orders (pipeline/states/fees.ts → data/parsed/fees_college_<state>.json)
   const unmatchedFee = new Set<string>();
   for (const f of readdirSync('data/parsed').filter((x) => x.startsWith('fees_college_'))) {
