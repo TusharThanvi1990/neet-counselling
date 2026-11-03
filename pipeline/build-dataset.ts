@@ -934,6 +934,7 @@ rounds.forEach((rd, ri) => {
     console.log(`fees: Madhya Pradesh ${n} (${miss} fee rows without a matching college/course); total ${fees.size}`);
   }
   // per-college fee orders (pipeline/states/fees.ts → data/parsed/fees_college_<state>.json)
+  const unmatchedFee = new Set<string>();
   for (const f of readdirSync('data/parsed').filter((x) => x.startsWith('fees_college_'))) {
     const fc = load(`data/parsed/${f}`), byInst = new Map<number, any>();
     for (const c of fc.colleges) { const ii = instM.get(norm(c.inst)); if (ii == null) console.log(`  ${f}: no institute ${c.inst}`); else byInst.set(ii, c); }
@@ -943,12 +944,19 @@ rounds.forEach((rd, ri) => {
       const ii = rows[k + 2], c = byInst.get(ii); if (!c) continue;
       const ci = rows[k + 3], qi = rows[k + 4], key = `${ii}.${ci}.${qi}`; if (fees.has(key)) continue;
       const label = quota.arr[qi].replace(`${fc.state} `, ''), kind = qre.find(([, re]) => re.test(label))?.[0];
-      const f3 = kind && c.fees[kind]; if (!f3) continue;
-      const g = group(ci), fee = g === 'clinical' ? f3[0] : g === 'para' ? f3[1] : f3[2];
+      if (!kind) continue;
+      let fee = 0;
+      if (c.fees?.[kind]) { const f3 = c.fees[kind], g = group(ci); fee = g === 'clinical' ? f3[0] : g === 'para' ? f3[1] : f3[2]; }
+      else if (c.courseFees?.[kind] && / \(MD\/MS\)$/.test(course.arr[ci])) {
+        const spec = course.arr[ci].replace(/ \(MD\/MS\)$/, '');
+        fee = c.courseFees[kind][spec] ?? 0;
+        if (!fee) unmatchedFee.add(`${fc.state}: ${spec}`);
+      }
       if (fee > 0) { setFee(ii, ci, qi, fee, fc.year, fc.label); n++; }
     }
     console.log(`fees: ${f} ${n}; total ${fees.size}`);
   }
+  if (unmatchedFee.size) console.log('  branches with allotments but no fee in the order:', [...unmatchedFee].join(', '));
   // MCC's own rounds (AIQ, deemed, central, DNB): the fee the institute declared to MCC; NRI seats use the declared NRI fee.
   const firstFee = (...v: unknown[]) => v.map(Number).find((x) => x > 1000) ?? 0;
   const MCC_QUOTAS = new Set(Object.values(QUOTA));

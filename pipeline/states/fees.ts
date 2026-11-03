@@ -84,7 +84,8 @@ console.log('fees_ap2025: category table written');
  * Course groups: pre-clinical = Anatomy / Physiology / Biochemistry; para-clinical = Pathology, Microbiology, Pharmacology,
  * Forensic Medicine, Community Medicine, Transfusion, Lab Medicine; clinical = the rest. "Non-clinical" in an order = pre + para.
  */
-type CollegeFees = { inst: string; name: string; fees: Record<string, [number, number, number]> };
+// fees: by course group; courseFees: by subject name (matched to the start of the site's branch label, e.g. "General Medicine").
+type CollegeFees = { inst: string; name: string; fees?: Record<string, [number, number, number]>; courseFees?: Record<string, Record<string, number>> };
 const college = (file: string, d: { state: string; year: number; source: string; label: string; quotas: Record<string, string>; colleges: CollegeFees[] }) => {
   writeFileSync(`data/parsed/fees_college_${file}.json`, JSON.stringify(d));
   console.log(`fees_college_${file}: ${d.colleges.length} colleges`);
@@ -105,5 +106,24 @@ college('wb2025', {
     { inst: 'WB KPCMEDICAL', name: 'KPC Medical College, Jadavpur', fees: wbAll(8.5 * L, 27 * L) },
     { inst: 'WB ICAREINSTITUTE', name: 'ICARE Institute of Medical Science and Research, Haldia', fees: { state: [9 * L, 3.9 * L, 3.9 * L], mgmt: [27 * L, 15.5 * L, 15.5 * L] } },
     { inst: 'WB JAGANNATHGUPTA', name: 'Jagannath Gupta Institute of Medical Sciences and Hospital', fees: wbAll(9 * L, 27 * L) },
+  ],
+});
+
+// Bihar: each private college's PGMAC-2025 fee letter to BCECEB (bceceboard.bihar.gov.in/pdf_Web/PGMAC25_FSTR.pdf, scans,
+// transcribed from the page images). Yearly tuition for general / minority seats; NRI fees are in US dollars and not recorded.
+const bh = (o: Record<string, number>) => ({ gen: Object.fromEntries(Object.entries(o).map(([k, v]) => [k, v * L])) });
+college('bh2025', {
+  state: 'Bihar', year: 2025, label: 'BCECEB PGMAC-2025 college fee letters',
+  source: 'https://bceceboard.bihar.gov.in/pdf_Web/PGMAC25_FSTR.pdf',
+  quotas: { gen: '^(Private \\(state quota\\)|Minority)$' },
+  colleges: [
+    { inst: 'BH KMCKATIHAR', name: 'Katihar Medical College', courseFees: bh({ 'General Medicine': 34.5, Paediatrics: 45, Orthopaedics: 45, 'Obstetrics & Gynaecology': 60, Anaesthesiology: 18, Dermatology: 45, 'General Surgery': 34.5, Radiodiagnosis: 60, Psychiatry: 22.65, ENT: 16.5, Ophthalmology: 22.5, Pathology: 7.5, 'Community Medicine': 7.5, Pharmacology: 2.5, Microbiology: 3.75, Biochemistry: 2.5, Physiology: 2.5, Anatomy: 2.5, 'Respiratory Medicine': 34.5 }) },
+    { inst: 'BH NMCHSASARAM', name: 'Narayan Medical College & Hospital, Sasaram', courseFees: bh({ 'General Medicine': 38, Paediatrics: 42.5, Orthopaedics: 42.5, 'Obstetrics & Gynaecology': 50, Anaesthesiology: 19.5, Dermatology: 49.5, 'General Surgery': 32.5, Radiodiagnosis: 55, ENT: 19.5, Ophthalmology: 19.5, Pathology: 12, Pharmacology: 2, Microbiology: 2.5, Biochemistry: 2, Physiology: 2, Anatomy: 2 }) },
+    { inst: 'BH MGMMCLSKHOSKISHANGANJ', name: 'Mata Gujri Memorial Medical College, Kishanganj', courseFees: bh({ Radiodiagnosis: 50, 'Obstetrics & Gynaecology': 50, 'General Medicine': 34.5, 'General Surgery': 32, Dermatology: 45, Orthopaedics: 40, Paediatrics: 40, Anaesthesiology: 18, Ophthalmology: 19, ENT: 15, Pathology: 7.5, Microbiology: 5, Pharmacology: 2, 'Community Medicine': 5, Anatomy: 2, Physiology: 2, Biochemistry: 2.5 }) },
+    { inst: 'BH RDJMMEDICALCOLLEGEANDHOSPITALTURKIMUZAFFARPUR', name: 'RDJM Medical College & Hospital, Turki', courseFees: bh({ Anatomy: 3, Physiology: 3, Orthopaedics: 40, Anaesthesiology: 19, 'Obstetrics & Gynaecology': 39, Ophthalmology: 22, ENT: 18, Pharmacology: 2.5, Microbiology: 3, Biochemistry: 2.5, Pathology: 12 }) },
+    { inst: 'BH LORDBUDHAKOSHIMEDICALCOLLEGEHOSPITALSAHARSA', name: 'Lord Buddha Koshi Medical College & Hospital, Saharsa', courseFees: bh({ 'General Medicine': 25.5, Paediatrics: 25.5, 'General Surgery': 17.5, Orthopaedics: 21.5, 'Obstetrics & Gynaecology': 33, Anaesthesiology: 11, Pathology: 9.8, Radiodiagnosis: 44, ENT: 15, Ophthalmology: 20, Physiology: 5, Biochemistry: 5, Pharmacology: 5, 'Respiratory Medicine': 35 }) },
+    { inst: 'BH SHRINARAYANMEDICALINSTITUTEANDHOSPITALSAHARSA', name: 'Shree Narayan Medical Institute & Hospital, Saharsa', courseFees: bh({ 'Obstetrics & Gynaecology': 38.5, 'General Medicine': 28, Paediatrics: 35.75, Orthopaedics: 37, 'General Surgery': 25, Anaesthesiology: 15, Pathology: 10, Radiodiagnosis: 47, Dermatology: 42, Ophthalmology: 21 }) },
+    { inst: 'BH MADHUBANIMEDICALCOLLEGEMADHUBANI', name: 'Madhubani Medical College', courseFees: bh({ 'General Medicine': 30, Paediatrics: 36, Anaesthesiology: 20, Dermatology: 40, Pathology: 10, 'General Surgery': 30, 'Obstetrics & Gynaecology': 40, Orthopaedics: 35, Ophthalmology: 20, ENT: 15, Radiodiagnosis: 55, Anatomy: 2.5, Physiology: 2, Biochemistry: 2.5, Pharmacology: 2.5, Microbiology: 4, 'Community Medicine': 6 }) },
+    { inst: 'BH NETAJISUBHASMEDICALCOLLEGEHOSPITAL', name: 'Netaji Subhas Medical College & Hospital, Bihta', courseFees: bh({ Anatomy: 4, Physiology: 4, Biochemistry: 4, Pathology: 8, Pharmacology: 4, Microbiology: 4, 'General Medicine': 31.5, Paediatrics: 33.5, Anaesthesiology: 19.25, 'Obstetrics & Gynaecology': 38.5, 'General Surgery': 29.25, Radiodiagnosis: 44.5, Ophthalmology: 20.5, Psychiatry: 23, Orthopaedics: 43.5, ENT: 20, Dermatology: 44 }) },
   ],
 });
