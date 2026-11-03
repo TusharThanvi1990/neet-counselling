@@ -587,7 +587,41 @@ const jkSeat = (sli: string, inst: string, inService: boolean): [string, string]
   return [/ASCOMS/i.test(inst) ? 'Private (state quota)' : 'State Quota', jkCat(sli)];
 };
 const jkCourse = (c: string) => c.replace(/^(MD|MS)\s*\/\s*(MD|MS)\s*/i, 'MD/MS ').replace(/^PG\s*Diploma\s*/i, 'Diploma ').replace(/^(MD|MS)(?=[A-Z])/, '$1 ').replace(/\bPediatric/i, 'Paediatric');
-const STATE_FILES = readdirSync('data/parsed').filter((f) => /^(mh|ka|kl|ap|rj|tg|gj|mp|hr|bh|pb|cg|hp|jk|ga)20\d\d_[a-z0-9_]+\.json$/.test(f) && !/merit|_oc$/.test(f)).map((f) => f.replace('.json', ''));
+// Uttar Pradesh (DGME UP): institute code on upneet.gov.in → MCC code (Government / AIQ code). Private colleges are not in MCC.
+const UP_CODES: Record<string, string> = {
+  '001': '903368', '002': '902829', '003': '902835', '005': '904571', '006': '902834', '007': '904573', '008': '902830', '009': '904583',
+  '010': '902832', '011': '904568', '012': '700329', '013': '700385', '014': '905699', '015': '902839', '016': '902833', '017': '701510',
+  '018': '902837', '019': '701515', '020': '701514', '021': '701694', '022': '701503', '023': '700384', '024': '700366', '025': '700370',
+  '026': '700372', '027': '700373', '028': '700527', '029': '700381', '030': '700376', '031': '700375', '032': '700377', '067': '904586',
+  '068': '904635', '069': '904636',
+};
+/** UP seat codes = category + sub-category: UR/EW/BC/SC/ST + OP (open) / PH (PwD). BS / SS appear only on diploma seats
+ *  taken by BC / SC candidates and are treated as OBC / SC. Candidate codes OB / OE / OS = reserved category from another
+ *  state, which UP counts as General. */
+const UP_CAT: Record<string, string> = { UR: 'Open', EW: 'EWS', BC: 'OBC', BS: 'OBC', SC: 'SC', SS: 'SC', ST: 'ST' };
+const upSeat = (c: string) => (UP_CAT[c.slice(0, 2)] ?? c.slice(0, 2)) + (c.slice(2) === 'PH' ? ' PwD' : '');
+const upCand = (c: string) => (/^(UR|OB|OE|OS)/.test(c) ? 'General' : upSeat(c)) + (/^UR/.test(c) && c.endsWith('PH') ? ' PwD' : '');
+const UP_DIPLOMA: Record<string, string> = { DA: 'D.A.', DCH: 'D.C.H.', DGO: 'D.G.O.', 'D ORTH': 'D.ORTHO', DMRD: 'D.M.R.D.', DVD: 'D.V.D.', DLO: 'D.L.O.' };
+const upCourse = (c: string) => UP_DIPLOMA[c] ? MH_DIPLOMA[UP_DIPLOMA[c]] : c.replace(/^(MD|MS) /, 'MD/MS ').replace('TRANSFUISION', 'TRANSFUSION').replace(/\bENT\b/, 'OTORHINOLARYNGOLOGY').replace(/\bANAESTHESIA\b/, 'ANAESTHESIOLOGY');
+// Assam (DME Assam): college code in the select list → MCC code.
+const AS_CODES: Record<string, string> = { '01': '700282', '02': '700283', '03': '700286', '04': '700294', '05': '700522', '06': '700511', '07': '700292', '08': '904585' };
+/** Assam quotas: UR / OBC/MOBC(NCL) / SC / ST(P) (plains) / ST(H) (hills) / EWS; SHQ = State Health service (in-service) quota. */
+const AS_CAT: Record<string, string> = { UR: 'Open', 'OBC/MOBC(NCL)': 'OBC', 'OBC/MOBC': 'OBC', SC: 'SC', 'ST(P)': 'ST (Plains)', 'ST(H)': 'ST (Hills)', EWS: 'EWS', General: 'Open' };
+const asCourse = (c: string) => ({ 'DIPLOMA PAEDIATRICS (D.C.H.)': 'Diploma in Child Health', 'DIPLOMA ANAESTHESIOLOGY': 'Diploma in Anaesthesiology', 'MD RADIO-THERAPY': 'MD/MS RADIATION ONCOLOGY' } as Record<string, string>)[c] ?? c.replace(/^(MD|MS) /, 'MD/MS ');
+// Odisha (PG Medical Counselling Committee): college as printed → [display name, MCC code]. Hi-Tech colleges are private.
+const OD_INST: Record<string, [string, string]> = {
+  'SCB MCH CUTTACK': ['SCB Medical College, Cuttack', '700336'], 'MKCG MCH BERHAMPUR': ['MKCG Medical College, Berhampur', '700335'],
+  'VIMSAR BURLA': ['VIMSAR, Burla', '700338'], 'PGIMER BHUBANESWAR': ['PGIMER & Capital Hospital, Bhubaneswar', '701713'],
+  'S J MCH PURI': ['Shri Jagannath Medical College & Hospital, Puri', '904332'], 'AHPGIC, CUTTACK': ['Acharya Harihar Post Graduate Institute of Cancer, Cuttack', '701714'],
+  'HI-TECH MCH BHUBANESWAR': ['Hi-Tech Medical College & Hospital, Bhubaneswar', ''], 'HI-TECH MCH ROURKELA': ['Hi-Tech Medical College & Hospital, Rourkela', ''],
+};
+const OD_CAT: Record<string, string> = { UR: 'Open', SC: 'SC', ST: 'ST', PH: 'Open PwD', GCH: 'Green Card Holder', ES: 'Ex-servicemen ward', SEBC: 'SEBC', EWS: 'EWS' };
+const odCand = (c: string) => (/^General/.test(c) ? 'General' : /^OBC/.test(c) ? 'SEBC' : c);
+const odCourse = (s: string, t: string) => {
+  const n = ({ 'GEN MEDICINE': 'GENERAL MEDICINE', 'GEN SURGERY': 'GENERAL SURGERY', 'RESP MEDICINE': 'RESPIRATORY MEDICINE', 'COMM MEDICINE': 'COMMUNITY MEDICINE', 'OBST AND GYNE': 'OBSTETRICS & GYNAECOLOGY', PEDIATRICS: 'PAEDIATRICS', ANESTHESIOLOGY: 'ANAESTHESIOLOGY' } as Record<string, string>)[s] ?? s;
+  return t === 'DNB' ? `(NBEMS) ${n}` : `MD/MS ${n}`;
+};
+const STATE_FILES = readdirSync('data/parsed').filter((f) => /^(mh|ka|kl|ap|rj|tg|gj|mp|hr|bh|pb|cg|hp|jk|ga|up|as|od)20\d\d_[a-z0-9_]+\.json$/.test(f) && !/merit|_oc$/.test(f)).map((f) => f.replace('.json', ''));
 
 // ---- rounds ----
 const files = readdirSync('data/parsed').filter((f) => /^mcc20\d\d_[a-z0-9]+\.json$/.test(f)).map((f) => f.replace('.json', ''))
@@ -618,6 +652,32 @@ rounds.forEach((rd, ri) => {
       const ii = instIndex('GA GMC', rd.year, { display: 'Goa Medical College, Bambolim', code: '700479', state: 'Goa' });
       const c = r.allottedCategory.toUpperCase().replace(/^DR-/, ''), seat = ({ GEN: 'Open', OBC: 'OBC', SC: 'SC', ST: 'ST', EWS: 'EWS' } as Record<string, string>)[c] ?? c;
       rows.push(ri, r.rank, ii, course.get(normCourse(`MD/MS ${r.course}`)), quota.get('Goa State Quota'), acat.get(seat), ccat.get(seat === 'Open' ? 'General' : seat), r.page);
+      continue;
+    }
+    if (rd.counselling === 'Odisha') {
+      const mgmt = /\(MGT\)/.test(r.institute), k = r.institute.replace(/\s*\(MGT\)/, '').trim(), m = OD_INST[k];
+      if (!m) unknownMp.add(`OD ${r.institute}`);
+      const ii = instIndex(`OD ${k}`, rd.year, { display: m?.[0] ?? k, code: m?.[1] ?? '', state: 'Odisha' });
+      const seat = mgmt ? 'Open' : OD_CAT[r.allottedCategory] ?? r.allottedCategory;
+      const q = mgmt ? 'Management' : r.inService ? 'In-service' : m?.[1] ? 'State Quota' : 'Private (state quota)';
+      rows.push(ri, r.rank, ii, course.get(normCourse(odCourse(r.course, r.courseType))), quota.get(`Odisha ${q}`), acat.get(seat), ccat.get(odCand(r.candidateCategory)), r.page);
+      continue;
+    }
+    if (rd.counselling === 'Assam') {
+      const code = AS_CODES[r.collegeCode] ?? '';
+      const ii = instIndex(`AS ${r.collegeCode}`, rd.year, { display: r.institute, code, state: 'Assam' });
+      const seat = r.inService ? (AS_CAT[r.candidateCategory] ?? r.candidateCategory) : AS_CAT[r.allottedCategory] ?? r.allottedCategory;
+      const cand = (AS_CAT[r.candidateCategory] ?? r.candidateCategory).replace(/^Open$/, 'General') + (r.pwd ? ' PwD' : '');
+      rows.push(ri, r.rank, ii, course.get(normCourse(asCourse(r.course))), quota.get(`Assam ${r.inService ? 'In-service (State Health Service)' : 'State Quota'}`), acat.get(seat + (r.pwd && !r.inService ? ' PwD' : '')), ccat.get(cand), r.page);
+      continue;
+    }
+    if (rd.counselling === 'Uttar Pradesh') {
+      const base = r.institute.replace(/\s*\((MUSLIM|JAIN)\s+MINORITY\)/i, ''), minority = base !== r.institute;
+      const code = UP_CODES[r.collegeCode] ?? '';
+      const ii = instIndex(`UP ${base.toLowerCase().replace(/[^a-z]/g, '')}`, rd.year, { display: titleCase(base).replace(/\bLko\b/, 'Lucknow').replace(/\bCollge\b/, 'College').replace(/\bUnivesity\b/, 'University').replace(/\bMeical\b/, 'Medical').replace(/\bBarilly\b/, 'Bareilly').replace(/ (Of|And) /g, (m) => m.toLowerCase()), code, state: 'Uttar Pradesh' });
+      const seat = upSeat(r.allottedCategory);
+      const q = r.inService ? 'In-service (bonus marks)' : minority ? 'Minority' : r.quota === 'Govt' ? 'State Quota' : 'Private (state quota)';
+      rows.push(ri, r.rank, ii, course.get(normCourse(upCourse(r.course))), quota.get(`Uttar Pradesh ${q}`), acat.get(seat), ccat.get(upCand(r.candidateCategory)), r.page);
       continue;
     }
     if (rd.counselling === 'Jammu & Kashmir') {
