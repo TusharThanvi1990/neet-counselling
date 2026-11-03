@@ -887,6 +887,31 @@ rounds.forEach((rd, ri) => {
   // Government colleges in every state: the state-quota / in-service tuition is the college's own fee, which it declares to MCC
   // (institute profile, year-1 fee). Used only where no state source gave a fee, and never for management / NRI / private seats.
   const govQuota = (label: string) => /State Quota|Government|In-service/.test(label) && !/Private|Management|NRI|Minority|Self-finance/.test(label);
+  // Course group used by fee orders: pre-clinical, para-clinical, clinical.
+  const PRE = /^(Anatomy|Physiology|Biochemistry) /, PARA = /^(Pathology|Microbiology|Pharmacology|Forensic Medicine|Community Medicine|Immunohaematology|Laboratory Medicine) /;
+  const group = (ci: number) => (PRE.test(course.arr[ci]) ? 'pre' : PARA.test(course.arr[ci]) ? 'para' : 'clinical');
+  const ap = load('data/parsed/fees_ap2025.json'), tg = load('data/parsed/fees_tg2023.json');
+  const tgBy = new Map<string, any>(tg.rows.map((r: any) => [r.collegeCode, r]));
+  let apn = 0, tgn = 0;
+  for (let k = 0; k < rows.length; k += 8) {
+    const ii = rows[k + 2], ci = rows[k + 3], qi = rows[k + 4], label = quota.arr[qi], key = `${ii}.${ci}.${qi}`;
+    if (fees.has(key)) continue;
+    const [, full, state, code] = inst[ii], g = group(ci);
+    if (state === 'Andhra Pradesh' && full.startsWith('AP ') && !code) { // private unaided college
+      const cat = /State Quota|Minority/.test(label) ? 'A' : /Management/.test(label) ? 'B' : /NRI|Institutional/.test(label) ? 'C' : '';
+      if (!cat) continue;
+      const t = ap.categories[cat], fee = g === 'pre' ? t.pre : g === 'para' ? t.para : t.clinical;
+      setFee(ii, ci, qi, fee, 2025, cat === 'A' ? 'Dr NTR UHS competent authority notification (2024-25 fee)' : 'Dr NTR UHS management quota notification 2025-26 (G.O.Rt.No.777)'); apn++;
+    }
+    if (state === 'Telangana' && full.startsWith('TG ')) {
+      const r = tgBy.get(full.slice(3)); if (!r) continue;
+      const cat = /State Quota|Minority/.test(label) ? 0 : /Management/.test(label) ? 1 : -1;
+      if (cat < 0) continue;
+      const pair = g === 'pre' ? r.nonClinical : g === 'para' ? r.para : r.clinical;
+      setFee(ii, ci, qi, pair[cat], 2025, 'Telangana G.O.Ms.No.107 (2023-26 fee order)'); tgn++;
+    }
+  }
+  console.log(`fees: Andhra Pradesh private ${apn}; Telangana private ${tgn}; total ${fees.size}`);
   // MCC's own rounds (AIQ, deemed, central, DNB): the fee the institute declared to MCC; NRI seats use the declared NRI fee.
   const firstFee = (...v: unknown[]) => v.map(Number).find((x) => x > 1000) ?? 0;
   const MCC_QUOTAS = new Set(Object.values(QUOTA));
