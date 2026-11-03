@@ -30,7 +30,7 @@ const SM_SOURCES: Record<string, string> = {
   sm2025_aiq: '2025/10/202510281305634189.pdf', sm2025_central: '2025/10/20251028847832917.pdf', sm2025_deemed: '2025/11/20251119105316139.pdf', sm2025_dnb: '2025/11/20251119228358966.pdf',
   sm2026_aiq: '2026/10/202610151676193504.pdf', sm2026_central: '2026/10/202610151906520168.pdf', sm2026_deemed: '2026/10/20261015907178910.pdf', sm2026_dnb: '2026/10/202610151482599908.pdf',
 };
-const ROUND_ORDER = ['Round 1', 'Round 2', 'Round 3', 'Mop-up', 'Additional mop-up', 'Stray', 'Special stray'];
+const ROUND_ORDER = ['Round 1', 'Round 2', 'Round 3', 'Mop-up', 'Additional mop-up', 'Stray', 'Stray 2', 'Special stray', 'Special stray 2'];
 
 const STATES = ['Andaman And Nicobar Islands', 'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chandigarh', 'Chhattisgarh',
   'Dadra And Nagar Haveli', 'Daman And Diu', 'Delhi', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jammu And Kashmir', 'Jharkhand',
@@ -263,7 +263,7 @@ const klSeat = (cat: string): [string, string] => {
   if (c === 'HQ' || c === 'IQ') return ['In-service', 'Open'];
   return ['State Quota', KL_CATS[c] ?? c];
 };
-const klCandidate = (cat: string) => (cat === 'General' ? 'General' : cat === 'EW' ? 'EWS' : KL_CATS[cat] ?? cat);
+const klCandidate = (cat: string) => (!cat ? 'Not stated' : cat === 'General' ? 'General' : cat === 'EW' ? 'EWS' : KL_CATS[cat] ?? cat);
 // Andhra Pradesh (Dr NTR UHS): college code → MCC institute code (government colleges).
 const AP_CODES: Record<string, string> = {
   M001: '700475', M002: '700469', M003: '700474', M004: '700470', M005: '700471', M006: '700472', M008: '700473', M018: '700486',
