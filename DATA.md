@@ -54,13 +54,13 @@ All ranks shown on the site are All India Ranks. Where a state prints only its o
 
 | Data | Status | Notes |
 |---|---|---|
-| Fees per college (state lists) | 📥 | Karnataka, Gujarat, Rajasthan, Tamil Nadu fee PDFs downloaded, not on the site yet. MCC fees are on the site |
-| State-specific categories in the predictor (VJ/NT, 2A/3B …) | 🟡 | stored in the data; predictor still filters by the common categories |
-| Stipend and service bond by state | ⬜ | |
-| Round calendar / key dates | ⬜ | |
-| Official notices feed + alerts | ⬜ | needs a scheduled checker |
-| INI-CET (AIIMS, JIPMER, PGIMER) | ⬜ | |
-| NEET MDS (dental) | ⬜ | |
+| Fees per college (state lists) | 🟡 | ✅ Karnataka (from KEA allotment rows), Gujarat (ACPPGMEC fee structure, 31 colleges), Rajasthan government colleges, shown in the predictor. ⛔ Kerala fee PDFs removed from cee.kerala.gov.in. 📥 Tamil Nadu fee PDF is a scan (needs OCR); Rajasthan private-college PDF text is jumbled. MCC fees are on the site |
+| State-specific categories in the predictor | ✅ | "State category" picker (e.g. Karnataka Cat-2A, Maharashtra NT-C, Telangana BC-B) applies to that state's quotas. Not yet in the saved-list page |
+| Stipend and service bond by state | 🟡 | ✅ Stipend by state (government colleges, from MCC profiles) on Colleges & Fees. ⬜ Bond rules: not in any data source; needs each state's government order / brochure (manual research) |
+| Round calendar / key dates | ✅ | /calendar from MCC's 2026 schedules (data/calendar2026.json); update when MCC revises |
+| Official notices feed + alerts | 🟡 | ✅ /notices reads MCC + 10 state sites hourly. ⬜ Other states load notices by script (linked only). ⬜ Email/push alerts |
+| INI-CET (AIIMS, JIPMER, PGIMER) | ⬜ | Gettable (AIIMS publishes round PDFs) but a separate exam with its own rank: needs its own predictor input and pages |
+| NEET MDS (dental) | ⬜ | Gettable, but a separate exam and dataset (dental colleges, MDS branches) |
 | State data before 2025 | ⬜ | Gujarat goes back to 2021 |
 
 ## 4. Rank conversion sources (not shown on the site, used by the parsers)

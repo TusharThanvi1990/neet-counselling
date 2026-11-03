@@ -3,7 +3,7 @@ import PageShell from '@/components/PageShell';
 import Link from 'next/link';
 import AutoForm from '@/components/AutoForm';
 import { getData } from '@/lib/data';
-import { INSTITUTE_TYPES, listInstitutes, MATRIX_PAGE, type InstituteSort } from '@/lib/institutes';
+import { INSTITUTE_TYPES, listInstitutes, MATRIX_PAGE, stipendByState, type InstituteSort } from '@/lib/institutes';
 import { fmt, hrefWith, type SearchParams } from '@/lib/url';
 
 export const metadata: Metadata = { title: 'Institutes & fees' };
@@ -65,6 +65,17 @@ export default async function InstitutesPage({ searchParams }: { searchParams: P
         Fees and stipends are as declared by each institute to MCC, in rupees. *Most institutes declare the stipend per month; some write
         separate amounts for MD/MS and diploma, and the first amount is shown here (the institute page shows their exact wording). A dash means not declared.
       </p>
+      <h2 id="stipend-by-state">Stipend by state (government colleges)</h2>
+      <div className="tablebox">
+        <table>
+          <thead><tr><th>State</th><th className="num">Colleges</th><th className="num">Typical (median)</th><th className="num">Lowest</th><th className="num">Highest</th></tr></thead>
+          <tbody>{stipendByState().map((r) => (
+            <tr key={r.state}><td><Link href={hrefWith('/institutes', {}, { state: r.state, type: 'Government / AIQ', sort: 'stipend' })}>{r.state}</Link></td>
+              <td className="num">{r.colleges}</td><td className="num">{rupees(r.median)}</td><td className="num">{rupees(r.min)}</td><td className="num">{rupees(r.max)}</td></tr>
+          ))}</tbody>
+        </table>
+      </div>
+      <p className="note">Year-1 stipend each government college declared to MCC, usually per month. Service bond rules are set by each state government and are not in MCC’s data; check the state’s counselling brochure.</p>
     </PageShell>
   );
 }

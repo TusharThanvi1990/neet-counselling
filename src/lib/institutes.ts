@@ -189,3 +189,17 @@ export function instituteDetail(code: string, rounds: RoundSet = 'main') {
     profileSource: d.profileSource,
   };
 }
+
+/** Government college stipend per state (year 1, as declared to MCC; usually per month): median, lowest and highest. */
+export function stipendByState() {
+  const d = getData(), by = new Map<string, number[]>();
+  for (const c of d.codes) {
+    const raw = d.profiles[c.code]?.stipendY1, v = typeof raw === "number" ? raw : Number(raw);
+    if (!c.state || !c.type.includes("Government / AIQ") || !Number.isFinite(v) || v < 10000) continue;
+    by.set(c.state, [...(by.get(c.state) ?? []), v]);
+  }
+  return [...by].map(([state, v]) => {
+    const s = [...v].sort((a, b) => a - b), m = s.length >> 1;
+    return { state, colleges: s.length, median: s.length % 2 ? s[m] : Math.round((s[m - 1] + s[m]) / 2), min: s[0], max: s[s.length - 1] };
+  }).sort((a, b) => b.median - a.median);
+}
