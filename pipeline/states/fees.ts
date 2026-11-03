@@ -274,6 +274,30 @@ college('up2026_minority', {
   college('mh2024', { state: 'Maharashtra', year: 2024, label: 'Maharashtra FRA approved MD/MS tuition fee 2024-25 (mahafra.org)', source: 'https://mahafra.org/', quotas: { seat: '^(State Quota|Institutional|Minority)$' }, colleges });
 }
 
+// Haryana: Haryana Govt Gazette (Extra.) 2 Sept 2024, Annexure V(a)-(c) (dmer.haryana.gov.in "Fee structure of MD/MS courses").
+// V(a) private unaided colleges affiliated to Pt BD Sharma UHS: tuition incl. development ₹3.52 L pre-clinical, ₹5.52 L
+// para-clinical, ₹14.02 L clinical for 2024-25 "+10% annual increase" → 2025-26 values below (×1.1). NRI pay the same in US$.
+// V(b) SGT University and V(c) Al-Falah University (2024-25): fee per subject per annum.
+const hr = { all: [1402000 * 1.1, 552000 * 1.1, 352000 * 1.1].map(Math.round) as [number, number, number] };
+college('hr2025', {
+  state: 'Haryana', year: 2025, label: 'Haryana Govt Gazette 2-9-2024 MD/MS fee structure',
+  source: 'https://dmer.haryana.gov.in/uploads/cand_images/MD_MS_Course_Fee.pdf',
+  quotas: { all: '^(State Quota|State Quota \\(institutional preference\\)|In-service|Management|Minority)$' },
+  colleges: [
+    { inst: 'HR adeshmedicalcollegekurukshetra', name: 'Adesh Medical College, Kurukshetra', fees: hr },
+    { inst: 'HR ncmedicalcollegeisranapanipat', name: 'NC Medical College, Israna', fees: hr },
+    { inst: 'HR worldcollegeofmedsciresjhajjar', name: 'World College of Medical Sciences & Research, Jhajjar', fees: hr },
+    { inst: 'HR sgtmedicalcollegeresearchinstitutebudheragurugram', name: 'SGT Medical College, Gurugram (SGT University)', courseFees: { all: {
+      Anatomy: 1000000, Biochemistry: 1000000, 'Community Medicine': 1000000, 'Forensic Medicine': 1000000, Microbiology: 1000000, Pathology: 1700000,
+      Physiology: 1000000, Pharmacology: 1000000, Dermatology: 4000000, Orthopaedics: 3200000, Ophthalmology: 2900000, 'General Medicine': 3500000,
+      'Respiratory Medicine': 2900000, Psychiatry: 2900000, Paediatrics: 3200000, 'General Surgery': 3000000, ENT: 2200000, Anaesthesiology: 2000000,
+      Radiodiagnosis: 4500000, 'Obstetrics & Gynaecology': 3500000 } } },
+    { inst: 'HR alfalahuniversityfaridabad', name: 'Al-Falah School of Medical Sciences, Faridabad', courseFees: { all: {
+      Anatomy: 720000, Biochemistry: 720000, 'Community Medicine': 912000, Paediatrics: 2990000, Microbiology: 720000, Pathology: 1455000, Physiology: 720000,
+      Dermatology: 3290000, 'General Medicine': 2990000, Anaesthesiology: 1790000, 'Obstetrics & Gynaecology': 2990000 } } },
+  ],
+});
+
 // Bihar: each private college's PGMAC-2025 fee letter to BCECEB (bceceboard.bihar.gov.in/pdf_Web/PGMAC25_FSTR.pdf, scans,
 // transcribed from the page images). Yearly tuition for general / minority seats; NRI fees are in US dollars and not recorded.
 const bh = (o: Record<string, number>) => ({ gen: Object.fromEntries(Object.entries(o).map(([k, v]) => [k, v * L])) });
