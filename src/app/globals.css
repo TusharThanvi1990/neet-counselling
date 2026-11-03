@@ -262,3 +262,11 @@ textarea { width: 100%; min-height: 160px; font: 13px ui-monospace, Consolas, mo
 .notice-grid h3 { margin: 0 0 8px; font-size: 1rem; }
 .notice-list { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: .9rem; line-height: 1.35; }
 .link-list { columns: 2 260px; padding-left: 18px; line-height: 1.8; }
+
+/* counselling calendar */
+.cal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.cal-grid h3, .cal-now h3 { margin: 0 0 8px; font-size: 1rem; }
+.cal-now { margin-bottom: 20px; } .cal-now ul { margin: 0; padding-left: 18px; line-height: 1.7; }
+.cal-table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+.cal-table td { padding: 5px 0; border-bottom: 1px solid var(--line); } .cal-table td.num { text-align: right; white-space: nowrap; padding-left: 12px; }
+tr.cal-done { opacity: .5; } tr.cal-now td { font-weight: 600; }
