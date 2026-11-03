@@ -20,6 +20,8 @@ import { gridTable } from '../grid';
 const RAW = 'data/raw/states/haryana';
 const ROUNDS: [string, number, string, string][] = [ // [file, year, round label, source URL]
   ['hr2025_r1', 2025, 'Round 1', 'https://image-static.collegedunia.com/public/image/ADMINMD12_ALLOCATION_MERIT_REPORT_MD_ROUND_1_2025_V1_0af95c37508ab594980679633775495a.pdf'],
+  // 2024 Round 1 (27-11-2024): DMER's PDF as hosted by UHSR Rohtak, via its Internet Archive copy (UHSR returned 503)
+  ['hr2024_r1', 2024, 'Round 1', 'https://uhsr.ac.in/writereaddata/upload/Admissions/271124allocationmdms.pdf'],
 ];
 const key = (s: string) => (s ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
 const clean = (s: string) => (s ?? '').replace(/\s+/g, ' ').trim();
