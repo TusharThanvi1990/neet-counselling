@@ -109,6 +109,28 @@ college('wb2025', {
   ],
 });
 
+// Himachal Pradesh: AMRU PG MD/MS/DNB Prospectus 2026 (amruhp.ac.in, 22-10-2026), chapter 8. Government colleges: tuition
+// ₹24,000 per year (8.2.1). Maharishi Markandeshwar, Kumarhatti: tuition incl. other charges per subject (8.3); NRI in US$, not recorded.
+const hpGovt = (inst: string, name: string): CollegeFees => ({ inst, name, fees: { all: [24000, 24000, 24000] } });
+college('hp2026', {
+  state: 'Himachal Pradesh', year: 2026, label: 'AMRU PG prospectus 2026 (fees, chapter 8)',
+  source: 'https://amruhp.ac.in/wp-content/uploads/2026/10/Final-Merged-PG-MD-MS-DNB-Prospectus-2026-22-10-2026.pdf',
+  quotas: { all: '^(State Quota|In-service \\(incentive marks\\)|Management)$' },
+  colleges: [
+    hpGovt('HP indiragandhimedicalcollegeshimla', 'Indira Gandhi Medical College, Shimla'),
+    hpGovt('HP rajendraprasad', 'Dr Rajendra Prasad Government Medical College, Tanda'),
+    hpGovt('HP lalbahadurshastri', 'Shri Lal Bahadur Shastri Government Medical College, Ner Chowk'),
+    hpGovt('HP radhakrishanan', 'Dr Radhakrishnan Government Medical College, Hamirpur'),
+    hpGovt('HP yashwantparmar', 'Dr Yashwant Singh Parmar Government Medical College, Nahan'),
+    hpGovt('HP jawaharlalnehru', 'Pt Jawahar Lal Nehru Government Medical College, Chamba'),
+    { inst: 'HP maharishimarkandeshwar', name: 'Maharishi Markandeshwar Medical College & Hospital, Kumarhatti', courseFees: { all: {
+      Anatomy: 300000, Physiology: 300000, Biochemistry: 300000, 'Community Medicine': 350000, Microbiology: 300000, Pathology: 1595000,
+      Pharmacology: 300000, 'Respiratory Medicine': 2347800, ENT: 1931600, Ophthalmology: 2767800, Paediatrics: 2767800,
+      'Obstetrics & Gynaecology': 2935800, Anaesthesiology: 1931600, Psychiatry: 2347800, 'General Surgery': 2635600,
+      'General Medicine': 2899600, Radiodiagnosis: 3339600, Dermatology: 3187800, Orthopaedics: 2767800, 'Forensic Medicine': 350000 } } },
+  ],
+});
+
 // Bihar: each private college's PGMAC-2025 fee letter to BCECEB (bceceboard.bihar.gov.in/pdf_Web/PGMAC25_FSTR.pdf, scans,
 // transcribed from the page images). Yearly tuition for general / minority seats; NRI fees are in US dollars and not recorded.
 const bh = (o: Record<string, number>) => ({ gen: Object.fromEntries(Object.entries(o).map(([k, v]) => [k, v * L])) });
