@@ -103,3 +103,62 @@ for (const [file, label, id] of ROUNDS) {
 console.log('status', Object.fromEntries(statuses));
 console.log('categories', Object.fromEntries([...cats].sort((a, b) => b[1] - a[1])));
 console.log('seat types', Object.fromEntries([...seats].sort((a, b) => b[1] - a[1])));
+
+// ---- 2024 (rajpgneet2024.org, via its Internet Archive copies; the site no longer exists) ----
+// Only the list published after Round 3 was archived ("allotments med for web r3_2024"): every seat held after Round 3,
+//   S.No | State Merit No. | Allotted to (Reg. ID) | Gender | Considered category, sub-cat | Name | Course | College (State/Mgmt - Recog | Post MBBS DNB/Diploma)
+// so it is published as "Round 3" closing ranks (all seats held after Round 3). Reg. ID → NEET roll and in-service status come from
+// the round-wise merit lists, roll → AIR from the NBEMS NEET-PG 2024 result.
+{
+  const A = 'https://web.archive.org/web/20250317043809/http://rajpgneet2024.org/docs_upd/allotments%20med%20for%20web%20r3_2024.pdf';
+  const nb = JSON.parse(readFileSync('data/raw/nbems/neetpg2024_air.json', 'utf8')) as Record<string, [number, number]>;
+  const rollOf = new Map<string, string>(), svc24 = new Set<string>();
+  for (const f of ['rj2024_merit_r1', 'rj2024_merit_r2', 'rj2024_merit_r3']) {
+    let col: Record<string, number> | null = null;
+    for await (const { rows } of tables(f)) for (const cells of rows) {
+      const ks = cells.map(key);
+      if (ks.includes('neetid')) { col = { roll: ks.indexOf('neetid'), reg: ks.findIndex((k) => k.startsWith('regid')), svc: ks.findIndex((k) => k.startsWith('inservice')) }; continue; }
+      if (!col || col.reg < 0) continue;
+      const roll = (cells[col.roll] ?? '').replace(/\D/g, ''), reg = (cells[col.reg] ?? '').trim();
+      if (!/^\d{11}$/.test(roll) || !/^PM\d+$/.test(reg)) continue;
+      rollOf.set(reg, roll);
+      if (/^in/i.test((cells[col.svc] ?? '').replace(/\W/g, ''))) svc24.add(reg); else svc24.delete(reg);
+    }
+  }
+  const CAT: Record<string, string> = { GEN: 'GENERAL', OBC: 'OBC NCL', MBC: 'MBC NCL', SC: 'SC', ST: 'ST', EWS: 'EWS' };
+  // 2024 college spellings → spellings whose letters-only key matches the 2025 table in build-dataset (RJ_CODES)
+  const NAME24: Record<string, string> = {
+    jlnmedicalcollegeajmer: 'JLN MC, Ajmer', spmedicalcollegebikaner: 'SP MC, Bikaner', rntmedicalcollegeudaipur: 'RNT MC, Udaipur',
+    snmedicalcollegejodhpur: 'Dr SN MC, Jodhpur', govtmedicalcollegekota: 'Govt Medical College, Kota', geetanjalimedicalcollegeudaipur: 'Geetanjali Medical College Hospital, Udaipur',
+    governmenthospitalbarmer: 'GH Barmer', governmentgeneralhospitalsawaimadhopur: 'GH Sawai Madhopur', govtbdkhospitaljhunjhunu: 'Government BDK Hospital, Jhunjhunu',
+    govermentdistricthospitalbundi: 'DH Bundi', jlngovernmenthospitalnagaur: 'DH Nagaur', generalhospitalkarauli: 'GH Karauli', districthospitalbaran: 'DH Baran',
+    govtdistrictsaadathospitaltonk: 'DH Tonk', mgmgovtdistricthospitalhanumangarhtown: 'DH Hanumangarh', mahatmagandhihospitalbhilwara: 'MGH Bhilwara',
+    govtdistrictcivilhospitalsuratgarhroadsriganganagarrajasthan: 'DH Sriganganagar', ssggovernmentdistricthospitalchittorgarh: 'DH Chittorgarh',
+    rajivgandhigovernmentgeneralhospitalprincipalmedicalofficergeneralhospitalalwar: 'Government Hospital, Alwar',
+    governmentmedicalcollegeandbangurhospitalpali: 'GMC Pali', govtmedicalcollegebharatpur: 'GMC Bharatpur',
+    governmentmedicalcollegeandassociatedgroupofhospitalsshriharidevjoshihospitaldungarpur: 'GMC Dungarpur',
+    ruhscollegeofmedicalsciencesjaipur: 'RUHS College of Medical Sciences', govtrdbpjaipuriyahospitaljaipur: 'Govt RDBP Jaipuria Hospital, Jaipur',
+    districthospitalpratapgarh: 'DH Pratapgarh', districthospitalsirohi: 'DH Sirohi', shriramkaranjoshigovernmentdistricthospitaldausa: 'DH Dausa',
+    rkgovtdistricthospitalrajsamand: 'DH Rajsamand', govtamritkaurhospitalbeawarajmer: 'Govt Amrit Kaur Hospital Beawar',
+  };
+  const GMC_BHARATPUR = 'Shri Jagannath Pahadiya Medical College Bharatpur or GMC Bharatpur';
+  const out: any[] = [];
+  let noAir = 0;
+  for await (const { page, rows } of tables('rj2024_r3')) for (const c of rows) {
+    if (!/^\d+$/.test(c[0] ?? '') || !/^PM\d+$/.test((c[2] ?? '').trim())) continue;
+    const reg = c[2].trim(), roll = rollOf.get(reg), rank = roll ? nb[roll]?.[0] : undefined;
+    if (!rank) { noAir++; continue; }
+    const college = (c[7] ?? '').replace(/\s+/g, ' ').trim(), kind = college.match(/\(([^()]*)\)\s*$/)?.[1] ?? '';
+    const cat = CAT[(c[4] ?? '').split(/[\s-]/)[0].toUpperCase()] ?? (c[4] ?? '').trim();
+    const name = college.replace(/\s*\([^()]*\)\s*$/, ''), nk = key(name);
+    const inst = nk === 'gmcbharatpur' || nk === 'govtmedicalcollegebharatpur' ? GMC_BHARATPUR : NAME24[nk] ?? name;
+    let course = (c[6] ?? '').replace(/\s+/g, ' ').trim().replace(/^MD\s*\(?PSM\)?$/i, 'MD (Community Medicine)').replace(/\bGen\.\s*/g, 'General ');
+    if (!/^Post MBBS/i.test(course)) course = (/Diploma/i.test(kind) ? 'Post MBBS Diploma ' : /DNB/i.test(kind) ? 'Post MBBS DNB ' : '') + course;
+    out.push({ rank, quota: /^Mgmt/i.test(kind) ? 'Management' : 'State', inService: svc24.has(reg), institute: inst,
+      course,
+      allottedCategory: cat, candidateCategory: cat, remarks: 'seat held after Round 3', page });
+  }
+  out.sort((a, b) => a.rank - b.rank);
+  writeFileSync('data/parsed/rj2024_r3.json', JSON.stringify({ source: A, url: A, counselling: 'Rajasthan', year: 2024, round: 'Round 3', rows: out }));
+  console.log(`rj2024_r3: ${out.length} seats held after Round 3 (${rollOf.size} reg. IDs mapped, ${noAir} without an AIR)`);
+}
