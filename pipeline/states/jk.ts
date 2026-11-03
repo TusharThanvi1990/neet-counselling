@@ -105,3 +105,52 @@ const top = (m: Map<string, number>) => Object.fromEntries([...m].sort((a, b) =>
 console.log('seat categories (CAT-SLI)', top(seats));
 console.log('candidate categories', top(cats));
 console.log('institutes', top(insts));
+
+// ---- 2024 (JKBOPEE notifications 177, 194 of 2024 and 008, 015, 017, 030 of 2025; scanned, read with NamahaPDF OCR by
+// pipeline/ocr-grid.ts into data/raw/states/jk/ocr). The 2024 lists give the UT merit rank, not the AIR, which comes from
+// the NBEMS NEET-PG 2024 result by roll number. Later lists re-list held seats ("Allotted earlier" + "Upgraded/allotted
+// now" columns); the last institute code in a row is the seat held after that round, and it counts only when it differs
+// from the candidate's seat after the previous round.
+{
+  const { readdirSync } = await import('node:fs');
+  const air24 = JSON.parse(readFileSync('data/raw/nbems/neetpg2024_air.json', 'utf8')) as Record<string, [number, number]>;
+  const INST: Record<string, string> = { 'GMC-S': 'GMC-SRINAGAR', 'GMC-J': 'GMC-JAMMU', 'SKIMS-S': 'SKIMS-SRINAGAR', 'ASCOMS-J': 'ASCOMS-JAMMU',
+    'GMC-A': 'GMC-ANANTNAG', 'GMC-K': 'GMC-KATHUA', 'GMC-B': 'GMC-BARAMULLA', 'GMC-R': 'GMC-RAJOURI', 'GMC-D': 'GMC-DODA' };
+  const R24: [string, string, number][] = [['jk2024_r1', 'Round 1', 16546], ['jk2024_r2', 'Round 2', 16591], ['jk2024_r3', 'Round 3', 16632],
+    ['jk2024_mop', 'Mop-up', 16664], ['jk2024_stray', 'Stray', 16667], ['jk2024_sstray', 'Special stray', 16690]];
+  const OUT: Record<string, string> = { jk2024_mop: 'jk2024_mopup' };
+  const OCR = 'data/raw/states/jk/ocr';
+  const held = new Map<string, string>();
+  for (const [file, label, nid] of R24) {
+    const pages = readdirSync(OCR).filter((f) => f.startsWith(`${file}_grid_p`)).sort((a, b) => Number(a.match(/p(\d+)/)![1]) - Number(b.match(/p(\d+)/)![1]));
+    const rows: any[] = [];
+    let listed = 0, same = 0, noAir = 0;
+    for (const pf of pages) {
+      const page = Number(pf.match(/p(\d+)/)![1]);
+      for (const raw of JSON.parse(readFileSync(`${OCR}/${pf}`, 'utf8')).rows as string[][]) {
+        const c = raw.map((x) => clean(x));
+        const ri = c.findIndex((x) => /^\d{11}$/.test(x.replace(/\s/g, '')));
+        if (ri < 0) continue;
+        const roll = c[ri].replace(/\s/g, '');
+        const ii = c.map((x, i) => (INST[x.replace(/\s/g, '')] ? i : -1)).filter((i) => i > ri).pop();
+        if (ii == null) continue; // no seat
+        listed++;
+        // OCR slips in CAT-SLD: "ST-I1"/"ST-11" = ST-II, "ST-|"/"ST-]"/"ST-1" = ST-I; "OM/JKPM", "OM/CDP", "OM/SP" are OM seats of a sub-category
+        const fixSeat = (x: string) => x.replace(/^ST-(I1|11|II)$/, 'ST2').replace(/^ST-(\||\]|1|I)$/, 'ST1').replace(/^ALC\/I?B$/, 'ALC').replace(/^OM\/(JKPM|CDP|SP)$/, 'OM');
+        const inst = INST[c[ii].replace(/\s/g, '')], course = (c[ii - 1] ?? '').replace(/\s+/g, ''), seat = fixSeat(c[ii + 1] ?? '');
+        if (!course) continue;
+        const sk = `${inst}|${course}|${seat}`;
+        if (held.get(roll) === sk) { same++; continue; }
+        held.set(roll, sk);
+        const rank = air24[roll]?.[0];
+        if (!rank) { noAir++; continue; }
+        const cat = c.slice(ri + 2, ri + 4).find((x) => /^[A-Z][A-Z-]{1,6}(\/[A-Z]+)?$/.test(x)) ?? '';
+        rows.push({ rank, quota: seat, inService: false, institute: inst, course, allottedCategory: seat, candidateCategory: cat, subCategory: '', remarks: '', page });
+      }
+    }
+    rows.sort((a, b) => a.rank - b.rank);
+    const out = OUT[file] ?? file, url = N(nid);
+    writeFileSync(`data/parsed/${out}.json`, JSON.stringify({ source: url, url, counselling: 'Jammu & Kashmir', year: 2024, round: label, rows }));
+    console.log(`${out}: ${rows.length} allotments (${listed} listed, ${same} held from the previous round, ${noAir} without an AIR)`);
+  }
+}
