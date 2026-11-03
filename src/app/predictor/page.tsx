@@ -4,12 +4,11 @@ import AutoForm from '@/components/AutoForm';
 import AddButton from '@/components/AddButton';
 import PageShell from '@/components/PageShell';
 import { getData, PROGRAMS, ROUND_SETS, yearLabel } from '@/lib/data';
-import { BAND_LABEL, CATEGORIES, parseProfile, predict, type Band, type SortKey } from '@/lib/query';
+import { BAND_LABEL, CATEGORIES, STATE_QUOTA, parseProfile, predict, stateCategories, type Band, type SortKey } from '@/lib/query';
 import { fmt, hrefWith, type SearchParams } from '@/lib/url';
 
 export const metadata: Metadata = { title: 'NEET PG College Predictor' };
 
-const STATE_QUOTA = /^(Maharashtra|Karnataka|Kerala|Andhra Pradesh|Rajasthan|Telangana|Gujarat|Madhya Pradesh|Haryana|Bihar|Punjab|Chhattisgarh|Himachal Pradesh|Jammu & Kashmir|Goa|Uttar Pradesh|Assam|Odisha|West Bengal) /;
 
 export default async function PredictorPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const sp = await searchParams;
@@ -37,6 +36,11 @@ export default async function PredictorPage({ searchParams }: { searchParams: Pr
           <label className="field"><span>Category</span>
             <select name="cat" defaultValue={p.cat}>{CATEGORIES.map((c) => <option key={c}>{c}</option>)}</select></label>
           <label className="check"><input type="checkbox" name="pwd" value="1" defaultChecked={p.pwd} /> PwD candidate</label>
+          <label className="field"><span>State category (for state quota seats)</span>
+            <select name="scat" defaultValue={p.scat}><option value="">Same as category above</option>
+              {Object.entries(Object.groupBy(stateCategories(), (c) => c.state)).map(([st, cs]) => (
+                <optgroup key={st} label={st}>{cs!.map((c) => <option key={c.cat} value={`${st}|${c.cat}`}>{st} · {c.cat}</option>)}</optgroup>
+              ))}</select></label>
           <a className="btn primary block jump" href="#results">See {fmt(total)} results ↓</a>
           <hr className="divider" />
           <h3>Filters</h3>

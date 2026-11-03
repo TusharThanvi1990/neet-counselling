@@ -23,6 +23,45 @@ export function eligibleSeatCats(cat: Category, pwd: boolean): Set<number> {
   return new Set(names.map((x) => d.acat.indexOf(x)).filter((x) => x >= 0));
 }
 
+/** States with state-counselling data; a state quota's label starts with the state's name. */
+export const STATE_NAMES = ['Maharashtra', 'Karnataka', 'Kerala', 'Andhra Pradesh', 'Rajasthan', 'Telangana', 'Gujarat', 'Madhya Pradesh', 'Haryana', 'Bihar',
+  'Punjab', 'Chhattisgarh', 'Himachal Pradesh', 'Jammu & Kashmir', 'Goa', 'Uttar Pradesh', 'Assam', 'Odisha', 'West Bengal'];
+export const STATE_QUOTA = new RegExp(`^(${STATE_NAMES.join('|')}) `);
+const BASE_CATS = new Set(['Open', 'EWS', 'OBC', 'SC', 'ST']);
+
+let quotaStateCache: (string | null)[] | null = null;
+/** Quota index → state name (null for MCC quotas). */
+export function quotaState(qi: number): string | null {
+  const d = getData();
+  quotaStateCache ??= d.quota.map((q) => q.label.match(STATE_QUOTA)?.[1] ?? null);
+  return quotaStateCache[qi];
+}
+
+let stateCatCache: { state: string; cat: string }[] | null = null;
+/** Each state's own seat categories (beyond Open / EWS / OBC / SC / ST), e.g. Karnataka Cat-2A, Maharashtra NT-C. */
+export function stateCategories() {
+  if (stateCatCache) return stateCatCache;
+  const d = getData(), seen = new Set<string>();
+  for (let k = 0; k < d.col.quota.length; k++) {
+    const st = quotaState(d.col.quota[k]); if (!st) continue;
+    const cat = d.acat[d.col.acat[k]].replace(/ PwD$/, '');
+    if (!BASE_CATS.has(cat)) seen.add(`${st}|${cat}`);
+  }
+  stateCatCache = [...seen].map((s) => { const [state, cat] = s.split('|'); return { state, cat }; })
+    .sort((a, b) => a.state.localeCompare(b.state) || a.cat.localeCompare(b.cat));
+  return stateCatCache;
+}
+
+/** Seat categories per quota: a chosen state category ("Karnataka|Cat-2A") replaces the national one for that state's quotas. */
+export function seatCatsFor(p: { cat: Category; pwd: boolean; scat?: string }) {
+  const d = getData(), national = eligibleSeatCats(p.cat, p.pwd);
+  const [st, sc] = (p.scat ?? '').split('|');
+  if (!st || !sc) return (_qi: number) => national;
+  const names = ['Open', sc, ...(p.pwd ? ['Open PwD', `${sc} PwD`] : [])];
+  const local = new Set(names.map((x) => d.acat.indexOf(x)).filter((x) => x >= 0));
+  return (qi: number) => (quotaState(qi) === st ? local : national);
+}
+
 // ---- search params ----
 
 type SP = Record<string, string | string[] | undefined>;
@@ -33,6 +72,8 @@ const int = (s: string, dflt: number) => { const n = parseInt(s, 10); return Num
 export type Profile = {
   rank: number; cat: Category; pwd: boolean; year: number; rounds: RoundSet;
   state: string; program: Program; branch: string; quotas: string[];
+  /** Optional state category, "State|Category" (e.g. "Karnataka|Cat-2A"), used for that state's quotas. */
+  scat: string;
 };
 
 export function parseProfile(sp: SP): Profile {
@@ -52,6 +93,7 @@ export function parseProfile(sp: SP): Profile {
     branch: d.index.course.has(one(sp, 'branch')) ? one(sp, 'branch') : '',
     // The form always sends `quotas=1` alongside its checkboxes, so "none ticked" stays distinguishable from "first visit".
     quotas: quotas.length || one(sp, 'quotas') === '1' ? quotas : DEFAULT_QUOTAS,
+    scat: stateCategories().some((c) => `${c.state}|${c.cat}` === one(sp, 'scat')) ? one(sp, 'scat') : '',
   };
 }
 
@@ -78,12 +120,12 @@ function toOption(g: Group, year: number, rank: number, band: Band): Option {
 /** Best eligible seat per (institute, branch, quota): the seat category with the most lenient closing rank. */
 function bestGroups(p: Profile, year = p.year) {
   const d = getData();
-  const cats = eligibleSeatCats(p.cat, p.pwd);
+  const cats = seatCatsFor(p);
   const qs = new Set(p.quotas.map((q) => d.index.quota.get(q)!));
   const branch = p.branch ? d.index.course.get(p.branch)! : -1;
   const best = new Map<string, Group>();
   for (const g of groupsFor(year, p.rounds).values()) {
-    if (!cats.has(g.acat) || !qs.has(g.quota)) continue;
+    if (!qs.has(g.quota) || !cats(g.quota).has(g.acat)) continue;
     if (branch >= 0 && g.course !== branch) continue;
     if (p.program && d.course[g.course].program !== p.program) continue;
     if (p.state && d.inst[g.inst].state !== p.state) continue;
@@ -246,16 +288,16 @@ export function rankScan(year: number, from: number, to: number) {
 /** A saved choice: season + institute + branch + quota, all stable ids. */
 export const choiceKey = (year: number, instId: string, branchId: string, quotaId: string) => `${year}~${instId}~${branchId}~${quotaId}`;
 
-export function choiceDetails(keys: string[], p: Pick<Profile, 'rank' | 'cat' | 'pwd' | 'rounds'>) {
+export function choiceDetails(keys: string[], p: Pick<Profile, 'rank' | 'cat' | 'pwd' | 'rounds'> & { scat?: string }) {
   const d = getData();
-  const cats = eligibleSeatCats(p.cat, p.pwd);
+  const catsFor = seatCatsFor(p);
   return keys.map((key) => {
     const [y, instId, branchId, quotaId] = key.split('~');
     const ii = d.index.inst.get(instId), ci = d.index.course.get(branchId), qi = d.index.quota.get(quotaId);
     if (ii == null || ci == null || qi == null) return { key, missing: true as const };
     const groups = groupsFor(Number(y), p.rounds);
     let best: Group | null = null;
-    for (const a of cats) { const g = groups.get(`${ii}.${ci}.${qi}.${a}`); if (g && (!best || g.close > best.close)) best = g; }
+    for (const a of catsFor(qi)) { const g = groups.get(`${ii}.${ci}.${qi}.${a}`); if (g && (!best || g.close > best.close)) best = g; }
     return {
       key, missing: false as const, year: Number(y), institute: d.inst[ii].name, state: d.inst[ii].state,
       branch: d.course[ci].label, quota: d.quota[qi].label,
