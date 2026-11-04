@@ -301,8 +301,10 @@ const apSeat = (cat: string) => {
   if (c === 'OC') return 'Open';
   if (c === 'OC-PH') return 'Open PwD';
   if (/^BC[A-E]$/.test(c)) return `BC-${c[2]}`;
-  if (/^SC\d$/.test(c)) return 'SC';
+  if (/^SC\d?$/.test(c)) return 'SC'; // 2024 lists print SC without the sub-group
   if (c === 'ST') return 'ST';
+  const pwd = c.match(/^(BC[A-E]|SC\d?|ST)-PH$/); // 2024 lists also mark PwD on reserved seats
+  if (pwd) return `${apSeat(pwd[1])} PwD`;
   return 'Open'; // Management / NRI / Institutional / Self-Finance / MINORITY are quota names, not categories
 };
 // Rajasthan: college name (letters only) → MCC institute code (government colleges and the district hospitals that
