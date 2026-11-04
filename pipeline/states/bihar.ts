@@ -8,7 +8,7 @@
  * or an upgrade are kept. The seat category comes from "Allotted Cat" when printed, else from the remark
  * ("Against UR Category Seat(Degree)-Female", "JUMP OVER ON EBC seat(Degree)"). Names, roll numbers and ids are skipped.
  *
- * Round 1's result was withdrawn and re-issued and is no longer on the board's site; Rounds 2 (revised), 3 (revised)
+ * Round 1's result was withdrawn and re-issued (REV_PGMAC25_FALT.pdf, 28-11-2025); Rounds 2 (revised), 3 (revised)
  * and the stray vacancy round are.
  *
  * Usage: tsx pipeline/states/bihar.ts
@@ -20,6 +20,8 @@ import { gridTable } from '../grid';
 const RAW = 'data/raw/states/bihar';
 const BASE = 'https://bceceboard.bihar.gov.in/pdf_Result/';
 const ROUNDS: [string, number, string, string][] = [ // [file, year, round label, official file]
+  // Round 1 as revised on 28-11-2025 (the first issue was withdrawn); still on the board's site. Columns as Round 2, no status column.
+  ['bh2025_r1', 2025, 'Round 1', BASE + 'REV_PGMAC25_FALT.pdf'],
   ['bh2025_r2', 2025, 'Round 2', BASE + 'REV_PGMAC25_ALT_R2.pdf'],
   ['bh2025_r3', 2025, 'Round 3', BASE + 'REV_PGMAC25_ALT_R3.pdf'],
   ['bh2025_r4', 2025, 'Stray', BASE + 'PGMAC25_ALT_R4.pdf'],
@@ -47,7 +49,7 @@ for (const [file, year, label, url] of ROUNDS) {
       const ks = cells.map(key);
       if (ks.includes('NEETAIR')) {
         const f = (k: string) => ks.indexOf(k);
-        col = { type: f('COURSETYPE'), air: f('NEETAIR'), cat: Math.max(f('CATEGORY'), f('CAT')), gender: Math.max(f('GENDER'), f('SEX')), inst: f('INSTITUTE'), branch: Math.max(f('BRANCH'), f('COURSE')), acat: f('ALLOTTEDCAT'),
+        col = { type: Math.max(f('COURSETYPE'), f('SEATTYPE')), air: f('NEETAIR'), cat: Math.max(f('CATEGORY'), f('CAT')), gender: Math.max(f('GENDER'), f('SEX')), inst: f('INSTITUTE'), branch: Math.max(f('BRANCH'), f('COURSE')), acat: f('ALLOTTEDCAT'),
           remark: f('REMARK'), status: Math.max(f('ALLOTSTATUS'), f('ALLOTTSTATUS'), f('STATUS')) };
         continue;
       }
