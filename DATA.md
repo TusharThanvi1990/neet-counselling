@@ -24,7 +24,7 @@ All ranks shown on the site are All India Ranks. Where a state prints only its o
 | State | 2025 | 2026 | Notes |
 |---|---|---|---|
 | Maharashtra | ✅ R1–R3, stray, special stray | ⏳ | |
-| Karnataka (+ in-service) | ✅ R1–R3, stray, special stray | ⏳ | |
+| Karnataka (+ in-service) | ✅ R1–R3, stray, special stray | ⏳ | 2024: R1, R2, R3, second stray (state lists only) |
 | Kerala | ✅ R1–R3, stray | ⏳ | |
 | Andhra Pradesh | ✅ R1–R3, stray | ⏳ | 2025: closing ranks only (official last-rank table) |
 | Rajasthan | ✅ R1–R3, stray | ✅ R1 | 2026 R1 (1,365) from pg.neetrajasthan.com via the GitHub mirror (sha256 matches) |
@@ -41,7 +41,7 @@ All ranks shown on the site are All India Ranks. Where a state prints only its o
 | **Uttar Pradesh** | ⛔ lists removed, no copies | ✅ R1 | added 2026-11-03 |
 | **Assam** | 🟡 R2 only (2024: R1) | ⏳ | added 2026-11-03; R1/R3/stray were notices without lists |
 | **Odisha** | 🟡 R1 + upgraded R1 (admitted list) | ⏳ R1 due 5 Nov | added 2026-11-03 from Internet Archive copies |
-| **West Bengal** | 🟡 R1, R2, stray (R3 not found) | ⏳ R1 due 4 Nov | added 2026-11-03. Result PDFs have no text mapping, read with NamahaPDF OCR (`pipeline/ocr-grid.ts`). R1 and R3 result files not found in any archive snapshot |
+| **West Bengal** | ✅ R1–R3, stray | ⏳ R1 due 4 Nov | added 2026-11-03. Result PDFs have no text mapping, read with NamahaPDF OCR (`pipeline/ocr-grid.ts`). R1 and R3 result files not found in any archive snapshot |
 | Tamil Nadu | ⛔ needs NBEMS 2025 result | ⏳ R1 not out (PwD list out 31 Oct) | 2025 lists give TN rank + roll no. only; the 2025 NBEMS result is offline and not archived |
 | Delhi | ✅ via MCC | ✅ via MCC | DU / IP University quotas are MCC rounds |
 | Jharkhand | ⛔ portal reset | ⏳ R1 due 3–4 Nov | |
@@ -61,7 +61,7 @@ All ranks shown on the site are All India Ranks. Where a state prints only its o
 | Official notices feed + alerts | 🟡 | ✅ /notices reads MCC + 10 state sites hourly. ⬜ Other states load notices by script (linked only). ⬜ Email/push alerts |
 | INI-CET (AIIMS, JIPMER, PGIMER) | ⬜ | Gettable (AIIMS publishes round PDFs) but a separate exam with its own rank: needs its own predictor input and pages |
 | NEET MDS (dental) | ⬜ | Gettable, but a separate exam and dataset (dental colleges, MDS branches) |
-| State data before 2025 | 🟡 | ✅ 2024: Kerala, Maharashtra (R3 list lost; later-round candidates partly without AIR), Telangana, Madhya Pradesh, Himachal (R1–R3), West Bengal (R1–R3, stray, special stray), Gujarat (final closing ranks; also 2023), Goa (R1, R3, stray, special stray; R2 never archived), Chhattisgarh (R1 revised, R2, mop-up, stray), Punjab (R1–R3, special stray), Odisha (R1–R3), J&K (R1–R3, mop-up, stray, special stray; OCR of scans), Rajasthan (R1–R3; R1/R2 from github.com/pramod-zillella/neet-rajasthan-pg-counselling, sha256-verified copies of the board's PDFs; its R3 copy is byte-identical to our archived one), Andhra Pradesh (Phase I–III, stray, special stray, 4,782 allotments, from archived NTR UHS college-wise lists; MQ special stray not archived), Bihar (R1 only, still on BCECEB as pdf_Web/PGMAC2024_FALTM.pdf), Assam (R1 only, archived DME select list), Haryana (R1, R2; R3/stray never archived, uhsr.ac.in returns 503). AIR for Punjab, Odisha, J&K, Rajasthan, Assam 2024 comes from the NBEMS 2024 result. ⛔ 2024: Karnataka (KEA lists not online or archived; medicalneetpg.com shows R1/R2 as an app, no PDF), Bihar R2+, Assam R2+, Haryana R3+, Rajasthan stray (archive-only, not fetched) |
+| State data before 2025 | 🟡 | ✅ 2024: Kerala, Maharashtra (R3 list lost; later-round candidates partly without AIR), Telangana, Madhya Pradesh, Himachal (R1–R3), West Bengal (R1–R3, stray, special stray), Gujarat (final closing ranks; also 2023), Goa (R1, R3, stray, special stray; R2 never archived), Chhattisgarh (R1 revised, R2, mop-up, stray), Punjab (R1–R3, special stray), Odisha (R1–R3), J&K (R1–R3, mop-up, stray, special stray; OCR of scans), Rajasthan (R1–R3, stray, special stray; R1/R2 from github.com/pramod-zillella/neet-rajasthan-pg-counselling, sha256-verified copies of the board's PDFs; its R3 copy is byte-identical to our archived one), Andhra Pradesh (Phase I–III, stray, special stray, 4,782 allotments, from archived NTR UHS college-wise lists; MQ special stray not archived), Bihar (R1, R2, stray, still on BCECEB under pdf_Web/; R3 not found), Assam (R1 only, archived DME select list), Karnataka (R1, R2, R3 mop-up, second stray; still on KEA under keawebentry456/pget2024/; first stray R4 not found), Haryana (R1, R2; R3/stray never archived, uhsr.ac.in returns 503). AIR for Punjab, Odisha, J&K, Rajasthan, Assam 2024 comes from the NBEMS 2024 result. ⛔ 2024: Karnataka R4 (first stray), Bihar R3, Assam R2+, Haryana R3 + stray (copies only on Scribd: "ADMINMD12-allocatedinR3", "Haryana Stray Round (Session 2024-25) Allotment"), AP MQ special stray |
 
 ## 4. Rank conversion sources (not shown on the site, used by the parsers)
 
