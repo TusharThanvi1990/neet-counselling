@@ -7,6 +7,7 @@
  * The All India Rank comes from the NEET-PG 2025 Assam State Merit List (Roll No | Name | Category | Score | Incentive % |
  * Revised score | NEET-PG 2025 publish rank | …), matched on roll number. SHQ = State Health service (in-service) quota.
  * Only the 2025 Round 2 select list is published as a list; Rounds 1 and 3 and the stray round were notices only.
+ * 2024 Round 1's select list survives in the Internet Archive.
  * Names are never written.
  *
  * Usage: tsx pipeline/states/assam.ts
@@ -19,19 +20,25 @@ const RAW = 'data/raw/states/assam';
 const B = 'https://dme.assam.gov.in/sites/default/files/swf_utility_folder/departments/dme_lipl_in_oid_8/latest/';
 const ROUNDS: [string, number, string, string, string][] = [ // [out file, year, label, select list PDF, merit list PDF]
   ['as2025_r2', 2025, 'Round 2', 'admission_notice-neet-pg2025_round-2.pdf', 'neet_pg_2025_assam_state_merit_list_final.pdf'],
+  // 2024 Round 1 select list (DME/PG/27/2024, 28-11-2024), deleted from the site; Internet Archive copy (snapshots of 02-12-2024
+  // and 19-04-2025 are identical). AIR from the NBEMS NEET-PG 2024 result by roll number.
+  ['as2024_r1', 2024, 'Round 1', 'admission_notice_admission_into_pg_course_after_1st_round_online_counselling_session_2024.pdf', 'nbems2024'],
 ];
+const LOCAL: Record<string, string> = { as2024_r1: 'as2024_r1.pdf' };
+const ARCHIVE: Record<string, string> = { as2024_r1: 'https://web.archive.org/web/20241202191638/' };
 const COLLEGE: Record<string, string> = {
   '01': 'Assam Medical College, Dibrugarh', '02': 'Gauhati Medical College, Guwahati', '03': 'Silchar Medical College, Silchar',
   '04': 'Jorhat Medical College, Jorhat', '05': 'Fakhruddin Ali Ahmed Medical College, Barpeta', '06': 'Tezpur Medical College, Tezpur',
   '07': 'Dr. B. Borooah Cancer Institute, Guwahati', '08': 'Lakhimpur Medical College, North Lakhimpur',
 };
-const FIX: [RegExp, string][] = [[/^MS OBSTETRICS &?$/, 'MS OBSTETRICS & GYNAECOLOGY'], [/^MD TUBERCULOSIS &?$/, 'MD RESPIRATORY MEDICINE'], [/^MD DERMATOLOGY,?$/, 'MD DERMATOLOGY, VENEREOLOGY & LEPROSY']];
+const FIX: [RegExp, string][] = [[/^MD RADIO-THERAPY\b.*$/,'MD RADIO-THERAPY'], [/^MS OBSTETRICS &?$/, 'MS OBSTETRICS & GYNAECOLOGY'], [/^MD TUBERCULOSIS &?$/, 'MD RESPIRATORY MEDICINE'], [/^MD DERMATOLOGY,?$/, 'MD DERMATOLOGY, VENEREOLOGY & LEPROSY']];
 const rows = async (f: string) => { const out: string[][] = []; for await (const pg of readPages(new Uint8Array(readFileSync(`${RAW}/${f}`)))) out.push(...gridTable(pg).rows); return out; };
 
 for (const [file, year, label, list, meritPdf] of ROUNDS) {
   const merit = new Map<string, number>();
-  for (const c of await rows(meritPdf)) if (/^\d{8,}$/.test(c[1] ?? '') && /^\d+$/.test(c[7] ?? '')) merit.set(c[1], Number(c[7]));
-  const sel = (await rows(list)).filter((c) => /^\d+$/.test(c[0] ?? '') && c.length >= 11);
+  if (meritPdf === 'nbems2024') for (const [roll, v] of Object.entries(JSON.parse(readFileSync('data/raw/nbems/neetpg2024_air.json', 'utf8')) as Record<string, [number, number]>)) merit.set(roll, v[0]);
+  else for (const c of await rows(meritPdf)) if (/^\d{8,}$/.test(c[1] ?? '') && /^\d+$/.test(c[7] ?? '')) merit.set(c[1], Number(c[7]));
+  const sel = (await rows(LOCAL[file] ?? list)).filter((c) => /^\d+$/.test(c[0] ?? '') && c.length >= 11);
   // subject code → most common subject text (the text before the college name)
   const votes = new Map<string, Map<string, number>>();
   const parsed = sel.map((c) => {
@@ -56,7 +63,7 @@ for (const [file, year, label, list, meritPdf] of ROUNDS) {
     out.push({ rank, stateRank: p.stateRank, quota: p.quota, institute: p.coll, collegeCode: p.cc, course, allottedCategory: p.quota, candidateCategory: p.cand, pwd: p.pwd, inService: p.quota === 'SHQ', remarks: '', page: 0 });
   }
   out.sort((a, b) => a.rank - b.rank);
-  writeFileSync(`data/parsed/${file}.json`, JSON.stringify({ source: B + list, url: B + list, counselling: 'Assam', year, round: label, rows: out }));
+  writeFileSync(`data/parsed/${file}.json`, JSON.stringify({ source: B + list, url: (ARCHIVE[file] ?? '') + B + list, counselling: 'Assam', year, round: label, rows: out }));
   console.log(`${file}: ${out.length} allotments (${none} without a seat, ${noRank} roll not in merit list, ${noSubj} subject/college unknown); merit list ${merit.size}`);
   console.log('subjects', Object.fromEntries(subject));
 }
