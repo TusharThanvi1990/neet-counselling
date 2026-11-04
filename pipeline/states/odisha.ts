@@ -16,6 +16,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { readPages } from '../engine';
 import { gridTable } from '../grid';
+import { pageLines } from '../textlines';
 
 const RAW = 'data/raw/states/odisha';
 const WB = 'https://web.archive.org/web/20260321222847id_/https://dmetodisha.in/PGMCC_Static/DOWNLOADSPGM_22/';
@@ -92,6 +93,36 @@ for (const [file, year, label, list, meritPdf, official] of ROUNDS) {
     console.log(`${file}: ${o.length} admissions`);
   }
   console.log(`2025 R3/stray: ${lateNoRank} rolls not in the NBEMS result`);
+}
+
+// ---- 2026 Round 1 ("PG Medical allotment 1st round 2026", 04-11-2026, live on dmetodisha.in):
+//   State Application No | Name | CMR-UR | Choice No | Allotted College | Allotted Course | Allotted Subject | Allotted Category
+// in two sections (DIRECT CANDIDATES, INSERVICE CANDIDATES), then a table of seats lying vacant (not read). The application
+// number is matched to the NEET roll number through the revised final merit list of 30-10-2026 (State Appln No | NEET Roll No
+// | …), and the AIR comes from the NBEMS 2026 result.
+{
+  const D = 'https://dmetodisha.in/PGMCC_Static/DOWNLOADSPGM_22/';
+  const url = D + 'PG%20MEDICAL%20ALLOTMENT%201ST%20ROUND%202026%20_PUBLISH%20WEB_04_11_2026.pdf';
+  const air26 = JSON.parse(readFileSync('data/raw/nbems/neetpg2026_air.json', 'utf8')) as Record<string, [number, number]>;
+  const rollOf = new Map<string, string>();
+  for await (const pg of readPages(new Uint8Array(readFileSync(`${RAW}/or2026_merit.pdf`)))) {
+    for (const l of pageLines(pg)) for (const m of l.words.map((w) => w.text).join(' ').matchAll(/\b(26\d{6})\s+(\d{11})\b/g)) rollOf.set(m[1], m[2]);
+  }
+  const out: any[] = []; let ins = false, listed = 0, noRank = 0;
+  for (const c of await rows('or2026_r1_allotment.pdf')) {
+    const line = c.join('').replace(/\s+/g, '').toUpperCase();
+    if (/INSERVICECANDIDATES|NT-INSERVICE/.test(line)) { ins = true; continue; }
+    if (/LYINGVACANT/.test(line)) break;
+    if (!/^26\d{6}$/.test(c[0] ?? '') || !(c[4] ?? '').trim()) continue;
+    listed++;
+    const roll = rollOf.get(c[0]), rank = roll ? air26[roll]?.[0] : undefined;
+    if (!rank) { noRank++; continue; }
+    out.push({ rank, quota: ins ? 'In-service' : 'State', institute: c[4].trim(), course: c[6].trim(), courseType: /DNB/.test(c[5]) ? 'DNB' : 'MD/MS',
+      allottedCategory: (c[7] ?? '').trim(), candidateCategory: '', inService: ins, upgraded: false, remarks: '', page: 0 });
+  }
+  out.sort((a, b) => a.rank - b.rank);
+  writeFileSync('data/parsed/od2026_r1.json', JSON.stringify({ source: url, url, counselling: 'Odisha', year: 2026, round: 'Round 1', rows: out }));
+  console.log(`od2026_r1: ${out.length} allotments (${listed} listed, ${out.filter((r) => r.inService).length} in-service, ${noRank} without a roll / AIR); appl → roll ${rollOf.size}`);
 }
 
 // ---- 2024 (Internet Archive copies of the DMET files; neither list prints an AIR, which comes from the NBEMS NEET-PG

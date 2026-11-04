@@ -530,6 +530,44 @@ const jhSeat = (s: string) => {
   const u = s.toUpperCase().replace(/\s+/g, ''), pwd = /-(PH|LOCO|PWD)/.test(u), base = u.replace(/-(PH|LOCO|PWD).*$/, '');
   return (base === 'UR' ? 'Open' : base) + (pwd ? ' PwD' : '');
 };
+// Uttarakhand (HNBUMU): college (letters only, lower case) key → [display name, MCC code, government?]
+const UK_INST: [string, string, string, boolean][] = [
+  ['doonmedicalcollege', 'Govt. Doon Medical College, Dehradun', '701352', true],
+  ['governmentmedicalcollegehaldwani', 'Government Medical College, Haldwani', '700386', true],
+  ['veerchandrasinghgarhwali', 'Veer Chandra Singh Garhwali Govt. Institute of Medical Science & Research, Srinagar (Garhwal)', '700502', true],
+  ['sobhansinghjeena', 'Soban Singh Jeena Govt. Institute of Medical Science & Research, Almora', '904587', true],
+  ['sobansinghjeena', 'Soban Singh Jeena Govt. Institute of Medical Science & Research, Almora', '904587', true],
+  ['gururamrai', 'Shri Guru Ram Rai Institute of Medical & Health Sciences, Dehradun', '', false],
+  ['himalayaninstitute', 'Himalayan Institute of Medical Sciences, Dehradun', '', false],
+  ['gautambuddhachikitsa', 'Gautam Buddha Chikitsa Mahavidyalaya, Dehradun', '', false],
+  // DNB seats; MCC lists the hospital without a code
+  ['hansfoundationgeneralhospital', 'The Hans Foundation General Hospital, Satpuli', '', false],
+];
+const ukInst = (s: string) => { const k = s.toLowerCase().replace(/[^a-z]/g, ''); return UK_INST.find(([p]) => k.includes(p)); };
+/** "GeneralMedicine(PostMBBSDNBSeats)" → "(NBEMS) GeneralMedicine"; "DiplomainAnesthesiology(PostMBBS DIPLOMASeats)" → NBEMS diploma */
+const ukCourse = (c: string) => {
+  const s = c.replace(/\s+/g, ''), name = s.replace(/\(.*$/, '').replace(/^Diploma(in)?/i, '').replace(/^ENT(DLO)?$/i, 'ENT');
+  return /DNB/i.test(s) ? `(NBEMS) ${name}` : /DIPLOMA/i.test(s) ? `(NBEMS-DIPLOMA) ${name}` : `MD/MS ${name}`;
+};
+/** "UR(Open)" → Open, "OBC(NCL)(WOMEN)" → "OBC (Women)", "SC(PwD)" → "SC PwD" */
+const ukSeat = (s: string) => {
+  const u = s.toUpperCase().replace(/\s+/g, ''), base = u.match(/^(UR|OBC|SC|ST|EWS|GEN)/)?.[1] ?? u;
+  const b = base === 'UR' || base === 'GEN' ? 'Open' : base;
+  return /PWD|DPW|PH\b|DIVYANG/.test(u) ? `${b} PwD` : /WOMEN/.test(u) ? `${b} (Women)` : /FF|FREEDOM/.test(u) ? `${b} (Freedom fighter)` : /SPORT/.test(u) ? `${b} (Sports)` : b;
+};
+// Puducherry (CENTAC): college → [display name, MCC code]; only IGMCRI is a government college
+const PY_INST: [RegExp, string, string][] = [
+  [/INDIRA GANDHI/i, 'Indira Gandhi Medical College & Research Institute, Puducherry', '700490'],
+  [/MANAKULA/i, 'Sri Manakula Vinayagar Medical College & Hospital, Puducherry', ''],
+  [/VENKATESWARA/i, 'Sri Venkateswaraa Medical College Hospital & Research Centre, Puducherry', ''],
+  [/PONDICHERRY INSTITUTE/i, 'Pondicherry Institute of Medical Sciences', ''],
+];
+// CENTAC seat codes: first letter U = U.T. residents, A = all India (management seats); then the community; "/FF" etc. horizontal
+const PY_CAT: Record<string, string> = { GE: 'Open', OB: 'OBC', MB: 'MBC', EB: 'EBC', BM: 'BC (Muslim)', BT: 'Backward Tribe', SC: 'SC', ST: 'ST' };
+const pySeat = (s: string) => {
+  const [code, h] = s.toUpperCase().replace(/\s+/g, '').split('/'), base = PY_CAT[code.slice(1)] ?? code;
+  return base + (h === 'FF' ? ' (Freedom fighter)' : h === 'ESM' ? ' (Ex-servicemen)' : h === 'MSP' ? ' (Sports)' : h === 'PH' || h === 'PWD' ? ' PwD' : '');
+};
 const bhCourse = (type: string, b: string) => (/^DIPLOMA/i.test(type) ? MH_DIPLOMA[b] ?? `Diploma ${b.replace(/^DIP\.?/i, '').replace(/^P\.M\.R\.?$/i,'Physical Medicine and Rehabilitation')}` : `MD/MS ${({ 'F.M.T.': 'Forensic Medicine', RADIOONCOLOGY: 'Radiation Oncology' } as Record<string, string>)[b.replace(/\s+/g, '').toUpperCase()] ?? b}`);
 // Punjab (BFUHS): the list cells often repeat or pick up text from the row above, so a college is the longest of these
 // name keys found inside the cell's letters. [key, display name, MCC code, government?]
@@ -697,10 +735,20 @@ const OD_INST: Record<string, [string, string]> = {
 // 2025 Round 2 prints names without spaces ("VIMSARBURLA", "GENMEDICINE"): look names up by their letters
 const odKey = (s: string) => s.toUpperCase().replace(/[^A-Z]/g, '');
 const OD_INST_K = new Map(Object.entries(OD_INST).map(([k, v]) => [odKey(k), [k, v] as const]));
+// 2026 lists use Odia place names (Kataka = Cuttack, Baleswar = Balasore) and short forms (BBSR, RKL, AHRCC)
+for (const [alias, name] of [['SCBMCHKATAKA', 'SCB MCH CUTTACK'], ['PGIMERBBSR', 'PGIMER BHUBANESWAR'], ['DRIEMSKATAKA', 'DRIEMS INST OF HEALTH SC HOSP TANGI'],
+  ['HITECHBBSR', 'HI-TECH MCH BHUBANESWAR'], ['HITECHMCHBBSR', 'HI-TECH MCH BHUBANESWAR'], ['HITECHRKL', 'HI-TECH MCH ROURKELA'], ['HITECHMCHRKL', 'HI-TECH MCH ROURKELA'],
+  ['FMMCHBALESWAR', 'FMMCH BALASORE'], ['AHRCCKATAKA', 'AHPGIC, CUTTACK'], ['SJMCHPURI', 'S J MCH PURI'], ['BBMCHBALANGIR', 'B B MCH BOLANGIR']] as const)
+  OD_INST_K.set(alias, [name, OD_INST[name]] as const);
+/** 2026 seat codes "UR-GC" / "SEBC-ES" / "ST-PWD": category + horizontal reservation */
+const odSeat = (c: string) => {
+  const [b, h] = c.toUpperCase().replace(/\s+/g, '').split('-'), base = OD_CAT[b] ?? b;
+  return !h ? base : h === 'PWD' || h === 'PH' ? `${base} PwD` : h === 'GC' ? `${base} (Green Card Holder)` : h === 'ES' ? `${base} (Ex-servicemen ward)` : `${base} (${h})`;
+};
 const OD_CAT: Record<string, string> = { UR: 'Open', SC: 'SC', ST: 'ST', PH: 'Open PwD', GCH: 'Green Card Holder', ES: 'Ex-servicemen ward', SEBC: 'SEBC', EWS: 'EWS' };
 const odCand = (c: string) => (/^General/.test(c) ? 'General' : /^OBC/.test(c) ? 'SEBC' : c);
 const OD_SUBJ_K: Record<string, string> = { GENMEDICINE: 'GEN MEDICINE', GENSURGERY: 'GEN SURGERY', COMMMEDICINE: 'COMM MEDICINE', RESPMEDICINE: 'RESP MEDICINE', OBSTANDGYNE: 'OBST AND GYNE',
-  TRANSFUSIUONMEDICINE: 'TRANSFUSION MEDICINE', FMT: 'FORENSIC MEDICINE', RADIOONCOLOGY: 'RADIOTHERAPY', SKINVD: 'SKIN VD' };
+  TRANSFUSIUONMEDICINE: 'TRANSFUSION MEDICINE', TRANSFMEDICINE: 'TRANSFUSION MEDICINE', FMT: 'FORENSIC MEDICINE', RADIOONCOLOGY: 'RADIOTHERAPY', SKINVD: 'SKIN VD' };
 const odCourse = (raw: string, t: string) => {
   const s = OD_SUBJ_K[odKey(raw)] ?? raw;
   const n = ({ 'GEN MEDICINE': 'GENERAL MEDICINE', 'GEN SURGERY': 'GENERAL SURGERY', 'RESP MEDICINE': 'RESPIRATORY MEDICINE', 'COMM MEDICINE': 'COMMUNITY MEDICINE', 'OBST AND GYNE': 'OBSTETRICS & GYNAECOLOGY', PEDIATRICS: 'PAEDIATRICS', ANESTHESIOLOGY: 'ANAESTHESIOLOGY' } as Record<string, string>)[s] ?? s;
@@ -762,7 +810,7 @@ const wbCourse = (c: string) => {
   if (/^DIP/.test(k)) return ({ 'OBSTETRICS & GYNAECOLOGY': 'Diploma in Obstetrics and Gynaecology', OPHTHALMOLOGY: 'Diploma in Ophthalmology', PAEDIATRICS: 'Diploma in Child Health', ANAESTHESIOLOGY: 'Diploma in Anaesthesiology' } as Record<string, string>)[spec] ?? `Diploma in ${spec}`;
   return `MD/MS ${spec}`;
 };
-const STATE_FILES = readdirSync('data/parsed').filter((f) => /^(mh|ka|kl|ap|rj|tg|gj|mp|hr|bh|pb|cg|hp|jk|jh|ga|up|as|od|wb|tn)20\d\d_[a-z0-9_]+\.json$/.test(f) && !/merit|_oc$/.test(f)).map((f) => f.replace('.json', ''));
+const STATE_FILES = readdirSync('data/parsed').filter((f) => /^(mh|ka|kl|ap|rj|tg|gj|mp|hr|bh|pb|cg|hp|jk|jh|ga|up|as|od|wb|tn|uk|py)20\d\d_[a-z0-9_]+\.json$/.test(f) && !/merit|_oc$/.test(f)).map((f) => f.replace('.json', ''));
 
 // ---- rounds ----
 const files = readdirSync('data/parsed').filter((f) => /^mcc20\d\d_[a-z0-9]+\.json$/.test(f)).map((f) => f.replace('.json', ''))
@@ -795,6 +843,29 @@ rounds.forEach((rd, ri) => {
       rows.push(ri, r.rank, ii, course.get(normCourse(MH_DIPLOMA[r.course] ?? r.course)), quota.get(`Maharashtra ${q}`), acat.get(seat), ccat.get(mhCandidate(r.candidateCategory)), r.page);
       continue;
     }
+    if (rd.counselling === 'Uttarakhand') {
+      const m = ukInst(r.institute);
+      if (!m) unknownMp.add(`UK ${r.institute}`);
+      const k = r.institute.toLowerCase().replace(/[^a-z]/g, '');
+      const ii = instIndex(`UK ${m?.[0] ?? k}`, rd.year, { display: m?.[1] ?? r.institute, code: m?.[2] ?? '', state: 'Uttarakhand' });
+      const qk = r.quota.toLowerCase().replace(/[^a-z]/g, ''), pmhs = r.inService || /pmhs/i.test(r.quotaTag ?? '');
+      const q = r.nri || /nri/.test(qk) ? 'NRI' : /allindia/.test(qk) ? 'Private (open to all)' : /manag/.test(qk) ? 'Management'
+        : pmhs ? 'In-service (incentive marks)' : m && !m[3] ? 'Private (state quota)' : 'State Quota';
+      const c = r.candidateCategory.toUpperCase().replace(/\s+/g, ''), cand = /^(UR|GEN|GENERAL)/.test(c) ? 'General' : /^OBC/.test(c) ? 'OBC' : c;
+      rows.push(ri, r.rank, ii, course.get(normCourse(ukCourse(r.course))), quota.get(`Uttarakhand ${q}`), acat.get(ukSeat(r.allottedCategory)), ccat.get(cand), r.page);
+      continue;
+    }
+    if (rd.counselling === 'Puducherry') {
+      const m = PY_INST.find(([re]) => re.test(r.institute));
+      if (!m) unknownMp.add(`PY ${r.institute}`);
+      const ii = instIndex(`PY ${m?.[1] ?? r.institute}`, rd.year, { display: m?.[1] ?? r.institute, code: m?.[2] ?? '', state: 'Puducherry' });
+      const q = /NRI/.test(r.quota) ? 'NRI' : /MINORITY/.test(r.quota) ? 'Minority' : /MANAGEMENT/.test(r.quota) ? 'Management'
+        : m?.[2] ? 'State Quota' : 'Private (state quota)';
+      const cc = r.candidateCategory.toUpperCase().split('/')[0].trim(), cand = cc === 'GEN' ? 'General' : cc === 'BCM' ? 'BC (Muslim)' : cc === 'BT' ? 'Backward Tribe' : cc;
+      const crs = r.course.replace(/^OBS\.?\s*&\s*GYN\.?$/i, 'Obstetrics & Gynaecology');
+      rows.push(ri, r.rank, ii, course.get(normCourse(`MD/MS ${crs}`)), quota.get(`Puducherry ${q}`), acat.get(pySeat(r.allottedCategory)), ccat.get(cand), r.page);
+      continue;
+    }
     if (rd.counselling === 'Goa') {
       const ii = instIndex('GA GMC', rd.year, { display: 'Goa Medical College, Bambolim', code: '700479', state: 'Goa' });
       const c = r.allottedCategory.toUpperCase().replace(/^DR-/, ''), seat = ({ GEN: 'Open', OBC: 'OBC', SC: 'SC', ST: 'ST', EWS: 'EWS' } as Record<string, string>)[c] ?? c;
@@ -812,10 +883,10 @@ rounds.forEach((rd, ri) => {
       continue;
     }
     if (rd.counselling === 'Odisha') {
-      const mgmt = /\(MGT\)/.test(r.institute), k0 = r.institute.replace(/\s*\(MGT\)/, '').trim(), hit = OD_INST_K.get(odKey(k0)), k = hit?.[0] ?? k0, m = hit?.[1];
+      const mgmt = /\(MGT\)|-MGT$/.test(r.institute), k0 = r.institute.replace(/\s*\(MGT\)|-MGT$/, '').trim(), hit = OD_INST_K.get(odKey(k0)), k = hit?.[0] ?? k0, m = hit?.[1];
       if (!m) unknownMp.add(`OD ${r.institute}`);
       const ii = instIndex(`OD ${k}`, rd.year, { display: m?.[0] ?? k, code: m?.[1] ?? '', state: 'Odisha' });
-      const seat = mgmt ? 'Open' : OD_CAT[r.allottedCategory] ?? r.allottedCategory;
+      const seat = mgmt ? 'Open' : OD_CAT[r.allottedCategory] ?? odSeat(r.allottedCategory);
       const q = mgmt ? 'Management' : r.inService ? 'In-service' : m?.[1] ? 'State Quota' : 'Private (state quota)';
       rows.push(ri, r.rank, ii, course.get(normCourse(odCourse(r.course, r.courseType))), quota.get(`Odisha ${q}`), acat.get(seat), ccat.get(odCand(r.candidateCategory)), r.page);
       continue;

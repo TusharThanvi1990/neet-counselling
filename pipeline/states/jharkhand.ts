@@ -29,6 +29,8 @@ const ROUNDS: [string, number, string, string][] = [ // [file, year, round label
   ['jh2024_sstray', 2024, 'Special stray', J + '1700.pdf'], // 17-03-2025
   ['jh2025_r1', 2025, 'Round 1', J + '1953.pdf'], // 28-11-2025
   ['jh2025_r2', 2025, 'Round 2', J + '1997.pdf'], // 22-12-2025
+  ['jh2025_r3', 2025, 'Round 3', J + '2017.pdf'], // 17-02-2026
+  ['jh2025_stray', 2025, 'Stray', J + '2021.pdf'], // 27-02-2026
   ['jh2026_r1', 2026, 'Round 1', J + '2276.pdf'], // 03-11-2026
 ];
 const key = (s: string) => (s ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
