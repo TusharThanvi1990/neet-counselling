@@ -494,7 +494,7 @@ const bhSeat = (cat: string, inst: [string, string] | undefined): [string, strin
   if (c === 'MM' || c === 'SM') return ['Minority', 'Open'];
   return [inst?.[1] ? 'State Quota' : 'Private (state quota)', BH_CAT[c] ?? c];
 };
-const bhCourse = (type: string, b: string) => (/^DIPLOMA/i.test(type) ? MH_DIPLOMA[b] ?? `Diploma ${b.replace(/^DIP/i, '')}` : `MD/MS ${({ 'F.M.T.': 'Forensic Medicine', RADIOONCOLOGY: 'Radiation Oncology' } as Record<string, string>)[b] ?? b}`);
+const bhCourse = (type: string, b: string) => (/^DIPLOMA/i.test(type) ? MH_DIPLOMA[b] ?? `Diploma ${b.replace(/^DIP\.?/i, '').replace(/^P\.M\.R\.?$/i,'Physical Medicine and Rehabilitation')}` : `MD/MS ${({ 'F.M.T.': 'Forensic Medicine', RADIOONCOLOGY: 'Radiation Oncology' } as Record<string, string>)[b] ?? b}`);
 // Punjab (BFUHS): the list cells often repeat or pick up text from the row above, so a college is the longest of these
 // name keys found inside the cell's letters. [key, display name, MCC code, government?]
 const PB_INST: [string, string, string, boolean][] = [

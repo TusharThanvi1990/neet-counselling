@@ -104,13 +104,21 @@ console.log('status', Object.fromEntries(statuses));
 console.log('categories', Object.fromEntries([...cats].sort((a, b) => b[1] - a[1])));
 console.log('seat types', Object.fromEntries([...seats].sort((a, b) => b[1] - a[1])));
 
-// ---- 2024 (rajpgneet2024.org, via its Internet Archive copies; the site no longer exists) ----
-// Only the list published after Round 3 was archived ("allotments med for web r3_2024"): every seat held after Round 3,
+// ---- 2024 (rajpgneet2024.org; the site no longer exists) ----
+// Each round's list re-lists every seat held after that round:
 //   S.No | State Merit No. | Allotted to (Reg. ID) | Gender | Considered category, sub-cat | Name | Course | College (State/Mgmt - Recog | Post MBBS DNB/Diploma)
-// so it is published as "Round 3" closing ranks (all seats held after Round 3). Reg. ID → NEET roll and in-service status come from
-// the round-wise merit lists, roll → AIR from the NBEMS NEET-PG 2024 result.
+// Round 1 is kept whole; Rounds 2 and 3 keep only seats that differ from the candidate's seat after the previous round (as 2025).
+// Round 3 comes from the Internet Archive copy. Rounds 1 and 2 come from the copies in github.com/pramod-zillella/neet-rajasthan-pg-counselling
+// (sha256 listed there; its Round 3 copy is byte-identical to our archived one). Reg. ID → NEET roll and in-service status
+// come from the round-wise merit lists, roll → AIR from the NBEMS NEET-PG 2024 result.
 {
-  const A = 'https://web.archive.org/web/20250317043809/http://rajpgneet2024.org/docs_upd/allotments%20med%20for%20web%20r3_2024.pdf';
+  const GH = 'https://github.com/pramod-zillella/neet-rajasthan-pg-counselling/raw/HEAD/documents/2024/allotment/';
+  const R24: [string, string, string, string][] = [ // [file, round, official URL, working copy]
+    ['rj2024_r1', 'Round 1', 'https://rajpgneet2024.org/docs_upd/rep_med_r1_web_2024_06122024.pdf', GH + 'round-1.pdf'],
+    ['rj2024_r2', 'Round 2', 'https://www.rajpgneet2024.org/docs_upd/roster_rep_med_2024_r2_16012025.pdf', GH + 'round-2.pdf'],
+    ['rj2024_r3', 'Round 3', 'http://rajpgneet2024.org/docs_upd/allotments%20med%20for%20web%20r3_2024.pdf',
+      'https://web.archive.org/web/20250317043809/http://rajpgneet2024.org/docs_upd/allotments%20med%20for%20web%20r3_2024.pdf'],
+  ];
   const nb = JSON.parse(readFileSync('data/raw/nbems/neetpg2024_air.json', 'utf8')) as Record<string, [number, number]>;
   const rollOf = new Map<string, string>(), svc24 = new Set<string>();
   for (const f of ['rj2024_merit_r1', 'rj2024_merit_r2', 'rj2024_merit_r3']) {
@@ -142,23 +150,57 @@ console.log('seat types', Object.fromEntries([...seats].sort((a, b) => b[1] - a[
     rkgovtdistricthospitalrajsamand: 'DH Rajsamand', govtamritkaurhospitalbeawarajmer: 'Govt Amrit Kaur Hospital Beawar',
   };
   const GMC_BHARATPUR = 'Shri Jagannath Pahadiya Medical College Bharatpur or GMC Bharatpur';
+  const held24 = new Map<string, string>();
+  for (const [file, label, official, url] of R24) {
   const out: any[] = [];
-  let noAir = 0;
-  for await (const { page, rows } of tables('rj2024_r3')) for (const c of rows) {
+  let noAir = 0, same = 0;
+  for await (const { page, rows } of tables(file)) for (const c of rows) {
     if (!/^\d+$/.test(c[0] ?? '') || !/^PM\d+$/.test((c[2] ?? '').trim())) continue;
     const reg = c[2].trim(), roll = rollOf.get(reg), rank = roll ? nb[roll]?.[0] : undefined;
-    if (!rank) { noAir++; continue; }
     const college = (c[7] ?? '').replace(/\s+/g, ' ').trim(), kind = college.match(/\(([^()]*)\)\s*$/)?.[1] ?? '';
     const cat = CAT[(c[4] ?? '').split(/[\s-]/)[0].toUpperCase()] ?? (c[4] ?? '').trim();
     const name = college.replace(/\s*\([^()]*\)\s*$/, ''), nk = key(name);
     const inst = nk === 'gmcbharatpur' || nk === 'govtmedicalcollegebharatpur' ? GMC_BHARATPUR : NAME24[nk] ?? name;
     let course = (c[6] ?? '').replace(/\s+/g, ' ').trim().replace(/^MD\s*\(?PSM\)?$/i, 'MD (Community Medicine)').replace(/\bGen\.\s*/g, 'General ');
     if (!/^Post MBBS/i.test(course)) course = (/Diploma/i.test(kind) ? 'Post MBBS Diploma ' : /DNB/i.test(kind) ? 'Post MBBS DNB ' : '') + course;
+    const sk = key(`${inst}|${course}|${kind}`);
+    if (held24.get(reg) === sk) { same++; continue; }
+    held24.set(reg, sk);
+    if (!rank) { noAir++; continue; }
     out.push({ rank, quota: /^Mgmt/i.test(kind) ? 'Management' : 'State', inService: svc24.has(reg), institute: inst,
       course,
-      allottedCategory: cat, candidateCategory: cat, remarks: 'seat held after Round 3', page });
+      allottedCategory: cat, candidateCategory: cat, remarks: '', page });
   }
   out.sort((a, b) => a.rank - b.rank);
-  writeFileSync('data/parsed/rj2024_r3.json', JSON.stringify({ source: A, url: A, counselling: 'Rajasthan', year: 2024, round: 'Round 3', rows: out }));
-  console.log(`rj2024_r3: ${out.length} seats held after Round 3 (${rollOf.size} reg. IDs mapped, ${noAir} without an AIR)`);
+  writeFileSync(`data/parsed/${file}.json`, JSON.stringify({ source: official, url, counselling: 'Rajasthan', year: 2024, round: label, rows: out }));
+  console.log(`${file}: ${out.length} allotments (${same} held from the previous round, ${noAir} without an AIR; ${rollOf.size} reg. IDs mapped)`);
+  }
+}
+
+// ---- 2026 (pg.neetrajasthan.com; Round 1 allotment 31-10-2026). The list prints the All India Rank and service status:
+//   S.No | RegID | NEETRollNo | Name | Gender | Domicile | Allotted Category | Additional Category | Allotted College (Seat Type) | Allotted Course | Service Status | State Merit Rank | All India Rank
+{
+  const R26: [string, string, string][] = [['rj2026_r1', 'Round 1', 'https://pg.neetrajasthan.com/notifications/1793436152872.pdf']];
+  for (const [file, label, url] of R26) {
+    const out: any[] = [];
+    let col: Record<string, number> | null = null, skipped = 0;
+    for await (const { page, rows } of tables(file)) for (const cells of rows) {
+      const ks = cells.map(key);
+      if (ks.includes('allindiarank')) {
+        const f = (k: string) => ks.findIndex((x) => x.startsWith(k));
+        col = { cat: f('allottedcategory'), college: f('allottedcollege'), course: f('allottedcourse'), svc: f('servicestatus'), air: f('allindiarank') };
+        continue;
+      }
+      if (!col || !/^\d+$/.test(cells[0] ?? '')) continue;
+      const get = (i: number) => (cells[i] ?? '').replace(/\s+/g, ' ').trim();
+      const rank = Number(get(col.air).replace(/\D/g, '')), college = get(col.college);
+      const seat = college.match(/\(([^()]*)\)\s*$/)?.[1] ?? '';
+      if (!rank || !seat) { skipped++; continue; }
+      out.push({ rank, quota: seat, inService: /^in/i.test(get(col.svc)), institute: college.replace(/\s*\([^()]*\)\s*$/, '').replace(/,/g, ' '),
+        course: get(col.course), allottedCategory: get(col.cat), candidateCategory: get(col.cat), remarks: '', page });
+    }
+    out.sort((a, b) => a.rank - b.rank);
+    writeFileSync(`data/parsed/${file}.json`, JSON.stringify({ source: url, url, counselling: 'Rajasthan', year: 2026, round: label, rows: out }));
+    console.log(`${file}: ${out.length} allotments (${skipped} rows skipped)`);
+  }
 }

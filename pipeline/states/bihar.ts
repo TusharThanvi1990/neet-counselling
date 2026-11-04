@@ -19,10 +19,14 @@ import { gridTable } from '../grid';
 
 const RAW = 'data/raw/states/bihar';
 const BASE = 'https://bceceboard.bihar.gov.in/pdf_Result/';
-const ROUNDS: [string, string, string][] = [ // [file, round label, official file]
-  ['bh2025_r2', 'Round 2', 'REV_PGMAC25_ALT_R2.pdf'],
-  ['bh2025_r3', 'Round 3', 'REV_PGMAC25_ALT_R3.pdf'],
-  ['bh2025_r4', 'Stray', 'PGMAC25_ALT_R4.pdf'],
+const ROUNDS: [string, number, string, string][] = [ // [file, year, round label, official file]
+  ['bh2025_r2', 2025, 'Round 2', BASE + 'REV_PGMAC25_ALT_R2.pdf'],
+  ['bh2025_r3', 2025, 'Round 3', BASE + 'REV_PGMAC25_ALT_R3.pdf'],
+  ['bh2025_r4', 2025, 'Stray', BASE + 'PGMAC25_ALT_R4.pdf'],
+  // 2024 Round 1 ("List of allotted candidate through first round counselling of PGMAC-2024", still on the board's site).
+  // Columns: Course Type | PGMAC Id | NEET Appl | NEET AIR | Name | Cat | Sex | [state ranks …] | Institute | Course | Remark; no
+  // status column (every row is a fresh allotment). Later 2024 rounds are no longer online.
+  ['bh2024_r1', 2024, 'Round 1', 'https://bceceboard.bihar.gov.in/pdf_Web/PGMAC2024_FALTM.pdf'],
 ];
 const key = (s: string) => (s ?? '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 const clean = (s: string) => (s ?? '').replace(/\s+/g, ' ').trim();
@@ -35,7 +39,7 @@ const fromRemark = (r: string) => {
   if (dq) return `DQ-${dq[1]}`;
   return k.match(/COMPENSATIONSEAT([A-Z]+?)AGAINST/)?.[1] ?? k.match(/(?:AGAINST|JUMPOVERON)([A-Z]+?)(?:CATEGORY)?SEAT/)?.[1] ?? '';
 };
-for (const [file, label, official] of ROUNDS) {
+for (const [file, year, label, url] of ROUNDS) {
   const out: any[] = [];
   let col: Record<string, number> | null = null, listed = 0;
   for await (const pg of readPages(new Uint8Array(readFileSync(`${RAW}/${file}.pdf`)))) {
@@ -43,7 +47,7 @@ for (const [file, label, official] of ROUNDS) {
       const ks = cells.map(key);
       if (ks.includes('NEETAIR')) {
         const f = (k: string) => ks.indexOf(k);
-        col = { type: f('COURSETYPE'), air: f('NEETAIR'), cat: f('CATEGORY'), gender: f('GENDER'), inst: f('INSTITUTE'), branch: f('BRANCH'), acat: f('ALLOTTEDCAT'),
+        col = { type: f('COURSETYPE'), air: f('NEETAIR'), cat: Math.max(f('CATEGORY'), f('CAT')), gender: Math.max(f('GENDER'), f('SEX')), inst: f('INSTITUTE'), branch: Math.max(f('BRANCH'), f('COURSE')), acat: f('ALLOTTEDCAT'),
           remark: f('REMARK'), status: Math.max(f('ALLOTSTATUS'), f('ALLOTTSTATUS'), f('STATUS')) };
         continue;
       }
@@ -53,7 +57,7 @@ for (const [file, label, official] of ROUNDS) {
       listed++;
       const status = clean(cells[col.status]), remark = clean(cells[col.remark]), inst = clean(cells[col.inst]), branch = clean(cells[col.branch]);
       bump(statuses, key(status));
-      if (!inst || !/FRESH|UPGRAD/.test(key(status))) continue; // retained / not allotted / held from an earlier round
+      if (!inst || (col.status >= 0 && !/FRESH|UPGRAD/.test(key(status)))) continue; // retained / not allotted / held from an earlier round
       const acat = (col.acat >= 0 ? clean(cells[col.acat]) : '') || fromRemark(remark);
       bump(remarks, `${acat} ← ${key(remark).replace(/\(?DEGREE\)?|\(?DIPLOMA\)?/g, '')}`); bump(insts, inst); bump(branches, `${cells[col.type]}|${branch}`); bump(types, key(cells[col.type]));
       out.push({ rank, quota: 'State', courseType: clean(cells[col.type]), institute: inst, course: branch, allottedCategory: acat, candidateCategory: clean(cells[col.cat]),
@@ -61,8 +65,7 @@ for (const [file, label, official] of ROUNDS) {
     }
   }
   out.sort((a, b) => a.rank - b.rank);
-  const url = BASE + official;
-  writeFileSync(`data/parsed/${file}.json`, JSON.stringify({ source: url, url, counselling: 'Bihar', year: 2025, round: label, rows: out }));
+  writeFileSync(`data/parsed/${file}.json`, JSON.stringify({ source: url, url, counselling: 'Bihar', year, round: label, rows: out }));
   console.log(`${file}: ${out.length} allotments in this round (of ${listed} listed)`);
 }
 const top = (m: Map<string, number>) => Object.fromEntries([...m].sort((a, b) => b[1] - a[1]));
