@@ -40,7 +40,7 @@ All ranks shown on the site are All India Ranks. Where a state prints only its o
 | Himachal Pradesh | ✅ R1–R3, stray, special stray | ⏳ | |
 | Jammu & Kashmir | ✅ R1–R3, mop-up, stray, special stray | ✅ R1 | 2026 R1 added 2026-11-04 (notice 250, re-issued as nid 19360; the earlier nid 19361 link was empty) |
 | Goa | 🟡 R2, R3 | ✅ R1 | 2025 R1 file gone |
-| **Uttar Pradesh** | ⛔ lists removed, no copies | ✅ R1 | added 2026-11-03 |
+| **Uttar Pradesh** | 🟡 R1 MD/MS (2,733); R2, R3, stray not found | ✅ R1 | 2026 R1 added 2026-11-03. 2025 R1 from a consultancy's public Google Sheet export of upneet's pages (its 2026 sheet matched our own scrape 2,832/2,832); AIR via DGME UP's own 2025 merit lists |
 | **Assam** | 🟡 R2 only (2024: R1) | ⏳ | added 2026-11-03; R1/R3/stray were notices without lists |
 | **Odisha** | 🟡 R1 + upgraded R1 (admitted list) | ⏳ R1 due 5 Nov | added 2026-11-03 from Internet Archive copies |
 | **West Bengal** | ✅ R1–R3, stray | ⏳ R1 due 4 Nov | added 2026-11-03. Result PDFs have no text mapping, read with NamahaPDF OCR (`pipeline/ocr-grid.ts`). R1 and R3 result files not found in any archive snapshot |
