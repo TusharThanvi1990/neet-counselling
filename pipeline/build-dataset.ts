@@ -464,7 +464,7 @@ const HR_CAT: Record<string, string> = { UR: 'Open', BCA: 'BC-A', BCB: 'BC-B', S
 /** "UR IP IS PWD", "BCA IS", "Mgmt" … → [quota suffix, seat category]. IS = in-service (Haryana Govt doctors);
  *  IP = institutional preference (MBBS from a Haryana college); ESM/FF (ex-servicemen / freedom fighter wards) not modelled. */
 const hrSeat = (code: string): [string, string] => {
-  const t = code.toUpperCase().split(/\s+/);
+  const t = code.toUpperCase().replace(/^-/, '').split(/\s+/); // 2024 R2 prints a few seats as "-UR" / "-BCB"
   if (t[0] === 'MGMT') return ['Management', 'Open'];
   if (t[0] === 'NRI') return ['NRI', 'Open'];
   if (t[0] === 'MINORITY') return ['Minority', 'Open'];

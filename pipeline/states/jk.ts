@@ -106,6 +106,38 @@ console.log('seat categories (CAT-SLI)', top(seats));
 console.log('candidate categories', top(cats));
 console.log('institutes', top(insts));
 
+// ---- 2026 (Notification 250-BOPEE of 2026, 03-11-2026, nid 19360; merit list Notification 239, nid 19303). Same layout as 2025.
+{
+  const air26 = new Map<string, number>(), da26 = new Set<string>();
+  for await (const pg of readPages(new Uint8Array(readFileSync(`${RAW}/jk2026_merit.pdf`)))) {
+    let col: Record<string, number> | null = null;
+    for (const cells of gridTable(pg).rows) {
+      const ks = cells.map(key);
+      if (ks.includes('ROLLNO') && ks.includes('NEETRANK')) { col = { roll: ks.indexOf('ROLLNO'), rank: ks.indexOf('NEETRANK'), da: ks.indexOf('DAMARKS') }; continue; }
+      if (!col) continue;
+      const roll = (cells[col.roll] ?? '').replace(/\D/g, ''), rank = Number((cells[col.rank] ?? '').replace(/\D/g, ''));
+      if (!/^\d{11}$/.test(roll) || !rank) continue;
+      air26.set(roll, rank);
+      if (col.da >= 0 && Number(cells[col.da]) > 0) da26.add(roll);
+    }
+  }
+  console.log(`2026 merit list: ${air26.size} roll numbers, ${da26.size} with in-service (DA) marks`);
+  const R26: [string, string, number][] = [['jk2026_r1', 'Round 1', 19360]];
+  for (const [file, label, nid] of R26) {
+    const seen = new Map<string, Row>();
+    for (const r of await read(file)) seen.set(r.roll, r);
+    let noAir = 0;
+    const rows = [...seen.values()].flatMap((r) => {
+      const rank = r.rank || air26.get(r.roll);
+      if (!rank) { noAir++; return []; }
+      return [{ rank, quota: r.seat, inService: da26.has(r.roll), institute: r.inst, course: r.course, allottedCategory: r.seat, candidateCategory: r.cat, subCategory: r.sub, remarks: '', page: r.page }];
+    }).sort((a, b) => a.rank - b.rank);
+    const url = N(nid);
+    writeFileSync(`data/parsed/${file}.json`, JSON.stringify({ source: url, url, counselling: 'Jammu & Kashmir', year: 2026, round: label, rows }));
+    console.log(`${file}: ${rows.length} allotments (${noAir} without a NEET rank)`);
+  }
+}
+
 // ---- 2024 (JKBOPEE notifications 177, 194 of 2024 and 008, 015, 017, 030 of 2025; scanned, read with NamahaPDF OCR by
 // pipeline/ocr-grid.ts into data/raw/states/jk/ocr). The 2024 lists give the UT merit rank, not the AIR, which comes from
 // the NBEMS NEET-PG 2024 result by roll number. Later lists re-list held seats ("Allotted earlier" + "Upgraded/allotted
