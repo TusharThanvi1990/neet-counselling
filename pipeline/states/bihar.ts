@@ -44,7 +44,7 @@ const statuses = new Map<string, number>(), remarks = new Map<string, number>(),
 /** "AgainstURCategorySeat(Degree)-Female" → UR; "JUMPOVERONEBCseat(Degree)" → EBC. */
 const fromRemark = (r: string) => {
   const k = key(r);
-  const dq = k.match(/AGAINSTDQCATEGORYSEAT(UR|SC|ST|BC|EBC|EWS)/); // DQ seats sit inside a vertical category
+  const dq = k.match(/AGAINSTDQCATEGORYSEAT(UR|SC|ST|BC|EBC|EB|EWS)/); // DQ seats sit inside a vertical category
   if (dq) return `DQ-${dq[1]}`;
   return k.match(/COMPENSATIONSEAT([A-Z]+?)AGAINST/)?.[1] ?? k.match(/(?:AGAINST|JUMPOVERON)([A-Z]+?)(?:CATEGORY)?SEAT/)?.[1] ?? '';
 };
@@ -71,7 +71,9 @@ for (const [file, year, label, url] of ROUNDS) {
       bump(statuses, key(status));
       if (col.status < 0 && NEED_STATUS.has(file)) continue;
       if (!inst || (col.status >= 0 && !/FRESH|UPGRAD/.test(key(status)))) continue; // retained / not allotted / held from an earlier round
-      const acat = (col.acat >= 0 ? clean(cells[col.acat]) : '') || fromRemark(remark);
+      // a bare "DQ" in the Allotted Cat column leaves the vertical category to the remark ("Against DQ Category Seat(EB)")
+      const printed = col.acat >= 0 ? clean(cells[col.acat]) : '';
+      const acat = (/^DQ$/i.test(printed) ? '' : printed) || fromRemark(remark);
       bump(remarks, `${acat} ← ${key(remark).replace(/\(?DEGREE\)?|\(?DIPLOMA\)?/g, '')}`); bump(insts, inst); bump(branches, `${cells[col.type]}|${branch}`); bump(types, key(cells[col.type]));
       out.push({ rank, quota: 'State', courseType: clean(cells[col.type]), institute: inst, course: branch, allottedCategory: acat, candidateCategory: clean(cells[col.cat]),
         female: /FEMALE/.test(key(remark)), remarks: remark, page: pg.index + 1 });

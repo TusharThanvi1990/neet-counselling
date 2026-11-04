@@ -60,7 +60,10 @@ for (const [year, files] of Object.entries(MERIT)) for (const f of files) {
     const ks = cells.map(key);
     if (ks.includes('rollno')) { col = { roll: ks.indexOf('rollno'), rank: ks.findIndex((k) => k === 'rank' || k === 'neetpgrank'), pcms: ks.findIndex((k) => k.startsWith('pcmscandida')), inc: ks.findIndex((k) => k.includes('incentive')) }; continue; }
     if (!col) continue;
-    const roll = (cells[col.roll] ?? '').replace(/\D/g, ''), rank = col.rank < 0 ? 0 : Number((cells[col.rank] ?? '').replace(/\D/g, ''));
+    // the 2026 list was exported from Excel and prints ranks of 100,000+ as "1E+05" / "2E+05": the real rank is lost, so
+    // such rows get no rank here (the NBEMS result fills them in when available) instead of being read as 105 / 205
+    const rankCell = col.rank < 0 ? '' : cells[col.rank] ?? '';
+    const roll = (cells[col.roll] ?? '').replace(/\D/g, ''), rank = /e\+/i.test(rankCell) ? 0 : Number(rankCell.replace(/\D/g, ''));
     if (/^\d{11}$/.test(roll) && col.inc >= 0 && Number(clean(cells[col.inc])) > 0) pcms.add(roll); // incentive marks = PCMS doctor
     if (!/^\d{11}$/.test(roll) || !rank) continue;
     air.set(roll, rank); n++;

@@ -415,10 +415,12 @@ const mpKey = (s: string) => s.toUpperCase().replace(/[^A-Z]/g, '');
 const MP_CAT: Record<string, string> = { UR: 'Open', OBC: 'OBC', SC: 'SC', ST: 'ST', EWS: 'EWS' };
 /** DME MP seat code "[INST|NON_INST/]CAT/HORIZONTAL/OP" (e.g. INST/OBC/X/OP, IN_UR/X/OP, INST/UR/NRI/OP) → [quota suffix, seat category].
  *  IN_ = in-service seat; INST = reserved for graduates of MP colleges; NON_INST or no prefix in a private college = open to all. */
-const mpSeat = (code: string, instType: string): [string, string] => {
+/** In-service doctors (candidate code IN_…) rank on bonus marks, so their seats go to the in-service quota even when the
+ *  seat itself is a general one; otherwise their AIRs would show as very late closing ranks on open seats. */
+const mpSeat = (code: string, instType: string, candidate = ''): [string, string] => {
   const p = code.toUpperCase().split('/');
   const [pre, cat, hz] = p.length >= 4 ? [p[0], p[1], p[2]] : ['', p[0], p[1] ?? 'X'];
-  const inService = cat.startsWith('IN_');
+  const inService = cat.startsWith('IN_') || /^IN_/i.test(candidate);
   const c = MP_CAT[cat.replace(/^IN_/, '')] ?? cat.replace(/^IN_/, ''), pwd = hz === 'PH' ? ' PwD' : '';
   if (inService) return ['In-service', c + pwd];
   if (hz === 'NRI') return ['NRI', 'Open'];
@@ -441,6 +443,8 @@ const HR_INST: Record<string, [string, string]> = {
   panditbhagwatdayalsharmapgims: ['Pt BD Sharma PGIMS, Rohtak', '700374'],
   bhagatphoolsinghgmc: ['BPS Government Medical College for Women, Khanpur Kalan', '700378'],
   shkmgmcnalharnuh: ['SHKM Government Medical College, Nalhar (Nuh)', '700491'],
+  alaafiacivilhospitalmandikheradistrtnuhmewatharyana: ['Al-Aafia Civil Hospital, Mandikhera (Nuh)', '701516'],
+  maharishimarkandeshwarcollegeofmedicalsciencesresearchsadopurambalaundermaharishimarkandeshwaruniversitysadopurambalaprivateuniversity: ['Maharishi Markandeshwar College of Medical Sciences & Research, Sadopur (Ambala)', ''],
   esicfaridabad: ['ESIC Medical College & Hospital, Faridabad', '701500'],
   kcgmckarnal: ['Kalpana Chawla Government Medical College, Karnal', '701698'],
   generalhospitalpanchkulaharyana: ['General Hospital, Panchkula', '700724'],
@@ -466,12 +470,16 @@ const HR_CAT: Record<string, string> = { UR: 'Open', BCA: 'BC-A', BCB: 'BC-B', S
 /** "UR IP IS PWD", "BCA IS", "Mgmt" … → [quota suffix, seat category]. IS = in-service (Haryana Govt doctors);
  *  IP = institutional preference (MBBS from a Haryana college); ESM/FF (ex-servicemen / freedom fighter wards) not modelled. */
 const hrSeat = (code: string): [string, string] => {
-  const t = code.toUpperCase().replace(/^-/, '').split(/\s+/); // 2024 R2 prints a few seats as "-UR" / "-BCB"
-  if (t[0] === 'MGMT') return ['Management', 'Open'];
-  if (t[0] === 'NRI') return ['NRI', 'Open'];
-  if (t[0] === 'MINORITY') return ['Minority', 'Open'];
-  const seat = (HR_CAT[t[0]] ?? t[0]) + (t.includes('PWD') ? ' PwD' : '');
-  return [t.includes('IS') ? 'In-service' : t.includes('IP') ? 'State Quota (institutional preference)' : 'State Quota', seat];
+  // 2024 R2 prints a few seats as "-UR" / "-BCB"; 2025 R3 / stray often drop the spaces ("BCAIPIS", "UR ISESM FF").
+  // IS = in-service, IP = institutional preference, PWD; ESM / FF (ex-servicemen / freedom-fighter wards) keep the base category.
+  const u = code.toUpperCase().replace(/^-/, '').trim();
+  if (/^MGMT/.test(u)) return ['Management', 'Open'];
+  if (/^NRI/.test(u)) return ['NRI', 'Open'];
+  if (/^MINORITY/.test(u)) return ['Minority', 'Open'];
+  const base = u.match(/^(UR|BCA|BCB|SCD|SC|EWS|ST)/)?.[1] ?? u.split(/\s+/)[0], rest = u.slice(base.length).replace(/\s+/g, '');
+  const pwd = /PWD/.test(rest), flags = rest.replace(/PWD/g, '');
+  const seat = (HR_CAT[base] ?? base) + (pwd ? ' PwD' : '');
+  return [/IS/.test(flags) ? 'In-service' : /IP/.test(flags) ? 'State Quota (institutional preference)' : 'State Quota', seat];
 };
 const hrCourse = (c: string) => c.replace(/^Post MBBS DNB\s*-\s*/i, '(NBEMS) ').replace(/^Post MBBS Diploma\s*-\s*/i, '(NBEMS-DIPLOMA) ').replace(/^(MD|MS)\s*-\s*/, '$1 ');
 // Bihar (BCECEB): institute (letters only) → [display name, MCC code]. Private colleges have no MCC code.
@@ -489,12 +497,14 @@ const BH_INST: Record<string, [string, string]> = {
   RDJMMEDICALCOLLEGEANDHOSPITALTURKIMUZAFFARPUR: ['RDJM Medical College & Hospital, Turki (Muzaffarpur)', ''],
 };
 const BH_CAT: Record<string, string> = { UR: 'Open', BC: 'BC', EBC: 'EBC', EWS: 'EWS', SC: 'SC', ST: 'ST', RCG: 'BC Women (RCG)' };
-/** BCECEB allotted category → [quota suffix, seat category]. MM / SM = Muslim / Sikh minority seats; DQ seats sit inside a vertical category. */
+/** BCECEB allotted category → [quota suffix, seat category]. MM / SM = Muslim / Sikh minority seats; DQ = Divyang (PwD)
+ *  seats, which sit inside a vertical category ("DQ-UR" → Open PwD). */
 const bhSeat = (cat: string, inst: [string, string] | undefined): [string, string] => {
-  const c = cat.toUpperCase().replace(/^DQ-?/, '') || 'UR';
+  const dq = /^DQ/i.test(cat), c = cat.toUpperCase().replace(/^DQ-?/, '') || 'UR';
   if (c === 'NRI') return ['NRI', 'Open'];
   if (c === 'MM' || c === 'SM') return ['Minority', 'Open'];
-  return [inst?.[1] ? 'State Quota' : 'Private (state quota)', BH_CAT[c] ?? c];
+  const v = c === 'EB' ? 'EBC' : c;
+  return [inst?.[1] ? 'State Quota' : 'Private (state quota)', (BH_CAT[v] ?? v) + (dq ? ' PwD' : '')];
 };
 const bhCourse = (type: string, b: string) => (/^DIPLOMA/i.test(type) ? MH_DIPLOMA[b] ?? `Diploma ${b.replace(/^DIP\.?/i, '').replace(/^P\.M\.R\.?$/i,'Physical Medicine and Rehabilitation')}` : `MD/MS ${({ 'F.M.T.': 'Forensic Medicine', RADIOONCOLOGY: 'Radiation Oncology' } as Record<string, string>)[b] ?? b}`);
 // Punjab (BFUHS): the list cells often repeat or pick up text from the row above, so a college is the longest of these
@@ -531,12 +541,12 @@ const pbInst = (cell: string) => {
   const k = pbNorm(cell);
   return PB_INST.filter(([key]) => k.includes(pbNorm(key))).sort((a, b) => b[0].length - a[0].length)[0];
 };
-const PB_CAT: [RegExp, string][] = [[/^ews/i, 'EWS'], [/scheduled\s*caste/i, 'SC'], [/backward/i, 'BC'], [/./, 'Open']];
+const PB_CAT: [RegExp, string][] = [[/pwd/i, 'Open PwD'], [/^ews/i, 'EWS'], [/scheduled\s*caste/i, 'SC'], [/backward/i, 'BC'], [/./, 'Open']];
 /** BFUHS quota + category → [quota suffix, seat category]. PCMS doctors (incentive marks on the state merit list) get
  *  their own quota; IP = institutional preference (MBBS from a Punjab university). */
 const pbSeat = (quota: string, cat: string, govt: boolean, inService: boolean): [string, string] => {
   const seat = PB_CAT.find(([re]) => re.test(cat.trim()))![1], q = quota.toLowerCase();
-  if (/nri/.test(q)) return ['NRI', 'Open'];
+  if (/nri/.test(q) || /^nri$/i.test(cat.trim())) return ['NRI', 'Open']; // NRI seats also sit inside management / minority quotas
   if (/management/.test(q)) return ['Management', 'Open'];
   if (/minority|^[ab]$/.test(q)) return ['Minority', 'Open'];
   if (/open\s*merit/.test(q)) return ['Private (open to all)', seat];
@@ -610,7 +620,7 @@ const JK_INST: Record<string, [string, string]> = {
 };
 /** JKBOPEE reservation codes. RBA = residents of backward areas; ALC = actual line of control / international border;
  *  ST-1 / ST-2 are the two scheduled-tribe groups; STK / STL are left as printed (meaning not stated in the lists). */
-const JK_CAT: Record<string, string> = { OM: 'Open', OMSP: 'Open', SC: 'SC', OBC: 'OBC', EWS: 'EWS', RBA: 'RBA', ALC: 'ALC/IB', ST1: 'ST-1', STI: 'ST-1', ST2: 'ST-2', STII: 'ST-2' };
+const JK_CAT: Record<string, string> = { OM: 'Open', OMSP: 'Open (Sports)', SC: 'SC', OBC: 'OBC', EWS: 'EWS', RBA: 'RBA', ALC: 'ALC/IB', ST1: 'ST-1', STI: 'ST-1', ST2: 'ST-2', STII: 'ST-2' };
 const jkCat = (c: string) => JK_CAT[c.toUpperCase().replace(/[^A-Z0-9]/g, '')] ?? c;
 const jkSeat = (sli: string, inst: string, inService: boolean): [string, string] => {
   const c = sli.toUpperCase().replace(/[^A-Z0-9]/g, '');
@@ -852,7 +862,7 @@ rounds.forEach((rd, ri) => {
       const k = mpKey(r.institute), [display, code] = MP_INST[k] ?? [r.institute.replace(/\s+/g, ' '), ''];
       if (!MP_INST[k]) unknownMp.add(r.institute);
       const ii = instIndex(`MP ${k}`, rd.year, { display, code, state: 'Madhya Pradesh' });
-      const [q, seat] = mpSeat(r.allottedCategory, r.quota);
+      const [q, seat] = mpSeat(r.allottedCategory, r.quota, r.candidateCategory);
       rows.push(ri, r.rank, ii, course.get(normCourse(mpCourse(r.course, r.subject))), quota.get(`Madhya Pradesh ${q}`), acat.get(seat), ccat.get(mpCandidate(r.candidateCategory)), r.page);
       continue;
     }

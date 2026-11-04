@@ -25,8 +25,16 @@ const ROUNDS: [string, number, string, string][] = [ // [file, year, round label
   // 2024 Round 2 (23-12-2024, after grievances): only new / upgraded seats are listed; the "Round 2 Allocated …" columns
   // come first, so the header match picks them over the "Round 1 Allocated …" ones. Internet Archive copy (UHSR 503).
   // hr2024_r2_prelim.pdf (PGROUND2ALLOCATION) is the pre-grievance merit list with the same seats plus unallotted rows; not used.
-  // Round 3 and stray were never captured (the archive's last crawl of the folder is 22-01-2025).
   ['hr2024_r2', 2024, 'Round 2', 'https://uhsr.ac.in/writereaddata/upload/Admissions/231224mdmsallocationround2.pdf'],
+  // Round 3 and stray (DMER "Merit List cum Provisional Allotment", 10-02-2025 / 22-02-2025 for 2024-25 and 17-02-2026
+  // (revised) / 24-02-2026 for 2025-26). The portal only serves its files through short-lived signed links; these are
+  // copies of the DMER PDFs kept on Google Drive by a counselling consultancy's public Telegram channel (t.me/SRISAINEETPG).
+  // Round 3 lists every seat holder with the previous allotment beside it: unchanged seats are skipped as held.
+  // 2025 Round 2 (ADMINMD12-AllocationMeritReportR2Publish.pdf) is only on the portal's signed links and was not found.
+  ['hr2024_r3', 2024, 'Round 3', 'https://drive.google.com/file/d/1ZLCIdktx1Yo0oZRIpcFmzgymjuo1uWve/view'],
+  ['hr2024_stray', 2024, 'Stray', 'https://drive.google.com/file/d/1bsFX1OOcdupEuRFbzoCct7NQaC5oRGgk/view'],
+  ['hr2025_r3', 2025, 'Round 3', 'https://drive.google.com/file/d/127OkxZjSwAtz5EFlGJk4WIpGYBbDJ-uG/view'],
+  ['hr2025_stray', 2025, 'Stray', 'https://drive.google.com/file/d/1pczyBvSpbLXO13acpptRhxn82WnTNW8j/view'],
 ];
 const key = (s: string) => (s ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
 const clean = (s: string) => (s ?? '').replace(/\s+/g, ' ').trim();
@@ -34,29 +42,32 @@ const bump = (m: Map<string, number>, k: string) => m.set(k, (m.get(k) ?? 0) + 1
 const cats = new Map<string, number>(), colleges = new Map<string, number>(), courses = new Map<string, number>();
 for (const [file, year, label, url] of ROUNDS) {
   const out: any[] = [];
-  let col: Record<string, number> | null = null, listed = 0;
+  let col: Record<string, number> | null = null, listed = 0, held = 0;
   for await (const pg of readPages(new Uint8Array(readFileSync(`${RAW}/${file}.pdf`)))) {
     for (const cells of gridTable(pg).rows) {
       const ks = cells.map(key);
       if (ks.includes('neetrank')) {
         const f = (re: RegExp) => ks.findIndex((k) => re.test(k));
-        col = { rank: f(/^neetrank$/), college: f(/allocatedcollege$/), course: f(/allocatedcourse$/), cat: f(/allocatedcategory$/) };
+        col = { rank: f(/^neetrank$/), college: f(/allocatedcollege$/), course: f(/allocatedcourse$/), cat: f(/allocatedcategory$/),
+          prevCollege: f(/^previous(ly)?allocatedcollege$/), prevCourse: f(/^previous(ly)?allocatedcourse$/) };
         continue;
       }
       if (!col || !/^\d+$/.test(cells[0] ?? '')) continue;
       const rank = Number((cells[col.rank] ?? '').replace(/\D/g, ''));
       if (!rank) continue;
       listed++;
-      const college = clean(cells[col.college]), course = clean(cells[col.course]), cat = clean(cells[col.cat]);
+      // the long MM Sadopur name ("…(PRIVATE UNIVERSITY)") spills into the next row's college cell
+      const college = clean(cells[col.college]).replace(/^UNIVERSITY\)\s*/, ''), course = clean(cells[col.course]), cat = clean(cells[col.cat]);
       // ineligible candidates carry a remark ("Minimum qualifying/Eligibility criteria not met") across the allotment cells
-      if (!college || !cat || /qualif|regist|eligib|payment/i.test(`${college} ${course}`)) continue;
+      if (!college || /^-+$/.test(college) || !cat || /qualif|regist|eligib|payment/i.test(`${college} ${course}`)) continue;
+      if (col.prevCollege >= 0 && key(cells[col.prevCollege]) === key(college) && key(cells[col.prevCourse]) === key(course)) { held++; continue; } // seat kept from an earlier round
       bump(cats, cat); bump(colleges, college); bump(courses, course);
       out.push({ rank, quota: 'State', institute: college, course, allottedCategory: cat, candidateCategory: cat, remarks: '', page: pg.index + 1 });
     }
   }
   out.sort((a, b) => a.rank - b.rank);
   writeFileSync(`data/parsed/${file}.json`, JSON.stringify({ source: url, url, counselling: 'Haryana', year, round: label, rows: out }));
-  console.log(`${file}: ${out.length} allotments (of ${listed} listed)`);
+  console.log(`${file}: ${out.length} allotments (of ${listed} listed, ${held} held from an earlier round)`);
 }
 const top = (m: Map<string, number>) => Object.fromEntries([...m].sort((a, b) => b[1] - a[1]));
 console.log('categories', top(cats));
