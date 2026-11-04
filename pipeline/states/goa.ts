@@ -13,12 +13,15 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { readPages } from '../engine';
 import { gridTable } from '../grid';
+import { pageLines } from '../textlines';
 
 const RAW = 'data/raw/states/goa';
 const F = 'https://dte.goa.gov.in/sites/default/files/';
 const ROUNDS: [string, number, string, string][] = [ // [file, year, round label, official URL]
+  ['ga2025_r1', 2025, 'Round 1', F + 'neetpg2025merallot.pdf'], // merit cum allotment list, still on the site; name from t.me/SRISAINEETPG
   ['ga2025_r2', 2025, 'Round 2', F + 'pgmedallotrnd2.pdf'],
   ['ga2025_r3', 2025, 'Round 3', F + 'pgmedallotrnd3.pdf'],
+  ['ga2025_stray', 2025, 'Stray', F + 'strayrndallotlist.pdf'], // still on the site; name from t.me/SRISAINEETPG
   ['ga2026_r1', 2026, 'Round 1', F + 'pgmed2026.pdf'],
 ];
 const key = (s: string) => (s ?? '').toUpperCase().replace(/[^A-Z0-9]/g, '');
@@ -55,6 +58,19 @@ for (const [file, year, label, url] of ROUNDS) {
       const cat = clean(cells[col.cat]), grp = col.group >= 0 ? clean(cells[col.group]) || group : group;
       bump(cats, cat); bump(groups, grp);
       out.push({ rank, quota: 'State', institute: 'GOA MEDICAL COLLEGE', courseCode: code, course: names.get(code) ?? CODES[code], allottedCategory: cat, candidateCategory: cat, group: grp, remarks: '', page: pg.index + 1 });
+    }
+  }
+  // 2025 stray list: no ruled table, plain lines "Merit No | Reg No | Name | course code | category"; ranks come from the
+  // earlier 2025 lists by registration number
+  if (!out.length && file === 'ga2025_stray') for await (const pg of readPages(new Uint8Array(readFileSync(`${RAW}/${file}.pdf`)))) {
+    for (const l of pageLines(pg)) {
+      const m = l.words.map((w) => w.text).join(' ').match(/^(\d+)\s+(\d{5})\b.*?\s([A-Z]{3})\s+((?:DR-)?(?:GEN|OBC|SC|ST|EWS))\s*$/);
+      if (!m || !CODES[m[3]]) continue;
+      listed++;
+      const rank = regRank.get(`${year}|${m[2]}`);
+      if (!rank) continue;
+      bump(cats, m[4]);
+      out.push({ rank, quota: 'State', institute: 'GOA MEDICAL COLLEGE', courseCode: m[3], course: CODES[m[3]], allottedCategory: m[4], candidateCategory: m[4], group: '', remarks: '', page: pg.index + 1 });
     }
   }
   for (const [c, n] of names) codesSeen.set(c, n);

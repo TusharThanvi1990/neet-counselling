@@ -42,6 +42,58 @@ for (const [file, year, label, list, meritPdf, official] of ROUNDS) {
   console.log(`${file}: ${out.length} admissions (${out.filter((r) => r.inService).length} in-service, ${out.filter((r) => r.upgraded).length} upgraded); roll not in merit list ${noRank}; merit list ${merit.size}`);
 }
 
+// ---- 2025 Round 2 ("Revised common allotment Round-2 with status of Round-1 / upgraded Round-1 admission", 21-12-2025;
+// Internet Archive copy, file name from t.me/SRISAINEETPG):
+//   Appl No | Name | Type (DIR/INS) | CMR-UR | R-2 Allot College | R-2 Allot Sub | R-2 Allot Cat | R-2 Allot Course | R-2 Choice |
+//   R-1 Adm College | R-1 Adm Course | R-1 Adm Sub | R-1 Adm Cat | R-1 Adm Choice
+// Only the state application number is printed: it is matched to the NEET roll number through the Round 1 admitted list and
+// the Round 3 merit list (Appln Number | NEET Roll no | … | NEET-AIR), and the AIR comes from the NBEMS 2025 result.
+// A row whose Round 2 seat equals the candidate's Round 1 admission is a held seat and is skipped.
+{
+  const air25 = JSON.parse(readFileSync('data/raw/nbems/neetpg2025_air.json', 'utf8')) as Record<string, [number, number]>;
+  const rollOf = new Map<string, string>();
+  for (const c of await rows('or2025_r1_admission.pdf')) if (/^\d{7}$/.test(c[2] ?? '') && /^\d{11}$/.test(c[3] ?? '')) rollOf.set(c[2], c[3]);
+  for (const c of await rows('or2025_r3_merit.pdf')) if (/^\d{7}$/.test(c[0] ?? '') && /^\d{11}$/.test(c[1] ?? '')) rollOf.set(c[0], c[1]);
+  const k = (s: string) => (s ?? '').toUpperCase().replace(/[^A-Z]/g, '');
+  const official = 'REVISED%20PG%20MED%20ALLOTEMNT%202ND%20ROUND_UPDATED_PUBLISH_21_12_2025.pdf';
+  const url = 'https://web.archive.org/web/20251229130035id_/https://dmetodisha.in/PGMCC_Static/DOWNLOADSPGM_22/' + official;
+  const out: any[] = []; let listed = 0, held = 0, noRank = 0;
+  for (const c of await rows('or2025_r2_allotment.pdf')) {
+    if (!/^\d{7}$/.test(c[0] ?? '') || !(c[4] ?? '').trim() || /^-+$/.test((c[4] ?? '').trim())) continue;
+    listed++;
+    if (k(c[4]) === k(c[9]) && k(c[5]) === k(c[11])) { held++; continue; }
+    const roll = rollOf.get(c[0]), rank = roll ? air25[roll]?.[0] : undefined;
+    if (!rank) { noRank++; continue; }
+    out.push({ rank, quota: c[2] === 'INS' ? 'In-service' : 'State', institute: c[4].trim(), course: c[5].trim(), courseType: /DNB/.test(c[7] ?? '') ? 'DNB' : 'MD/MS',
+      allottedCategory: (c[6] ?? '').trim(), candidateCategory: '', inService: c[2] === 'INS', upgraded: !!(c[9] ?? '').trim(), remarks: '', page: 0 });
+  }
+  out.sort((a, b) => a.rank - b.rank);
+  writeFileSync('data/parsed/od2025_r2.json', JSON.stringify({ source: url, url, counselling: 'Odisha', year: 2025, round: 'Round 2', rows: out }));
+  console.log(`od2025_r2: ${out.length} allotments (${listed} listed, ${held} held their Round 1 seat, ${noRank} without a roll / AIR); appl → roll ${rollOf.size}`);
+
+  // 2025 Rounds 3 and 4 (stray): "Final admission list after completion of stray round (Round-4)", 25-02-2026 (Internet Archive
+  // copy): Appln No | NEET Roll No | Name | Type | CMR-UR | Admitted Course | College | Subject | Cat | Admission Status
+  // ("ADMITTED R-3" / "ADMITTED R-4") | e-pay / phone / posting columns (not read). Rows admitted in Round 3 or 4 are those rounds.
+  const fin = 'AFTER%20STRAY_FINAL%20DATA%20FOR%20CONVENER%20FOR%20GOVT%20LETTER%20TO%20RELIEVE_PUBLISH_25_02_2026.pdf';
+  const finUrl = 'https://web.archive.org/web/20260610181054id_/https://dmetodisha.in/PGMCC_Static/DOWNLOADSPGM_22/' + fin;
+  const late = new Map<string, any[]>([['R-3', []], ['R-4', []]]); let lateNoRank = 0;
+  for (const c of await rows('or2025_final_after_stray.pdf')) {
+    if (!/^\d{7}$/.test(c[0] ?? '') || !/^\d{11}$/.test(c[1] ?? '')) continue;
+    const r = (c[9] ?? '').replace(/\s+/g, '').match(/^ADMITTED(R-[34])$/)?.[1];
+    if (!r) continue;
+    const rank = air25[c[1]]?.[0];
+    if (!rank) { lateNoRank++; continue; }
+    late.get(r)!.push({ rank, quota: c[3] === 'INS' ? 'In-service' : 'State', institute: (c[6] ?? '').trim(), course: (c[7] ?? '').trim(), courseType: /DNB/.test(c[5] ?? '') ? 'DNB' : /DIPLOMA|PMN/i.test(c[5] ?? '') ? 'Diploma' : 'MD/MS',
+      allottedCategory: (c[8] ?? '').trim(), candidateCategory: '', inService: c[3] === 'INS', upgraded: false, remarks: '', page: 0 });
+  }
+  for (const [r, file, label] of [['R-3', 'od2025_r3', 'Round 3'], ['R-4', 'od2025_stray', 'Stray']] as const) {
+    const o = late.get(r)!.sort((a, b) => a.rank - b.rank);
+    writeFileSync(`data/parsed/${file}.json`, JSON.stringify({ source: finUrl, url: finUrl, counselling: 'Odisha', year: 2025, round: label, rows: o }));
+    console.log(`${file}: ${o.length} admissions`);
+  }
+  console.log(`2025 R3/stray: ${lateNoRank} rolls not in the NBEMS result`);
+}
+
 // ---- 2024 (Internet Archive copies of the DMET files; neither list prints an AIR, which comes from the NBEMS NEET-PG
 // 2024 result, data/raw/nbems/neetpg2024_air.json) ----
 // Round 1: the admitted list (Serial | Appln No | Roll | Name | Category | Type | UR rank | Choice | College | Course | Subject | Seat cat).

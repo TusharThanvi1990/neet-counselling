@@ -6,7 +6,7 @@
  *   (the same subject code in every college, so wrapped / cut subject text is named from the code).
  * The All India Rank comes from the NEET-PG 2025 Assam State Merit List (Roll No | Name | Category | Score | Incentive % |
  * Revised score | NEET-PG 2025 publish rank | …), matched on roll number. SHQ = State Health service (in-service) quota.
- * Only the 2025 Round 2 select list is published as a list; Rounds 1 and 3 and the stray round were notices only.
+ * 2025: Round 1 (archived copy) and Round 2 select lists; Round 3 and the stray round were notices only.
  * 2024 Round 1's select list survives in the Internet Archive.
  * Names are never written.
  *
@@ -19,13 +19,16 @@ import { gridTable } from '../grid';
 const RAW = 'data/raw/states/assam';
 const B = 'https://dme.assam.gov.in/sites/default/files/swf_utility_folder/departments/dme_lipl_in_oid_8/latest/';
 const ROUNDS: [string, number, string, string, string][] = [ // [out file, year, label, select list PDF, merit list PDF]
+  // 2025 Round 1 select list ("admission notice after 1st round online counselling, session 2025"): removed from the site;
+  // Internet Archive copy of 10-12-2025 (file name from t.me/SRISAINEETPG).
+  ['as2025_r1', 2025, 'Round 1', 'admission_notice_after_1st_round_online_counselling_session_2025.pdf', 'neet_pg_2025_assam_state_merit_list_final.pdf'],
   ['as2025_r2', 2025, 'Round 2', 'admission_notice-neet-pg2025_round-2.pdf', 'neet_pg_2025_assam_state_merit_list_final.pdf'],
   // 2024 Round 1 select list (DME/PG/27/2024, 28-11-2024), deleted from the site; Internet Archive copy (snapshots of 02-12-2024
   // and 19-04-2025 are identical). AIR from the NBEMS NEET-PG 2024 result by roll number.
   ['as2024_r1', 2024, 'Round 1', 'admission_notice_admission_into_pg_course_after_1st_round_online_counselling_session_2024.pdf', 'nbems2024'],
 ];
-const LOCAL: Record<string, string> = { as2024_r1: 'as2024_r1.pdf' };
-const ARCHIVE: Record<string, string> = { as2024_r1: 'https://web.archive.org/web/20241202191638/' };
+const LOCAL: Record<string, string> = { as2024_r1: 'as2024_r1.pdf', as2025_r1: 'as2025_r1.pdf' };
+const ARCHIVE: Record<string, string> = { as2024_r1: 'https://web.archive.org/web/20241202191638/', as2025_r1: 'https://web.archive.org/web/20251210011507/' };
 const COLLEGE: Record<string, string> = {
   '01': 'Assam Medical College, Dibrugarh', '02': 'Gauhati Medical College, Guwahati', '03': 'Silchar Medical College, Silchar',
   '04': 'Jorhat Medical College, Jorhat', '05': 'Fakhruddin Ali Ahmed Medical College, Barpeta', '06': 'Tezpur Medical College, Tezpur',
@@ -34,6 +37,8 @@ const COLLEGE: Record<string, string> = {
 const FIX: [RegExp, string][] = [[/^MD RADIO-THERAPY\b.*$/,'MD RADIO-THERAPY'], [/^MS OBSTETRICS &?$/, 'MS OBSTETRICS & GYNAECOLOGY'], [/^MD TUBERCULOSIS &?$/, 'MD RESPIRATORY MEDICINE'], [/^MD DERMATOLOGY,?$/, 'MD DERMATOLOGY, VENEREOLOGY & LEPROSY']];
 const rows = async (f: string) => { const out: string[][] = []; for await (const pg of readPages(new Uint8Array(readFileSync(`${RAW}/${f}`)))) out.push(...gridTable(pg).rows); return out; };
 
+// select lists are cumulative: a candidate holding the same seat as in the year's previous list is skipped
+const heldSeat = new Map<string, string>(); // `${year}|${roll}` → college + subject code
 for (const [file, year, label, list, meritPdf] of ROUNDS) {
   const merit = new Map<string, number>();
   if (meritPdf === 'nbems2024') for (const [roll, v] of Object.entries(JSON.parse(readFileSync('data/raw/nbems/neetpg2024_air.json', 'utf8')) as Record<string, [number, number]>)) merit.set(roll, v[0]);
@@ -54,16 +59,19 @@ for (const [file, year, label, list, meritPdf] of ROUNDS) {
     for (const [re, to] of FIX) if (re.test(s)) s = to;
     return [ss, s];
   }));
-  const out: any[] = []; let noRank = 0, noSubj = 0, none = 0;
+  const out: any[] = []; let noRank = 0, noSubj = 0, none = 0, held = 0;
   for (const p of parsed) {
     if (!p) { none++; continue; }
     const rank = merit.get(p.roll), course = subject.get(p.ss);
     if (!rank) { noRank++; continue; }
     if (!course || !p.coll) { noSubj++; continue; }
+    const hk = `${year}|${p.roll}`, seatKey = p.cc + p.ss;
+    if (heldSeat.get(hk) === seatKey) { held++; continue; }
+    heldSeat.set(hk, seatKey);
     out.push({ rank, stateRank: p.stateRank, quota: p.quota, institute: p.coll, collegeCode: p.cc, course, allottedCategory: p.quota, candidateCategory: p.cand, pwd: p.pwd, inService: p.quota === 'SHQ', remarks: '', page: 0 });
   }
   out.sort((a, b) => a.rank - b.rank);
   writeFileSync(`data/parsed/${file}.json`, JSON.stringify({ source: B + list, url: (ARCHIVE[file] ?? '') + B + list, counselling: 'Assam', year, round: label, rows: out }));
-  console.log(`${file}: ${out.length} allotments (${none} without a seat, ${noRank} roll not in merit list, ${noSubj} subject/college unknown); merit list ${merit.size}`);
+  console.log(`${file}: ${out.length} allotments (${held} held from the previous list, ${none} without a seat, ${noRank} roll not in merit list, ${noSubj} subject/college unknown); merit list ${merit.size}`);
   console.log('subjects', Object.fromEntries(subject));
 }

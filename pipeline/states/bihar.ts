@@ -32,6 +32,8 @@ const ROUNDS: [string, number, string, string][] = [ // [file, year, round label
   // "FSALTM" repeats the Round 1 list (no status column) and then the Round 2 list (with a status column): only rows under a
   // header with a status column are read. Round 3 is not on the site; the stray final result (02-03-2025) is.
   ['bh2024_r2', 2024, 'Round 2', 'https://bceceboard.bihar.gov.in/pdf_Web/PGMAC2024_FSALTM.pdf'],
+  // Round 3 ("List of Candidate who allotted during 3rd Round", 02-03-2025), still on the board's site; name from t.me/SRISAINEETPG.
+  ['bh2024_r3', 2024, 'Round 3', 'https://bceceboard.bihar.gov.in/pdf_Web/FINAL_3RD_ROUND_2024_02_03.pdf'],
   ['bh2024_r4', 2024, 'Stray', 'https://bceceboard.bihar.gov.in/pdf_Web/PGMAC2024_STRAY_ALTM.pdf'],
   // Special stray vacancy round result ("SSV_RESULT", March 2025), still on the board's site.
   ['bh2024_r5', 2024, 'Special stray', 'https://bceceboard.bihar.gov.in/pdf_Web/PGMAC2024_SSV_RESULT.pdf'],
@@ -54,13 +56,14 @@ for (const [file, year, label, url] of ROUNDS) {
   for await (const pg of readPages(new Uint8Array(readFileSync(`${RAW}/${file}.pdf`)))) {
     for (const cells of gridTable(pg).rows) {
       const ks = cells.map(key);
-      if (ks.includes('NEETAIR')) {
+      if (ks.includes('NEETAIR') || (ks.includes('AIR') && ks.includes('INSTITUTENAME'))) { // 2024 R3: "AIR", "InstituteName", "alot_Cat"
         const f = (k: string) => ks.indexOf(k);
-        col = { type: Math.max(f('COURSETYPE'), f('SEATTYPE')), air: f('NEETAIR'), cat: Math.max(f('CATEGORY'), f('CAT')), gender: Math.max(f('GENDER'), f('SEX')), inst: f('INSTITUTE'), branch: Math.max(f('BRANCH'), f('COURSE')), acat: f('ALLOTTEDCAT'),
+        col = { type: Math.max(f('COURSETYPE'), f('SEATTYPE')), air: Math.max(f('NEETAIR'), f('AIR')), cat: Math.max(f('CATEGORY'), f('CAT')), gender: Math.max(f('GENDER'), f('SEX')), inst: Math.max(f('INSTITUTE'), f('INSTITUTENAME')), branch: Math.max(f('BRANCH'), f('COURSE')), acat: Math.max(f('ALLOTTEDCAT'), f('ALOTCAT')),
           remark: f('REMARK'), status: Math.max(f('ALLOTSTATUS'), f('ALLOTTSTATUS'), f('STATUS')) };
         // 2024 Round 2 / stray headers: "ALLOTTEDREMARKS | Remarks" (status in Remarks) or "REMARKS | STATUS"
         if (col.remark < 0) col.remark = ks.indexOf('ALLOTTEDREMARKS') >= 0 ? ks.indexOf('ALLOTTEDREMARKS') : ks.indexOf('REMARKS');
         if (col.status < 0 && ks.includes('ALLOTTEDREMARKS')) col.status = ks.indexOf('REMARKS');
+        if (col.status < 0 && ks.includes('REMARK') && ks.includes('REMARKS')) col.status = ks.indexOf('REMARKS'); // 2024 R3: Remark | Remarks (status)
         continue;
       }
       if (!col || !/^(DEGREE|DIPLOMA)/i.test(cells[col.type] ?? '')) continue;

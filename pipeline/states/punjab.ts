@@ -26,6 +26,10 @@ const BF = 'https://admission.bfuhsonline.ac.in/';
 const ROUNDS: [string, number, string, string][] = [ // [file, year, round label, source URL]
   ['pb2025_r1', 2025, 'Round 1', MD + 'revised-provisional-allotment-under-neet-pg-2025-311350.pdf'],
   ['pb2025_r2', 2025, 'Round 2', MD + 'revised-allotment-2nd-round-27122025-317825.pdf'],
+  // Round 3 (10-02-2026): BFUHS PDF, copy on a consultancy's public Google Drive (t.me/SRISAINEETPG); gone from bfuhs.ac.in.
+  ['pb2025_r3', 2025, 'Round 3', 'https://drive.google.com/file/d/1bH2FrIQYPx0nxmRB2H0wRCQJenX6C-af/view'],
+  // Stray vacancy round (25-02-2026): Internet Archive copy of bfuhs.ac.in's PDF.
+  ['pb2025_stray', 2025, 'Stray', 'https://web.archive.org/web/20260407015400/https://bfuhs.ac.in/PGET2025/MDMS/Provisional%20selection%20Stray%20Vacancy%20round%20NEET%20PG-2025.pdf'],
   ['pb2026_r1', 2026, 'Round 1', BF + 'PGET2026/MDMS/Provisional%20selection%20list%20for%20admission%20to%20PG%20Courses%20under%20NEET%20PG%202026.pdf'],
   // 2024 (admission.bfuhsonline.ac.in/mdms/MDMS24.asp). These lists and merit lists have no AIR; it comes from the NBEMS
   // NEET-PG 2024 result (data/raw/nbems/neetpg2024_air.json). The stray-round list on bfuhs.ac.in is gone.
@@ -91,7 +95,7 @@ for (const [file, year, label, url] of ROUNDS) {
     const ks = cells.map(key);
     if (ks.some((k) => /^allot+edcollege$/.test(k))) {
       const f = (re: RegExp) => ks.findIndex((k) => re.test(k));
-      col = { roll: f(/rollno$/), cat: f(/^categor/), college: f(/^allot+edcollege$/), course: f(/^allot+ed(course|branch)$/), quota: f(/^allot+edquota$/), acat: f(/^allot+edcategory$/),
+      col = { roll: f(/rollno$/), cat: f(/^categor/), college: f(/^allot+edcollege$/), course: f(/^allot+ed(course|branch|specialty|speciality)$/), quota: f(/^allot+edquota$/), acat: f(/^allot+edcategory$/),
         both: f(/^allot+edcategoryquota$/),
         sCollege: f(/^shiftedcollege$/), sCourse: f(/^shifted(spec|course)/), sQuota: f(/^shiftedquota$/), sCat: f(/^shiftedcategory$/), sBoth: f(/^shiftedcategoryquota$/) };
       continue;

@@ -6,7 +6,7 @@
  * application number (ARNO), not the All India Rank:
  *   SNO | GRANK | ARNO | NAME | COMMUNITY | SERVICE | T.MARK | [ALLOTTED FROM] | ALLOTTED TO | CATEGORY | [Status]
  * "ALLOTTED TO" is "GQ - <course> <COLLEGE, PLACE>". The state rank lists map ARNO → NEET roll number, and the NBEMS
- * NEET-PG 2025 result (data/raw/nbems/neetpg2025_air.json, from pipeline/nbems-result.ts) maps roll number → AIR.
+ * NEET-PG result of that year (data/raw/nbems/neetpg<year>_air.json, from pipeline/nbems-result.ts) maps roll number → AIR.
  * Later rounds re-list seats kept from earlier rounds ("Retained", or ALLOTTED FROM = ALLOTTED TO); those are skipped.
  * Names are never written.
  *
@@ -18,13 +18,26 @@ import { gridTable } from '../grid';
 
 const RAW = 'data/raw/states/tamilnadu';
 const SITE = 'https://tnmedicalselection.net/';
-const ROUNDS: [string, string, string[]][] = [ // [output, round label, list files]
-  ['tn2025_r1', 'Round 1', ['tn2025_r1_gq', 'tn2025_r1_mq', 'tn2025_r1_pwd']],
-  ['tn2025_r2', 'Round 2', ['tn2025_r2_gq', 'tn2025_r2_mq', 'tn2025_r2_pwd']],
-  ['tn2025_r3', 'Round 3', ['tn2025_r3_gq', 'tn2025_r3_mq', 'tn2025_r3_pwd']],
-  ['tn2025_stray', 'Stray', ['tn2025_stray_gq', 'tn2025_stray_mq']],
+const ROUNDS: [string, number, string, string[]][] = [ // [output, year, round label, list files]
+  ['tn2025_r1', 2025, 'Round 1', ['tn2025_r1_gq', 'tn2025_r1_mq', 'tn2025_r1_pwd']],
+  ['tn2025_r2', 2025, 'Round 2', ['tn2025_r2_gq', 'tn2025_r2_mq', 'tn2025_r2_pwd']],
+  ['tn2025_r3', 2025, 'Round 3', ['tn2025_r3_gq', 'tn2025_r3_mq', 'tn2025_r3_pwd']],
+  ['tn2025_stray', 2025, 'Stray', ['tn2025_stray_gq', 'tn2025_stray_mq']],
+  // 2024-25 session: still on the site under news/<timestamp>.pdf but no longer linked; found through the Internet Archive's
+  // captures of the home page's notice list (titles "GQ / MQ / PWD - Provisional List of Candidates allotted …").
+  ['tn2024_r1', 2024, 'Round 1', ['tn2024_r1_gq', 'tn2024_r1_mq', 'tn2024_r1_pwd']],
+  ['tn2024_r2', 2024, 'Round 2', ['tn2024_r2_gq', 'tn2024_r2_mq', 'tn2024_r2_pwd']],
+  ['tn2024_r3', 2024, 'Round 3', ['tn2024_r3_gq', 'tn2024_r3_mq', 'tn2024_r3_pwd']],
+  ['tn2024_mopup', 2024, 'Mop-up', ['tn2024_mopup_gq', 'tn2024_mopup_mq']],
+  ['tn2024_stray', 2024, 'Stray', ['tn2024_stray_gq', 'tn2024_stray_mq']],
+  ['tn2024_sstray', 2024, 'Special stray', ['tn2024_sstray_gq', 'tn2024_sstray_mq']],
 ];
-const RANKS = ['tn2025_rank_gq', 'tn2025_rank_gq_lp', 'tn2025_rank_mq', 'tn2025_rank_mq_lp'];
+const RANKS: Record<number, string[]> = {
+  2025: ['tn2025_rank_gq', 'tn2025_rank_gq_lp', 'tn2025_rank_mq', 'tn2025_rank_mq_lp'],
+  // provisional rank lists (16-11-2024), their addenda and the revised GQ state merit lists after the percentile cut-off fell
+  2024: ['tn2024_rank_gq', 'tn2024_rank_mq', 'tn2024_rank_gq_a1', 'tn2024_rank_mq_a1', 'tn2024_rank_gq_a2', 'tn2024_rank_mq_a2', 'tn2024_rank_gq_a3',
+    'tn2024_rank_gq_a4', 'tn2024_rank_gq_rev1', 'tn2024_rank_mq_a3', 'tn2024_rank_gq_rev2', 'tn2024_rank_mq_a4'],
+};
 const key = (s: string) => (s ?? '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 const clean = (s: string) => (s ?? '').replace(/\s+/g, ' ').trim();
 // uppercase words that belong to course names, not college names
@@ -49,7 +62,7 @@ async function table(file: string) {
   for await (const pg of readPages(new Uint8Array(readFileSync(`${RAW}/${file}.pdf`)))) {
     for (const cells of gridTable(pg).rows) {
       const ks = cells.map(key);
-      if (ks.includes('GRANK') || (ks.includes('RANK') && ks.includes('APPNO'))) { head = ks; continue; }
+      if (ks.includes('GRANK') || (ks.includes('RANK') && (ks.includes('APPNO') || ks.includes('ARNO')))) { head = ks; continue; } // 2024 R1: RANK | ARNO
       if (!head || !/^\d+[A-Z]?$/.test(clean(cells[0]))) continue;
       const r: Record<string, string> = { page: String(pg.index + 1) };
       head.forEach((h, i) => { if (h) r[h] = clean(cells[i]); });
@@ -59,14 +72,24 @@ async function table(file: string) {
   return rows;
 }
 
-const air = JSON.parse(readFileSync('data/raw/nbems/neetpg2025_air.json', 'utf8')) as Record<string, [number, number]>;
-const rollOf = new Map<string, string>();
-for (const f of RANKS) for (const r of await table(f)) if (r.APPNO && /^\d{11}$/.test(r.NEETROLLNUMBER ?? '')) rollOf.set(r.APPNO, r.NEETROLLNUMBER);
-console.log(`ARNO → roll: ${rollOf.size}; NBEMS 2025 roll → AIR: ${Object.keys(air).length}`);
+// per year: ARNO → NEET roll (state rank lists) and roll → AIR (NBEMS result of that year)
+const airOf = new Map<number, Record<string, [number, number]>>(), rollOfYear = new Map<number, Map<string, string>>();
+for (const [year, files] of Object.entries(RANKS)) {
+  const y = Number(year), rollOf = new Map<string, string>();
+  // any row holding an application number ("24PG…") and an 11-digit NEET roll number: the first page of each rank list has
+  // its column header merged into the title block, so rows are not matched by header
+  for (const f of files) for await (const pg of readPages(new Uint8Array(readFileSync(`${RAW}/${f}.pdf`)))) for (const cells of gridTable(pg).rows) {
+    const c = cells.map(clean), app = c.find((x) => /^\d{2}PG\d+$/.test(x)), roll = c.find((x) => /^\d{11}$/.test(x));
+    if (app && roll) rollOf.set(app, roll);
+  }
+  rollOfYear.set(y, rollOf);
+  airOf.set(y, JSON.parse(readFileSync(`data/raw/nbems/neetpg${y}_air.json`, 'utf8')));
+  console.log(`${y}: ARNO → roll ${rollOf.size}; NBEMS roll → AIR ${Object.keys(airOf.get(y)!).length}`);
+}
 
 const colleges = new Map<string, number>(), courses = new Map<string, number>();
-for (const [out, label, files] of ROUNDS) {
-  const rows: any[] = [];
+for (const [out, year, label, files] of ROUNDS) {
+  const rows: any[] = [], rollOf = rollOfYear.get(year)!, air = airOf.get(year)!;
   let listed = 0, retained = 0, noAir = 0;
   for (const f of files) {
     for (const r of await table(f)) {
@@ -76,14 +99,15 @@ for (const [out, label, files] of ROUNDS) {
       if (/retain/i.test(r.STATUS ?? '') || (r.ALLOTTEDFROM && key(r.ALLOTTEDFROM) === key(to))) { retained++; continue; }
       const roll = rollOf.get(r.ARNO), rank = roll ? air[roll]?.[0] : undefined;
       if (!rank) { noAir++; continue; }
-      const [quota, course, college] = split(to);
+      // the 2024 Round 1 MQ list prints "M.D. … COLLEGE" without the "MQ - " prefix: take the quota from the list
+      const [quota, course, college] = split(/^(GQ|MQ|NRI|SQ|[A-Z]{2,4})\s*-/.test(clean(to)) ? to : `${f.endsWith('_mq') ? 'MQ' : 'GQ'} - ${to}`);
       colleges.set(college, (colleges.get(college) ?? 0) + 1); courses.set(course, (courses.get(course) ?? 0) + 1);
-      rows.push({ rank, quota, pwd: f.endsWith('_pwd'), institute: college, course, allottedCategory: r.CATEGORY ?? '', candidateCategory: r.COMMUNITY ?? '',
+      rows.push({ rank, quota, pwd: f.endsWith('_pwd'), institute: college, course, allottedCategory: r.CATEGORY ?? '', candidateCategory: r.COMMUNITY ?? r.COMM ?? '',
         inService: /service|yes/i.test(r.SERVICE ?? ''), stateRank: r.GRANK, remarks: '', page: Number(r.page) });
     }
   }
   rows.sort((a, b) => a.rank - b.rank);
-  writeFileSync(`data/parsed/${out}.json`, JSON.stringify({ source: SITE, url: SITE, counselling: 'Tamil Nadu', year: 2025, round: label, rows }));
+  writeFileSync(`data/parsed/${out}.json`, JSON.stringify({ source: SITE, url: SITE, counselling: 'Tamil Nadu', year, round: label, rows }));
   console.log(`${out}: ${rows.length} allotments (${listed} listed, ${retained} retained, ${noAir} without an AIR)`);
 }
 console.log('colleges', Object.fromEntries([...colleges].sort((a, b) => b[1] - a[1])));

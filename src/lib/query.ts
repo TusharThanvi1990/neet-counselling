@@ -25,7 +25,7 @@ export function eligibleSeatCats(cat: Category, pwd: boolean): Set<number> {
 
 /** States with state-counselling data; a state quota's label starts with the state's name. */
 export const STATE_NAMES = ['Maharashtra', 'Karnataka', 'Kerala', 'Andhra Pradesh', 'Rajasthan', 'Telangana', 'Gujarat', 'Madhya Pradesh', 'Haryana', 'Bihar',
-  'Punjab', 'Chhattisgarh', 'Himachal Pradesh', 'Jammu & Kashmir', 'Goa', 'Uttar Pradesh', 'Assam', 'Odisha', 'West Bengal', 'Tamil Nadu'];
+  'Punjab', 'Chhattisgarh', 'Himachal Pradesh', 'Jammu & Kashmir', 'Goa', 'Uttar Pradesh', 'Assam', 'Odisha', 'West Bengal', 'Tamil Nadu', 'Jharkhand'];
 export const STATE_QUOTA = new RegExp(`^(${STATE_NAMES.join('|')}) `);
 const BASE_CATS = new Set(['Open', 'EWS', 'OBC', 'SC', 'ST']);
 

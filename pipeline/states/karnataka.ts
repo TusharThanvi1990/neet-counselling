@@ -25,10 +25,12 @@ const ROUNDS: [string, string, string, string][] = [ // [file, round label, quot
   ['ka2025_ins_r2', 'Round 2', 'In-service', 'PGNEET_MEED_ALLOT_2025_INS_R2_FINAL_23122025english.pdf'],
   ['ka2025_ins_r3', 'Round 3', 'In-service', 'PGNEET_MEED_ALLOT_2025_INS_MOPUP_25022026.pdf'],
   // 2024 (still on KEA's site under keawebentry456/pget2024/; file names found via Collegedunia's Round 1 article and Scribd
-  // titles). The first stray round (R4) was not found (R2's name was found by trying KEA's naming pattern over the round's dates); R5 is the second stray round.
+  // titles; R2's name was found by trying KEA's naming pattern over the round's dates, R4's from a link on t.me/SRISAINEETPG).
+  // R4 is the first stray round, R5 the second.
   ['ka2024_r1', 'Round 1', 'State', '2024:PGNEET_MEED_ALLOT_2024_R1_finL_26_11_2024.pdf'],
   ['ka2024_r2', 'Round 2', 'State', '2024:PGNEET_MEED_ALLOT_2024_R2_finL_20_12_2024.pdf'],
   ['ka2024_r3', 'Round 3', 'State', '2024:PGNEET_MEED_ALLOT_2024_R3_Final_30_01_2025.pdf'],
+  ['ka2024_r4', 'Stray', 'State', '2024:PGNEET_MEED_ALLOT_2024_R4_25022025_F_english.pdf'],
   ['ka2024_r5', 'Special stray', 'State', '2024:PGNEET_MEED_ALLOT_2024_R5_17032025_Final_kannada.pdf'],
 ];
 const KEA24 = 'https://cetonline.karnataka.gov.in/keawebentry456/pget2024/';
