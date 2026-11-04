@@ -33,6 +33,8 @@ const ROUNDS: [string, number, string, string][] = [ // [file, year, round label
   // header with a status column are read. Round 3 is not on the site; the stray final result (02-03-2025) is.
   ['bh2024_r2', 2024, 'Round 2', 'https://bceceboard.bihar.gov.in/pdf_Web/PGMAC2024_FSALTM.pdf'],
   ['bh2024_r4', 2024, 'Stray', 'https://bceceboard.bihar.gov.in/pdf_Web/PGMAC2024_STRAY_ALTM.pdf'],
+  // Special stray vacancy round result ("SSV_RESULT", March 2025), still on the board's site.
+  ['bh2024_r5', 2024, 'Special stray', 'https://bceceboard.bihar.gov.in/pdf_Web/PGMAC2024_SSV_RESULT.pdf'],
 ];
 const NEED_STATUS = new Set(['bh2024_r2']);
 const key = (s: string) => (s ?? '').toUpperCase().replace(/[^A-Z0-9]/g, '');
