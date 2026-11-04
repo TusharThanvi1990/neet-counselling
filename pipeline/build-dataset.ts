@@ -680,6 +680,11 @@ const WB_INST: [string, string, string, boolean][] = [
   ['VIDYASAGARSTATEGENERAL', 'Vidyasagar State General Hospital', '701296', true], ['JANGIPUR', 'Jangipur Sub-Divisional Hospital', '701444', true],
   ['LALBAGH', 'Lalbagh Sub-Divisional Hospital', '701451', true], ['CHANDANNAGAR', 'Chandannagar Sub-Divisional Hospital', '701295', true],
   ['PRAFULLACHANDRASEN', 'Prafulla Chandra Sen Government Medical College, Arambagh', '', true], ['ISLAMPURSUBDIVISIONAL', 'Islampur Sub-Divisional Hospital', '', true],
+  // seen first in the 2025 Round 3 list (government district / sub-divisional hospitals; no MCC code)
+  ['DURGAPURSUBDIVISIONAL', 'Durgapur Sub-Divisional Hospital', '', true], ['KHARAGPURSUBDIVISIONAL', 'Kharagpur Sub-Divisional Hospital', '', true],
+  ['DOMKALSUBDIVISIONAL', 'Domkal Sub-Divisional & Super Speciality Hospital', '', true], ['BALURGHATDH', 'Balurghat District & Super Speciality Hospital', '', true],
+  ['DISTRICTHOSPITALDARJEELING', 'District Hospital, Darjeeling', '', true], ['RANAGHATSUBDIVISIONAL', 'Ranaghat Sub-Divisional Hospital', '', true],
+  ['BOLPURSUBDIVISION', 'Bolpur Sub-Divisional Hospital', '', true],
   ['KPCMEDICAL', 'KPC Medical College, Kolkata', '', false], ['IQCITY', 'IQ City Medical College, Durgapur', '', false],
   ['GOURIDEVI', 'Gouri Devi Institute of Medical Sciences, Durgapur', '', false], ['JAGANNATHGUPTA', 'Jagannath Gupta Institute of Medical Sciences, Budge Budge', '', false],
   ['RAMAKRISHNAMISSION', 'Ramakrishna Mission Seva Pratishthan, Kolkata', '', false], ['RAMKRISHNAMISSIONSEVA', 'Ramakrishna Mission Seva Pratishthan, Kolkata', '', false], ['SHRRAMKRISHNA', 'Shri Ramkrishna Institute of Medical Sciences & Sanaka Hospitals, Durgapur', '', false],

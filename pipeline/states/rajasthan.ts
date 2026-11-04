@@ -118,10 +118,15 @@ console.log('seat types', Object.fromEntries([...seats].sort((a, b) => b[1] - a[
     ['rj2024_r2', 'Round 2', 'https://www.rajpgneet2024.org/docs_upd/roster_rep_med_2024_r2_16012025.pdf', GH + 'round-2.pdf'],
     ['rj2024_r3', 'Round 3', 'http://rajpgneet2024.org/docs_upd/allotments%20med%20for%20web%20r3_2024.pdf',
       'https://web.archive.org/web/20250317043809/http://rajpgneet2024.org/docs_upd/allotments%20med%20for%20web%20r3_2024.pdf'],
+    // stray rounds list only the seats allotted in that round (Internet Archive copies, as linked from the GitHub mirror's documents.json)
+    ['rj2024_stray', 'Stray', 'http://rajpgneet2024.org/docs_upd/20250302_rep_med_r4_web_2024.pdf',
+      'https://web.archive.org/web/20250317052638/http://rajpgneet2024.org/docs_upd/20250302_rep_med_r4_web_2024.pdf'],
+    ['rj2024_sstray', 'Special stray', 'https://www.rajpgneet2024.org/docs_upd/rep_med_web_r5_2024.pdf',
+      'https://web.archive.org/web/20250406112957/https://www.rajpgneet2024.org/docs_upd/rep_med_web_r5_2024.pdf'],
   ];
   const nb = JSON.parse(readFileSync('data/raw/nbems/neetpg2024_air.json', 'utf8')) as Record<string, [number, number]>;
   const rollOf = new Map<string, string>(), svc24 = new Set<string>();
-  for (const f of ['rj2024_merit_r1', 'rj2024_merit_r2', 'rj2024_merit_r3']) {
+  for (const f of ['rj2024_merit_r1', 'rj2024_merit_r2', 'rj2024_merit_r3', 'rj2024_merit_stray', 'rj2024_merit_sstray']) {
     let col: Record<string, number> | null = null;
     for await (const { rows } of tables(f)) for (const cells of rows) {
       const ks = cells.map(key);

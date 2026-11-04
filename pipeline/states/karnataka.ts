@@ -24,7 +24,16 @@ const ROUNDS: [string, string, string, string][] = [ // [file, round label, quot
   ['ka2025_ins_r1', 'Round 1', 'In-service', 'PGNEET_MEED_ALLOT_2025_INS_final_12122025english.pdf'],
   ['ka2025_ins_r2', 'Round 2', 'In-service', 'PGNEET_MEED_ALLOT_2025_INS_R2_FINAL_23122025english.pdf'],
   ['ka2025_ins_r3', 'Round 3', 'In-service', 'PGNEET_MEED_ALLOT_2025_INS_MOPUP_25022026.pdf'],
+  // 2024 (still on KEA's site under keawebentry456/pget2024/; file names found via Collegedunia's Round 1 article and Scribd
+  // titles). The first stray round (R4) was not found (R2's name was found by trying KEA's naming pattern over the round's dates); R5 is the second stray round.
+  ['ka2024_r1', 'Round 1', 'State', '2024:PGNEET_MEED_ALLOT_2024_R1_finL_26_11_2024.pdf'],
+  ['ka2024_r2', 'Round 2', 'State', '2024:PGNEET_MEED_ALLOT_2024_R2_finL_20_12_2024.pdf'],
+  ['ka2024_r3', 'Round 3', 'State', '2024:PGNEET_MEED_ALLOT_2024_R3_Final_30_01_2025.pdf'],
+  ['ka2024_r5', 'Special stray', 'State', '2024:PGNEET_MEED_ALLOT_2024_R5_17032025_Final_kannada.pdf'],
 ];
+const KEA24 = 'https://cetonline.karnataka.gov.in/keawebentry456/pget2024/';
+const urlOf = (pdf: string) => (pdf.startsWith('2024:') ? KEA24 + pdf.slice(5) : KEA + pdf);
+const rawOf = (file: string) => (file.startsWith('ka2024') ? `${RAW}/2024/${file}.pdf` : `${RAW}/${file}.pdf`);
 const key = (s: string) => s.toLowerCase().replace(/[^a-z]/g, '');
 const FIELDS: Record<string, string> = {
   slno: 'sl', allindiarank: 'rank', coursecode: 'code', nameofthecollegeallotted: 'college', coursename: 'course',
@@ -32,13 +41,13 @@ const FIELDS: Record<string, string> = {
 };
 
 // In-service candidates get separate lists (and PDFs), so they stay separate rounds under "Karnataka in-service".
-const out = new Map<string, { label: string; url: string; counselling: string; rows: any[] }>();
+const out = new Map<string, { label: string; url: string; counselling: string; year: number; rows: any[] }>();
 const statuses = new Map<string, number>(), cats = new Map<string, number>();
 for (const [file, label, group, pdf] of ROUNDS) {
   let idx: Record<string, number> | null = null, n = 0, skipped = 0, prevRank = 0, breaks = 0;
-  const o = { label, url: KEA + pdf, counselling: group === 'In-service' ? 'Karnataka in-service' : 'Karnataka', rows: [] as any[] };
+  const o = { label, url: urlOf(pdf), counselling: group === 'In-service' ? 'Karnataka in-service' : 'Karnataka', year: file.startsWith('ka2024') ? 2024 : 2025, rows: [] as any[] };
   out.set(file, o);
-  for await (const pg of readPages(new Uint8Array(readFileSync(`${RAW}/${file}.pdf`)))) {
+  for await (const pg of readPages(new Uint8Array(readFileSync(rawOf(file))))) {
     for (const cells of gridTable(pg).rows) {
       const ks = cells.map(key);
       if (ks.includes('allindiarank')) { idx = {}; ks.forEach((k, i) => { if (FIELDS[k]) idx![FIELDS[k]] = i; }); continue; }
@@ -65,7 +74,7 @@ for (const [file, label, group, pdf] of ROUNDS) {
 for (const [id, o] of out) {
   o.rows.sort((a, b) => a.rank - b.rank);
   writeFileSync(`data/parsed/${id}.json`, JSON.stringify({
-    source: o.url, url: o.url, counselling: o.counselling, year: 2025, round: o.label, rows: o.rows,
+    source: o.url, url: o.url, counselling: o.counselling, year: o.year, round: o.label, rows: o.rows,
   }));
   console.log(`→ data/parsed/${id}.json  ${o.rows.length} rows`);
 }

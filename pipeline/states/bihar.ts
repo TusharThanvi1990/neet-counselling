@@ -29,7 +29,12 @@ const ROUNDS: [string, number, string, string][] = [ // [file, year, round label
   // Columns: Course Type | PGMAC Id | NEET Appl | NEET AIR | Name | Cat | Sex | [state ranks …] | Institute | Course | Remark; no
   // status column (every row is a fresh allotment). Later 2024 rounds are no longer online.
   ['bh2024_r1', 2024, 'Round 1', 'https://bceceboard.bihar.gov.in/pdf_Web/PGMAC2024_FALTM.pdf'],
+  // "FSALTM" repeats the Round 1 list (no status column) and then the Round 2 list (with a status column): only rows under a
+  // header with a status column are read. Round 3 is not on the site; the stray final result (02-03-2025) is.
+  ['bh2024_r2', 2024, 'Round 2', 'https://bceceboard.bihar.gov.in/pdf_Web/PGMAC2024_FSALTM.pdf'],
+  ['bh2024_r4', 2024, 'Stray', 'https://bceceboard.bihar.gov.in/pdf_Web/PGMAC2024_STRAY_ALTM.pdf'],
 ];
+const NEED_STATUS = new Set(['bh2024_r2']);
 const key = (s: string) => (s ?? '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 const clean = (s: string) => (s ?? '').replace(/\s+/g, ' ').trim();
 const bump = (m: Map<string, number>, k: string) => m.set(k, (m.get(k) ?? 0) + 1);
@@ -51,6 +56,9 @@ for (const [file, year, label, url] of ROUNDS) {
         const f = (k: string) => ks.indexOf(k);
         col = { type: Math.max(f('COURSETYPE'), f('SEATTYPE')), air: f('NEETAIR'), cat: Math.max(f('CATEGORY'), f('CAT')), gender: Math.max(f('GENDER'), f('SEX')), inst: f('INSTITUTE'), branch: Math.max(f('BRANCH'), f('COURSE')), acat: f('ALLOTTEDCAT'),
           remark: f('REMARK'), status: Math.max(f('ALLOTSTATUS'), f('ALLOTTSTATUS'), f('STATUS')) };
+        // 2024 Round 2 / stray headers: "ALLOTTEDREMARKS | Remarks" (status in Remarks) or "REMARKS | STATUS"
+        if (col.remark < 0) col.remark = ks.indexOf('ALLOTTEDREMARKS') >= 0 ? ks.indexOf('ALLOTTEDREMARKS') : ks.indexOf('REMARKS');
+        if (col.status < 0 && ks.includes('ALLOTTEDREMARKS')) col.status = ks.indexOf('REMARKS');
         continue;
       }
       if (!col || !/^(DEGREE|DIPLOMA)/i.test(cells[col.type] ?? '')) continue;
@@ -59,6 +67,7 @@ for (const [file, year, label, url] of ROUNDS) {
       listed++;
       const status = clean(cells[col.status]), remark = clean(cells[col.remark]), inst = clean(cells[col.inst]), branch = clean(cells[col.branch]);
       bump(statuses, key(status));
+      if (col.status < 0 && NEED_STATUS.has(file)) continue;
       if (!inst || (col.status >= 0 && !/FRESH|UPGRAD/.test(key(status)))) continue; // retained / not allotted / held from an earlier round
       const acat = (col.acat >= 0 ? clean(cells[col.acat]) : '') || fromRemark(remark);
       bump(remarks, `${acat} ← ${key(remark).replace(/\(?DEGREE\)?|\(?DIPLOMA\)?/g, '')}`); bump(insts, inst); bump(branches, `${cells[col.type]}|${branch}`); bump(types, key(cells[col.type]));

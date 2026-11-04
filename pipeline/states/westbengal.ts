@@ -20,6 +20,8 @@ const ROUNDS: [string, number, string, string, string][] = [ // [out, year, labe
   // Drive copy linked from pw.live; the WBMCC CDN file was not found. Being first for 2025, Round 2's Retained rows are skipped.
   ['wb2025_r1', 2025, 'Round 1', 'wb2025_r1_result', 'https://drive.google.com/file/d/1uzQF46Adnj4ARWpy6B9hzL9iV0RlJiyn/view'],
   ['wb2025_r2', 2025, 'Round 2', 'wb2025_r2_result', C + '2025/12/20251224980923146.pdf'],
+  // 2025 Round 3 (16-02-2026), on WBMCC's CDN (link found in Collegedunia's Round 3 article); text readable, grids by grid-json.ts
+  ['wb2025_r3', 2025, 'Round 3', 'wb2025_r3_result', C + '2026/02/202602161760928463.pdf'],
   ['wb2025_stray', 2025, 'Stray', 'wb2025_stray_result', C + '2026/02/202602272073540219.pdf'],
   // 2024: Internet Archive copies of wbmcc.nic.in/PGMed/Documents result PDFs (text PDFs, grids written by pipeline/grid-json.ts).
   // The Round 2 list includes Round 1 seats that were kept (skipped there, since Round 1 is now present).
