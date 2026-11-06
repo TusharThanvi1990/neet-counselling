@@ -419,3 +419,7 @@ h1, h2, h3 { line-height: 1.15; }
 .paywall .btn:not(.accent) { background: transparent; color: #fff; border-color: #2e3e3c; }
 .header-actions .btn.accent { padding: 8px 14px; }
 .plan .checks { align-content: start; }
+
+/* Footer policy links (Razorpay requires these to be visible) */
+.site-footer .legal-links { justify-content: flex-start; gap: 6px 20px; padding-block: 18px 0; }
+.site-footer .legal-links + .legal { border-top: 0; }

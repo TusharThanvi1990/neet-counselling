@@ -36,9 +36,13 @@ export default function SiteFooter() {
               <li><Link href="/calendar">Counselling calendar</Link></li>
               <li><Link href="/notices">Official notices</Link></li>
               <li><Link href="/sources">Data sources & method</Link></li>
+              <li><Link href="/contact">Contact us</Link></li>
               <li><a href="https://mcc.nic.in/pg-medical-counselling/" target="_blank" rel="noopener">MCC official website</a></li>
             </ul>
           </div>
+        </div>
+        <div className="legal legal-links">
+          <Link href="/terms">Terms</Link><Link href="/privacy">Privacy</Link><Link href="/refund-policy">Refunds &amp; cancellation</Link><Link href="/shipping-policy">Delivery</Link><Link href="/contact">Contact</Link>
         </div>
         <div className="legal">
           <span>© {new Date().getFullYear()} neetpgcounselling.in. Not affiliated with MCC, NBEMS, NMC or any state counselling authority.</span>
