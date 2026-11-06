@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
+import { can, FREE_RESULTS, getAccess } from '@/lib/pro';
 import { parseProfile, predict, type Band, type SortKey } from '@/lib/query';
 
 /**
@@ -6,15 +7,16 @@ import { parseProfile, predict, type Band, type SortKey } from '@/lib/query';
  * Same parameters as the home page: rank, cat, pwd=1, year, rounds (r1|main|all), branch, program, state,
  * quota (repeatable), band (safe|possible|reach), sort (close|margin|inst), q, limit (≤2000).
  */
-export function GET(req: NextRequest) {
+export async function GET(req: NextRequest) {
   const params = req.nextUrl.searchParams;
   const sp = Object.fromEntries([...new Set(params.keys())].map((k) => [k, params.getAll(k)]));
   const profile = parseProfile(sp);
+  const full = can(await getAccess(), 'pass');
   const result = predict(profile, {
     band: (params.get('band') as Band) ?? 'all',
     sort: (params.get('sort') as SortKey) ?? 'close',
     q: params.get('q') ?? '',
-    limit: Math.min(2000, Number(params.get('limit')) || 100),
+    limit: full ? Math.min(2000, Number(params.get('limit')) || 100) : FREE_RESULTS,
   });
   return NextResponse.json({ profile, ...result });
 }

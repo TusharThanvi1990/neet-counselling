@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import PageShell from '@/components/PageShell';
+import ProGate from '@/components/Paywall';
 import Link from 'next/link';
 import AutoForm from '@/components/AutoForm';
 import { getData, latestFullYear, yearLabel } from '@/lib/data';
@@ -20,6 +21,7 @@ export default async function RankScanPage({ searchParams }: { searchParams: Pro
 
   return (
     <PageShell title="Rank Scan" intro={<>See what every rank in a range was allotted in each MCC and state counselling round: the first seat, any upgrade in later rounds, and stray-round seats. Use it to see how far down the ranks a seat went, and who moved up from it.</>}>
+      <ProGate need="pro" title="Rank Scan is part of Pro" text="See what every rank around yours was allotted in each round, including upgrades and stray-round seats.">
 
 
       <AutoForm className="panel">
@@ -64,6 +66,7 @@ export default async function RankScanPage({ searchParams }: { searchParams: Pro
           Ranks {fmt(from)}–{fmt(shownTo)} in {year}. A dash in a later round means no new seat in that round: the candidate kept the earlier seat, or did not take part.
         </div>
       </div>
+          </ProGate>
     </PageShell>
   );
 }

@@ -47,6 +47,7 @@ export default function SiteHeader() {
             </div>
           </nav>
           <div className="header-actions">
+            <Link href="/pricing" className="btn accent" aria-current={current('/pricing')}>Pricing</Link>
             <Link href="/my-list" className="btn" aria-current={current('/my-list')}>
               <ListIcon size={18} /><span className="btn-list-label">My list</span><span className="count">{count}</span>
             </Link>

@@ -398,3 +398,24 @@ h1, h2, h3 { line-height: 1.15; }
 .statstrip .v { margin-bottom: 4px; }
 .filters .field input[type="checkbox"], .field .check input { width: 17px; min-width: 17px; flex: none; }
 .filters .quotas .check { justify-content: flex-start; }
+
+/* pricing + paywall */
+.plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; align-items: stretch; }
+.plan { position: relative; background: #fff; border: 1px solid var(--line); border-radius: 24px; padding: 30px; display: flex; flex-direction: column; gap: 12px; }
+.plan h3 { margin: 0; font-size: 22px; }
+.plan .price { font: 600 40px/1 var(--mono); letter-spacing: -0.02em; }
+.plan .price s { font-size: 18px; color: var(--muted); font-weight: 500; }
+.plan .sub { margin: 0; }
+.plan .checks { margin: 6px 0 10px; flex: 1; }
+.plan .checks li { font-size: 14px; }
+.plan .checks li::before { content: "✓"; color: var(--primary); font-weight: 800; margin-right: 2px; }
+.plan.featured { border: 2px solid var(--primary); }
+.plan.wanted { box-shadow: 0 0 0 4px var(--primary-50); }
+.plan .badge { position: absolute; top: -12px; right: 24px; font: 700 11px/1 var(--font); letter-spacing: .06em; text-transform: uppercase; background: var(--accent); color: var(--ink); border-radius: 6px; padding: 6px 9px; }
+.paywall { background: var(--ink); color: #fff; border-radius: 24px; padding: 32px; display: grid; gap: 10px; margin: 8px 0 24px; }
+.paywall h3 { margin: 0; font-size: 26px; color: #fff; }
+.paywall p { margin: 0; color: #bfcbc8; max-width: 640px; }
+.paywall .kicker { color: var(--accent); margin: 0; }
+.paywall .btn:not(.accent) { background: transparent; color: #fff; border-color: #2e3e3c; }
+.header-actions .btn.accent { padding: 8px 14px; }
+.plan .checks { align-content: start; }

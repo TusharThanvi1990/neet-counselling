@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import PageShell from '@/components/PageShell';
+import ProGate from '@/components/Paywall';
 import { getData } from '@/lib/data';
 import { instituteDetail } from '@/lib/institutes';
 import { fmt, type SearchParams } from '@/lib/url';
@@ -55,6 +56,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
       intro="Put up to four colleges side by side: closing ranks for the branches they share, seats, fees, stipend, hostel and the state’s service bond."
       crumb={{ href: '/institutes', label: 'Colleges' }}
     >
+      <ProGate need="pro" title="Compare colleges is part of Pro" text="Put up to four colleges side by side: closing ranks per branch, seats, fees, stipend, hostel and service bond.">
       <form className="card panel no-print" action="/compare" method="get">
         <div className="fields">
           {Array.from({ length: MAX }, (_, i) => {
@@ -121,6 +123,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
           <p className="note">Highlighted: the most lenient closing rank (easiest to get) among the compared colleges.</p>
         </>
       )}
+          </ProGate>
     </PageShell>
   );
 }

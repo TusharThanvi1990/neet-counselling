@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import PageShell from '@/components/PageShell';
+import { Paywall } from '@/components/Paywall';
+import { can, getAccess } from '@/lib/pro';
 import Link from 'next/link';
 import AutoForm from '@/components/AutoForm';
 import { getData, PROGRAMS, type Program } from '@/lib/data';
@@ -24,6 +26,8 @@ export default async function SeatMatrixPage({ searchParams }: { searchParams: P
   const branches = [...d.course].sort((a, b) => a.label.localeCompare(b.label));
   const canCompare = matrixYears.includes(year - 1);
 
+  const locked = view === 'changes' && !can(await getAccess(), 'pro');
+
   return (
     <PageShell title="NEET PG Seat Matrix" intro={<>Seats MCC put up for counselling each season, from its official seat matrices, by institute, branch, quota and category. Compare with the season before to see where seats were added or cut.</>}>
 
@@ -32,6 +36,7 @@ export default async function SeatMatrixPage({ searchParams }: { searchParams: P
         <Link href={hrefWith('/seat-matrix', sp, { view: undefined, page: undefined })} aria-current={view === 'matrix'}>Seats by institute</Link>
         <Link href={hrefWith('/seat-matrix', sp, { view: 'changes', page: undefined })} aria-current={view === 'changes'}>Changes vs last year</Link>
       </div>
+      {locked ? <Paywall need="pro" title="Seat increase is part of Pro" text="See every seat added, increased, reduced or removed compared with last year, by college and branch." /> : <>
 
       <AutoForm className="panel">
         {view === 'changes' && <input type="hidden" name="view" value="changes" />}
@@ -64,6 +69,7 @@ export default async function SeatMatrixPage({ searchParams }: { searchParams: P
       {view === 'matrix' ? <MatrixTable sp={sp} year={year} program={program} branch={branch} state={state} /> : canCompare
         ? <ChangesTable sp={sp} year={year} program={program} branch={branch} state={state} />
         : <p className="empty">There is no earlier season in the data to compare {year} with.</p>}
+          </>}
     </PageShell>
   );
 }

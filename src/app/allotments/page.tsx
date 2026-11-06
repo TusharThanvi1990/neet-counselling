@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import PageShell from '@/components/PageShell';
+import ProGate from '@/components/Paywall';
 import Link from 'next/link';
 import AutoForm from '@/components/AutoForm';
 import { getData } from '@/lib/data';
@@ -19,6 +20,7 @@ export default async function AllotmentsPage({ searchParams }: { searchParams: P
 
   return (
     <PageShell title="MCC NEET PG Allotment Lists" intro={<>Every allotment from MCC’s official result PDFs, searchable. Each row links to the page of the PDF it came from. For Rounds 2 and 3, only seats allotted in that round are listed.</>}>
+      <ProGate need="pro" title="Allotment lists are part of Pro" text="Search every allotment from MCC and state result PDFs: who got which college, branch and quota at which rank, in every round.">
 
 
       <AutoForm className="panel">
@@ -66,6 +68,7 @@ export default async function AllotmentsPage({ searchParams }: { searchParams: P
           {f.page < pages && <Link className="btn" href={hrefWith('/allotments', sp, { page: f.page + 1 })}>Next →</Link>}
         </div>
       </div>
+          </ProGate>
     </PageShell>
   );
 }

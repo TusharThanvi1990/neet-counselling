@@ -4,6 +4,8 @@ import AutoForm from '@/components/AutoForm';
 import AddButton from '@/components/AddButton';
 import PageShell from '@/components/PageShell';
 import SmartListButton from '@/components/SmartListButton';
+import { Paywall } from '@/components/Paywall';
+import { can, FREE_RESULTS, getAccess } from '@/lib/pro';
 import { getData, PROGRAMS, ROUND_SETS, yearLabel } from '@/lib/data';
 import { BAND_LABEL, CATEGORIES, STATE_QUOTA, parseProfile, predict, stateCategories, type Band, type SortKey } from '@/lib/query';
 import { fmt, hrefWith, type SearchParams } from '@/lib/url';
@@ -21,7 +23,9 @@ export default async function PredictorPage({ searchParams }: { searchParams: Pr
   const band = (['safe', 'possible', 'reach'].includes(String(sp.band)) ? sp.band : 'all') as Band | 'all';
   const sort = (['close', 'margin', 'inst'].includes(String(sp.sort)) ? sp.sort : 'close') as SortKey;
   const q = typeof sp.q === 'string' ? sp.q : '';
-  const limit = Math.min(2000, Math.max(50, Number(sp.limit) || 50));
+  const access = await getAccess();
+  const full = can(access, 'pass'), pro = can(access, 'pro');
+  const limit = full ? Math.min(2000, Math.max(50, Number(sp.limit) || 50)) : FREE_RESULTS;
   const maxFee = FEE_CAPS.some(([v]) => v === Number(sp.fee)) ? Number(sp.fee) : 0;
   const res = predict(p, { band, q, sort, limit, maxFee });
   const total = res.counts.safe + res.counts.possible + res.counts.reach;
@@ -91,7 +95,9 @@ export default async function PredictorPage({ searchParams }: { searchParams: Pr
         <div id="results">
           <div className="results-head">
             <div className="count-text"><b>{fmt(total)}</b> colleges & branches for AIR <b>{fmt(p.rank)}</b> ({p.cat}{p.pwd ? ', PwD' : ''})</div>
-            <SmartListButton keys={smart} name={`AIR ${fmt(p.rank)} · ${p.cat}${p.branch ? ` · ${d.course[d.index.course.get(p.branch)!].label}` : ''}`} />
+            {pro
+              ? <SmartListButton keys={smart} name={`AIR ${fmt(p.rank)} · ${p.cat}${p.branch ? ` · ${d.course[d.index.course.get(p.branch)!].label}` : ''}`} />
+              : <Link className="btn primary" href="/pricing?plan=pro">Build my choice list · Pro</Link>}
             <div className="seg" role="group" aria-label="Sort" style={{ margin: 0 }}>
               {([['close', 'Top colleges'], ['margin', 'Safest first'], ['inst', 'A–Z']] as const).map(([v, label]) => (
                 <Link key={v} href={hrefWith('/predictor', sp, { sort: v === 'close' ? undefined : v, limit: undefined })} scroll={false} aria-current={sort === v}>{label}</Link>
@@ -137,8 +143,12 @@ export default async function PredictorPage({ searchParams }: { searchParams: Pr
               <div className="card empty">No seats within reach for these filters. Try adding quotas, another branch or state, or a different season.</div>
             )}
           </div>
+          {!full && res.total > res.options.length && (
+            <Paywall need="pass" title={`${fmt(res.total - res.options.length)} more seats match your rank`}
+              text={`You are seeing the top ${FREE_RESULTS} of ${fmt(res.total)}. Unlock every match across MCC and all state counsellings, with the fee and state filters, for the whole season.`} />
+          )}
           <div className="more">
-            {res.total > res.options.length
+            {!full ? null : res.total > res.options.length
               ? <>Showing {fmt(res.options.length)} of {fmt(res.total)} <Link className="btn primary" href={hrefWith('/predictor', sp, { limit: limit + 50 })} scroll={false}>Load more colleges</Link></>
               : res.total ? `${fmt(res.total)} results` : null}
           </div>

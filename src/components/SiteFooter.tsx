@@ -32,6 +32,7 @@ export default function SiteFooter() {
           <div>
             <h4>About</h4>
             <ul>
+              <li><Link href="/pricing">Pricing</Link></li>
               <li><Link href="/calendar">Counselling calendar</Link></li>
               <li><Link href="/notices">Official notices</Link></li>
               <li><Link href="/sources">Data sources & method</Link></li>
