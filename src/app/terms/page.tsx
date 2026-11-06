@@ -21,7 +21,7 @@ export default function TermsPage() {
         <p>We take care to read the official documents correctly and link each figure to its source PDF, but errors can happen. If anything differs from the official document, the official document is correct. Tell us via the <Link href="/contact">contact page</Link> and we will fix it.</p>
         <h2>4. Paid plans</h2>
         <ul>
-          <li>Plans: {PLANS.pass.name} (₹{PLANS.pass.price}) and {PLANS.pro.name} (₹{PLANS.pro.price}). Prices are in Indian rupees and shown on the <Link href="/pricing">pricing page</Link> before you pay.</li>
+          <li>Plans: {PLANS.pass.name} (₹{PLANS.pass.price}) and {PLANS.pro.name} (₹{PLANS.pro.price}). Prices are in Indian rupees and shown on the <Link href="/pricing">pricing page</Link> before you pay. The price shown is the full amount you pay; we are not currently registered for GST, so no GST is added.</li>
           <li>Each plan is a one-time payment. Access lasts until {until}. Nothing renews automatically and you are not charged again.</li>
           <li>Access is digital and starts immediately after a successful payment. There is nothing shipped. See the <Link href="/shipping-policy">delivery policy</Link>.</li>
           <li>Payments are processed by Razorpay. We never see or store your card, UPI or bank details.</li>
