@@ -70,7 +70,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
         })}
       </div>
 
-      <p className="note">One-time payment, non-refundable. By paying you agree to the <Link href="/terms">terms</Link> and <Link href="/refund-policy">refund policy</Link>.</p>
+      <p className="note">One-time payment, no GST added: the price shown is exactly what you pay. Non-refundable. By paying you agree to the <Link href="/terms">terms</Link> and <Link href="/refund-policy">refund policy</Link>.</p>
 
       <h2>Compare plans</h2>
       <div className="tablebox">
@@ -91,6 +91,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
         <details><summary>Is it a subscription?</summary><p>No. You pay once and access lasts until {until}, the end of NEET PG 2026 counselling. Nothing renews.</p></details>
         <details><summary>How do I pay?</summary><p>Through Razorpay: UPI, cards, net banking or wallets. We never see your card or bank details.</p></details>
         <details><summary>Can I upgrade from Predictor Pass to Pro later?</summary><p>Yes, buy Pro any time from this page.</p></details>
+        <details><summary>Is GST extra?</summary><p>No. The price shown is the full amount you pay. We are not registered for GST yet, so none is added.</p></details>
         <details><summary>Can I get a refund?</summary><p>No. Access starts the moment you pay, so all sales are final; try the free tools first. If you were charged twice or paid but nothing unlocked, <Link href="/contact">contact us</Link> and we will fix it. See the <Link href="/refund-policy">refund policy</Link>.</p></details>
         <details><summary>Why is it cheaper than other sites?</summary><p>We read every official result PDF with our own pipeline, so the data costs us little to keep up to date. You get the same closing ranks, each linked to its source page.</p></details>
       </div>

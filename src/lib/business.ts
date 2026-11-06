@@ -6,7 +6,7 @@ export const BUSINESS = {
   phoneHref: 'tel:+917855026094',
   whatsapp: 'https://wa.me/917855026094',
   /** Set once the support mailbox exists, e.g. support@neetpgcounselling.in. Empty hides it. */
-  email: '',
+  email: 'support@neetpgcounselling.in',
   address: ['Akesha, Mulund', 'Mumbai, Maharashtra 400080', 'India'],
   city: 'Mumbai',
   hours: 'Monday to Saturday, 10 am to 7 pm IST',
