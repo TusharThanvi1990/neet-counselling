@@ -36,7 +36,7 @@ a:hover { text-decoration: underline; }
 :focus-visible { outline: 3px solid var(--primary-100); outline-offset: 1px; border-radius: 6px; }
 img, svg { max-width: 100%; }
 .num { font-variant-numeric: tabular-nums; }
-.container { max-width: 1200px; margin: 0 auto; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
+.container { max-width: 1680px; margin: 0 auto; padding-left: max(clamp(16px, 3.2vw, 56px), env(safe-area-inset-left, 0px)); padding-right: max(clamp(16px, 3.2vw, 56px), env(safe-area-inset-right, 0px)); }
 
 /* ---------- header ---------- */
 .site-header { position: sticky; top: 0; z-index: 30; background: rgba(255, 255, 255, 0.92); backdrop-filter: saturate(1.4) blur(10px); border-bottom: 1px solid var(--line); }
