@@ -3,11 +3,15 @@ import Link from 'next/link';
 import AutoForm from '@/components/AutoForm';
 import AddButton from '@/components/AddButton';
 import PageShell from '@/components/PageShell';
+import SmartListButton from '@/components/SmartListButton';
 import { getData, PROGRAMS, ROUND_SETS, yearLabel } from '@/lib/data';
 import { BAND_LABEL, CATEGORIES, STATE_QUOTA, parseProfile, predict, stateCategories, type Band, type SortKey } from '@/lib/query';
 import { fmt, hrefWith, type SearchParams } from '@/lib/url';
 
 export const metadata: Metadata = { title: 'NEET PG College Predictor' };
+
+const SMART_MAX = 150;
+const FEE_CAPS: [number, string][] = [[50000, 'Up to ₹50,000'], [100000, 'Up to ₹1 lakh'], [200000, 'Up to ₹2 lakh'], [500000, 'Up to ₹5 lakh'], [1000000, 'Up to ₹10 lakh'], [2500000, 'Up to ₹25 lakh']];
 
 
 export default async function PredictorPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
@@ -18,8 +22,11 @@ export default async function PredictorPage({ searchParams }: { searchParams: Pr
   const sort = (['close', 'margin', 'inst'].includes(String(sp.sort)) ? sp.sort : 'close') as SortKey;
   const q = typeof sp.q === 'string' ? sp.q : '';
   const limit = Math.min(2000, Math.max(50, Number(sp.limit) || 50));
-  const res = predict(p, { band, q, sort, limit });
+  const maxFee = FEE_CAPS.some(([v]) => v === Number(sp.fee)) ? Number(sp.fee) : 0;
+  const res = predict(p, { band, q, sort, limit, maxFee });
   const total = res.counts.safe + res.counts.possible + res.counts.reach;
+  // Smart list: the top matches across every band, hardest-to-get first (the order choice filling wants).
+  const smart = predict(p, { q, sort: 'close', limit: SMART_MAX, maxFee }).options.map((o) => o.key);
   const branches = [...d.course].sort((a, b) => a.label.localeCompare(b.label));
 
   return (
@@ -51,6 +58,8 @@ export default async function PredictorPage({ searchParams }: { searchParams: Pr
             <select name="program" defaultValue={p.program}><option value="">All programs</option>{PROGRAMS.map((x) => <option key={x}>{x}</option>)}</select></label>
           <label className="field"><span>State</span>
             <select name="state" defaultValue={p.state}><option value="">All states</option>{d.states.map((s) => <option key={s}>{s}</option>)}</select></label>
+          <label className="field"><span>Max tuition per year</span>
+            <select name="fee" defaultValue={maxFee || ''}><option value="">Any fee</option>{FEE_CAPS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></label>
           <label className="field"><span>College name</span>
             <input type="search" name="q" defaultValue={q} placeholder="Search college" /></label>
           <div className="field">
@@ -82,6 +91,7 @@ export default async function PredictorPage({ searchParams }: { searchParams: Pr
         <div id="results">
           <div className="results-head">
             <div className="count-text"><b>{fmt(total)}</b> colleges & branches for AIR <b>{fmt(p.rank)}</b> ({p.cat}{p.pwd ? ', PwD' : ''})</div>
+            <SmartListButton keys={smart} name={`AIR ${fmt(p.rank)} · ${p.cat}${p.branch ? ` · ${d.course[d.index.course.get(p.branch)!].label}` : ''}`} />
             <div className="seg" role="group" aria-label="Sort" style={{ margin: 0 }}>
               {([['close', 'Top colleges'], ['margin', 'Safest first'], ['inst', 'A–Z']] as const).map(([v, label]) => (
                 <Link key={v} href={hrefWith('/predictor', sp, { sort: v === 'close' ? undefined : v, limit: undefined })} scroll={false} aria-current={sort === v}>{label}</Link>

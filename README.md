@@ -1,4 +1,4 @@
-# PG Seat Compass
+# NEET PG Counselling (neetpgcounselling.in)
 
 NEET PG counselling helper built on MCC's official allotment results (2023 onwards).
 

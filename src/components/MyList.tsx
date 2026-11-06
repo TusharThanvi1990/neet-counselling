@@ -60,7 +60,7 @@ export default function MyList() {
 
   return (
     <>
-      <div className="panel">
+      <div className="panel no-print">
         <div className="fields">
           <label className="field"><span>List</span>
             <select value={lists?.active ?? ''} onChange={(e) => { setActiveList(e.target.value); setMsg(''); setDelArmed(false); }}>
@@ -99,6 +99,10 @@ export default function MyList() {
         </div>
       </div>
 
+      <div className="print-only">
+        <h2 style={{ marginTop: 0 }}>{active?.name} · NEET PG choice list</h2>
+        <p>AIR {prof.rank} · {prof.cat}{prof.pwd ? ' · PwD' : ''} · {keys.length} choices · neetpgcounselling.in</p>
+      </div>
       <div className="tablebox">
         <table>
           <thead><tr><th className="num">#</th><th>Institute</th><th>Branch</th><th className="hide-sm">Quota</th><th className="num">Closing rank</th><th>Chance</th><th /></tr></thead>
@@ -130,6 +134,12 @@ export default function MyList() {
       </div>
 
       <div className="toolbar">
+        <button className="btn" type="button" disabled={keys.length < 2} title="Hardest-to-get first, the order choice filling expects" onClick={() => {
+          const close = (k: string) => { const d = details[k]; return d && !d.missing && d.closingRank != null ? d.closingRank : Infinity; };
+          writeChoices([...keys].sort((a, b) => close(a) - close(b)));
+          setMsg('Ordered by closing rank: hardest to get first.');
+        }}>Order by closing rank</button>
+        <button className="btn" type="button" disabled={!keys.length} onClick={() => window.print()}>Print / save as PDF</button>
         <button className="btn primary" type="button" disabled={!keys.length} onClick={() => {
           const t = asText();
           navigator.clipboard.writeText(t).then(() => { setMsg(`Copied ${keys.length} choices.`); setText(''); },

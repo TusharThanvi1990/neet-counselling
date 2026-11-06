@@ -3,7 +3,7 @@
 The one place that says what data the site has, what is missing, and why. **Update it in the same commit as any data change.**
 State-by-state detail (sources, quirks, row counts, checks) lives in [STATES.md](STATES.md).
 
-Last updated: 2026-11-04.
+Last updated: 2026-11-06.
 
 Cross-check (2026-11-04): 96 Round 1 closing ranks (rank and seat count) compared by hand with neetvantage.com across MCC 2023–26, Karnataka, Maharashtra, West Bengal, Haryana, MP and Rajasthan: 96/96 match. Nothing copied from it. A dataset-wide outlier scan found and fixed: Bihar DQ (Divyang) seats filed as non-PwD, MP in-service candidates on general seats (now in-service quota), Punjab PwD / NRI seats inside other quotas, Punjab 2026 ranks printed as "1E+05" (now from the NBEMS 2026 result), J&K sports seats.
 
@@ -57,6 +57,9 @@ All ranks shown on the site are All India Ranks. Where a state prints only its o
 | Data | Status | Notes |
 |---|---|---|
 | Fees per college | 🟡 | Yearly tuition per college × branch × quota, shown in the predictor (8,100+ state fees + MCC profile fees). Official sources per state are named in pipeline/states/fees.ts and build-dataset.ts. ⛔ No official document: Kerala self-financing (fee notice removed), Chhattisgarh private colleges (CGDME has no fee file), ASCOMS Jammu, Telangana Category C (only "up to 3× B") and Telangana government colleges ("as notified", not published), MCC DNB hospitals (no fee declared to MCC). Maharashtra uses FRA 2024-25 approved fees (FRA's API returns nothing for 2025-26). NRI fees in US$ not recorded |
+| Score → rank (/score-to-rank) | ✅ | `data/score2rank.json` (pipeline/score-table.ts) from the NBEMS 2025 and 2026 results: best/worst AIR and candidate count per score. ⛔ 2024 prints percentile, not score. Rebuild after each new NBEMS result |
+| Quota eligibility (/eligibility) | 🟡 | MCC quotas from MCC's rules; state quotas judged from the quota type in our labels (State Quota, Institutional, Management, NRI, In-service, open to all), shown as "likely" / "check the brochure". ⬜ Per-state domicile rules from each brochure (texts for AP, Bihar, CG, Haryana, J&K, Rajasthan, HP, Maharashtra are in pipeline/scratch) |
+| Clinical load (OPD/IPD/beds), merit-list position, round alerts | ⬜ | Rank and Seats / ZyNerd show these. Clinical load needs NMC or college data; alerts need accounts (after Razorpay) |
 | State-specific categories in the predictor | ✅ | "State category" picker (e.g. Karnataka Cat-2A, Maharashtra NT-C, Telangana BC-B) applies to that state's quotas. Not yet in the saved-list page |
 | Stipend and service bond by state | 🟡 | ✅ Stipend by state (MCC profiles). ✅ Bond / seat-leaving rules for 18 states from official documents: Andhra Pradesh, Bihar, Chhattisgarh, Goa, Gujarat, Haryana, Himachal, J&K (no general bond; Ladakh candidates only), Karnataka (seat-cancellation penalties only; the service-bond clause is in the e-bulletin, not found online), Kerala, Madhya Pradesh, Maharashtra, Odisha, Punjab (security deposit only), Rajasthan, Telangana, Uttar Pradesh, West Bengal. ⏳ Assam (DME file links return 404) |
 | Round calendar / key dates | ✅ | /calendar from MCC's 2026 schedules (data/calendar2026.json); update when MCC revises |

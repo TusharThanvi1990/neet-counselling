@@ -22,7 +22,10 @@ export default async function InstitutePage({ params }: Params) {
 
   return (
     <PageShell title={inst.name} intro={<>{inst.state} · {inst.type} · MCC institute code {inst.code}{p?.university ? ` · ${p.university}` : ''}</>} crumb={{ href: '/institutes', label: 'Colleges' }}>
-
+      <div className="toolbar" style={{ marginTop: 0 }}>
+        <Link className="btn" href={`/compare?c=${inst.code}`}>Compare with other colleges</Link>
+        <Link className="btn" href={`/allotments?q=${encodeURIComponent(inst.name)}`}>Who got a seat here</Link>
+      </div>
 
       <h2>Fees and stipend</h2>
       {p ? (

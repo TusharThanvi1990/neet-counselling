@@ -73,7 +73,7 @@ export async function fetchNotices(): Promise<SourceNotices[]> {
   return Promise.all(FEED_SOURCES.map(async (src) => {
     try {
       const res = await fetch(src.url, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; PGSeatCompass/1.0; notices feed)' },
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; NEETPGCounselling/1.0; notices feed)' },
         next: { revalidate: 3600 }, signal: AbortSignal.timeout(15000),
       });
       if (!res.ok) return { ...src, ok: false, notices: [] };

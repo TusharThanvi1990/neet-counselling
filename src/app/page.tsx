@@ -1,24 +1,18 @@
 import Link from 'next/link';
-import { ArrowIcon, BuildingIcon, ChartIcon, CheckIcon, GridIcon, ListIcon, ScanIcon, TargetIcon } from '@/components/Icons';
+import { ArrowIcon, CheckIcon } from '@/components/Icons';
 import { getData, latestFullYear } from '@/lib/data';
 import { cutoffs, CATEGORIES } from '@/lib/query';
 import { fmt } from '@/lib/url';
 
-const FEATURES = [
-  { href: '/predictor', icon: <TargetIcon />, title: 'College Predictor', text: 'Enter your rank and category to see every MCC seat within reach, marked Safer, Possible or Reach.' },
-  { href: '/cutoffs', icon: <ChartIcon />, title: 'Branch Cutoffs', text: 'Opening and closing ranks for every branch, quota and category, compared across seasons.' },
-  { href: '/institutes', icon: <BuildingIcon />, title: 'Colleges, Fees & Stipend', text: 'Fees, stipend, hostel and resignation rules for each college, with its seats and cutoffs by year.' },
-  { href: '/seat-matrix', icon: <GridIcon />, title: 'Seat Matrix', text: 'Seats per college and branch for each season, and where seats were added or cut this year.' },
-  { href: '/rank-scan', icon: <ScanIcon />, title: 'Rank Scan', text: 'See what candidates around your rank were allotted in every round, including upgrades.' },
-  { href: '/my-list', icon: <ListIcon />, title: 'Choice List Builder', text: 'Save colleges as you browse, arrange them in your order of preference and copy the list.' },
-];
-
-const FAQ = [
-  ['Where does the data come from?', 'Every number comes from documents MCC publishes: round-wise allotment results, seat matrices and institute profiles. Each closing rank links to the page of the official PDF it came from.'],
-  ['How accurate is the college predictor?', 'It compares your rank with the last rank MCC actually allotted for each seat in past rounds. Cutoffs move every year with seats and competition, so treat the labels as a guide, not a guarantee.'],
-  ['Does it cover state quota counselling?', 'State counselling 2025 for Maharashtra, Karnataka, Kerala, Andhra Pradesh, Rajasthan, Telangana, Gujarat, Madhya Pradesh, Bihar, Punjab, Chhattisgarh, Himachal Pradesh, Jammu & Kashmir and Goa is included (Haryana Round 1, Assam Round 2, Odisha Round 1 and West Bengal Round 2 + stray too), plus 2026 Round 1 for Uttar Pradesh, Gujarat, Madhya Pradesh, Punjab, Chhattisgarh and Goa, with every allotment shown by All India Rank. More states are being added. MCC counselling (All India Quota, deemed and central universities, DNB) is fully covered.'],
-  ['Is it free?', 'Yes, all tools are free to use during the current season.'],
-  ['Which rounds are included?', 'Rounds 1–3 and the stray rounds from 2023, 2024 and 2025, plus 2026 rounds as MCC publishes them.'],
+const TOOLS = [
+  { href: '/rank-scan', n: '02 · SCAN', title: 'Rank Scan', text: 'What every rank near yours was allotted in each round, upgrades included.' },
+  { href: '/cutoffs', n: '03 · CUTOFFS', title: 'Closing-rank trends', text: 'Opening and closing ranks per branch, quota and category, season by season.' },
+  { href: '/seat-matrix?view=changes', n: '04 · SEATS', title: 'Seat matrix and seat increase', text: 'Seats per college and branch, and where seats were added or cut this year.' },
+  { href: '/institutes', n: '05 · MONEY', title: 'Fees, stipend and bond', text: 'Tuition per year, monthly stipend, hostel and the service-bond rules of 18 states.' },
+  { href: '/eligibility', n: '06 · ELIGIBLE', title: 'Quota eligibility', text: 'Which counsellings and quotas you can apply for, from your domicile and MBBS state.' },
+  { href: '/score-to-rank', n: '07 · RANK', title: 'Score to rank', text: 'Your NEET PG score as an All India Rank, from the full NBEMS results.' },
+  { href: '/compare', n: '08 · COMPARE', title: 'Compare colleges', text: 'Two to four colleges side by side: cutoffs, seats, fees, stipend and bond.' },
+  { href: '/my-list', n: '09 · LIST', title: 'Smart choice list', text: 'Build a choice list from the predictor in one click, reorder it and print it as PDF.' },
 ];
 
 export default function Home() {
@@ -26,97 +20,91 @@ export default function Home() {
   const year = latestFullYear(d);
   const top = cutoffs(year, 'main', 'all-india', 'Open', 'MD/MS').rows
     .filter((r) => ['General Medicine (MD/MS)', 'Radiodiagnosis (MD/MS)', 'Dermatology (MD/MS)', 'Paediatrics (MD/MS)', 'General Surgery (MD/MS)', 'Obstetrics & Gynaecology (MD/MS)'].includes(r.branch));
-  const totalSeats = d.matrixSources.filter((m) => m.year === Math.max(...d.years)).reduce((s, m) => s + m.seats, 0);
+  const counsellings = [...new Set(d.rounds.map((r) => r.counselling))];
+  const states = counsellings.filter((c) => c !== 'MCC').sort();
+  const latest = Math.max(...d.years), first = Math.min(...d.years);
+
+  const faq: [string, string][] = [
+    ['Where does the data come from?', 'Every number comes from documents the counselling authorities publish: MCC and state round-wise allotment results, seat matrices, institute profiles and fee notifications. Each closing rank links to the page of the official PDF it came from.'],
+    ['How accurate is the college predictor?', 'It compares your rank with the last rank actually allotted for each seat in past rounds. Cutoffs move every year with seats and competition, so treat Safer, Possible and Reach as a guide, not a guarantee.'],
+    ['Which state counsellings are covered?', `MCC (All India Quota, deemed and central universities, DNB) and ${states.length} state counsellings: ${states.join(', ')}. Ranks that a state prints as its own merit number or roll number are converted to All India Rank through the NBEMS result.`],
+    ['Which rounds are included?', `Every round from ${first} onwards, stray and special stray rounds included, and ${latest} rounds as they are published.`],
+  ];
 
   return (
     <>
       <section className="hero">
         <div className="container">
           <div>
-            <span className="eyebrow">NEET PG {Math.max(...d.years)} counselling · Updated with MCC Round 1</span>
-            <h1>Find the PG seat your <em>NEET rank</em> can get</h1>
-            <p className="big">College predictor, cutoffs, seat matrix and fees for MCC counselling, built on {d.years.length} years of official allotment results.</p>
+            <span className="eyebrow">NEET PG {latest} · Round 1 results in</span>
+            <h1>Know where your rank lands before you fill a single choice.</h1>
+            <p className="big">Closing ranks, seats, fees, stipends and bonds for MCC and {states.length} state counsellings, read from every official result PDF since {first}.</p>
             <div className="trust">
-              <span><CheckIcon size={18} /> Official MCC data</span>
-              <span><CheckIcon size={18} /> Every round since 2023</span>
-              <span><CheckIcon size={18} /> Free to use</span>
+              <span><CheckIcon size={18} /> Every rank links to its PDF page</span>
+              <span><CheckIcon size={18} /> MCC + state quotas in one list</span>
             </div>
           </div>
           <form className="card hero-card" action="/predictor" method="get">
             <h2>Check your chances</h2>
-            <label className="field"><span>Your NEET PG All India Rank</span>
-              <input name="rank" type="number" min={1} inputMode="numeric" placeholder="e.g. 12500" required /></label>
+            <label className="field"><span>NEET PG All India Rank</span>
+              <input name="rank" type="number" min={1} inputMode="numeric" placeholder="e.g. 14500" required /></label>
             <div className="row">
               <label className="field"><span>Category</span>
                 <select name="cat" defaultValue="General">{CATEGORIES.map((c) => <option key={c}>{c}</option>)}</select></label>
-              <label className="field"><span>Program</span>
+              <label className="field"><span>Course</span>
                 <select name="program" defaultValue=""><option value="">All</option><option>MD/MS</option><option>DNB</option><option>Diploma</option></select></label>
             </div>
             <label className="check"><input type="checkbox" name="pwd" value="1" /> I am a PwD candidate</label>
             <button className="btn accent lg block" type="submit">Show my colleges <ArrowIcon size={18} /></button>
-            <span className="note" style={{ textAlign: 'center' }}>Compared with {year} MCC Rounds 1–3</span>
+            <span className="note" style={{ textAlign: 'center' }}>Compared with {year} Rounds 1–3</span>
           </form>
         </div>
       </section>
 
       <div className="container">
         <div className="statstrip">
-          <div><div className="v">{fmt(d.n)}</div><div className="k">allotments analysed</div></div>
-          <div><div className="v">{fmt(d.codes.length)}</div><div className="k">colleges & hospitals</div></div>
-          <div><div className="v">{fmt(totalSeats)}</div><div className="k">seats in {Math.max(...d.years)} MCC matrix</div></div>
-          <div><div className="v">{d.rounds.length}</div><div className="k">counselling rounds</div></div>
+          <div><div className="v">{fmt(d.n)}</div><div className="k">allotments read from result PDFs</div></div>
+          <div><div className="v">{fmt(d.codes.length)}</div><div className="k">colleges and DNB hospitals</div></div>
+          <div><div className="v">{counsellings.length}</div><div className="k">counsellings: MCC and {states.length} states</div></div>
+          <div><div className="v">{first}–{String(latest).slice(2)}</div><div className="k">every round, stray rounds included</div></div>
         </div>
       </div>
 
       <section className="band">
         <div className="container">
-          <div className="section-title">
-            <h2>Everything you need for MCC counselling</h2>
-            <p>From your first shortlist to the final choice list, without digging through hundreds of PDF pages.</p>
+          <div className="section-head">
+            <h2>Every tool a counselling season needs</h2>
+            <p>From the first shortlist to the final locked choice list, without opening a single 900-page PDF.</p>
           </div>
-          <div className="features">
-            {FEATURES.map((f) => (
-              <Link key={f.href} href={f.href} className="card feature">
-                <span className="icon">{f.icon}</span>
-                <h3>{f.title}</h3>
-                <p>{f.text}</p>
-                <span className="go">Open →</span>
+          <div className="bento">
+            <Link href="/predictor" className="lead">
+              <span className="n">01 · PREDICT</span>
+              <h3>College predictor</h3>
+              <p>Every seat your rank reached last year across MCC and your state, marked Safer, Possible or Reach, with the fee on the same row.</p>
+              <span className="go">Open predictor →</span>
+            </Link>
+            {TOOLS.map((t) => (
+              <Link key={t.href} href={t.href}>
+                <span className="n">{t.n}</span>
+                <h3>{t.title}</h3>
+                <p>{t.text}</p>
               </Link>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="band white">
-        <div className="container">
-          <div className="section-title">
-            <h2>How it works</h2>
-            <p>Three steps from rank to a ready choice list.</p>
-          </div>
-          <div className="steps">
-            <div className="card step"><h3>Enter your rank</h3><p>Add your All India Rank, category and the quotas you are eligible for.</p></div>
-            <div className="card step"><h3>See your options</h3><p>Every college and branch whose closing rank was near yours, with seats, fees and the source PDF.</p></div>
-            <div className="card step"><h3>Build your list</h3><p>Save options, put them in your order of preference and take the list into MCC choice filling.</p></div>
-          </div>
-        </div>
-      </section>
-
-      <section className="band">
+      <section className="band ink">
         <div className="container split">
           <div>
-            <h2>Closing ranks you can verify</h2>
-            <p>We read MCC’s result PDFs line by line, so every cutoff is an actual allotment, not an estimate. Click any closing rank to open the exact page of the official PDF.</p>
-            <ul className="checks">
-              <li><CheckIcon size={18} /> Round-wise MCC results for 2023, 2024, 2025 and 2026</li>
-              <li><CheckIcon size={18} /> State counselling for 7 states, every 2025 round</li>
-              <li><CheckIcon size={18} /> Seat matrices with year-on-year seat changes</li>
-              <li><CheckIcon size={18} /> Fees and stipends declared by colleges to MCC</li>
-            </ul>
-            <p style={{ marginTop: 22 }}><Link className="btn primary" href="/cutoffs">See all branch cutoffs <ArrowIcon size={18} /></Link></p>
+            <span className="kicker">Traceable by design</span>
+            <h2>Don’t trust a number you can’t check.</h2>
+            <p>Each closing rank opens the official result PDF at the exact page it came from. Ranks printed as state merit numbers or roll numbers are converted to All India Rank through the NBEMS result.</p>
+            <p style={{ marginTop: 22 }}><Link className="btn accent" href="/cutoffs">See all branch cutoffs <ArrowIcon size={18} /></Link></p>
           </div>
           <div className="tablebox">
             <table>
-              <thead><tr><th>Branch (AIQ, Open)</th><th className="num">First rank</th><th className="num">Closing rank {year}</th></tr></thead>
+              <thead><tr><th>Branch · AIQ · Open</th><th className="num">First rank</th><th className="num">Closing {year}</th></tr></thead>
               <tbody>
                 {top.map((r) => (
                   <tr key={r.branchId}><td><b>{r.branch.replace(' (MD/MS)', '')}</b><div className="sub">MD/MS</div></td>
@@ -132,7 +120,7 @@ export default function Home() {
         <div className="container">
           <div className="section-title"><h2>Frequently asked questions</h2></div>
           <div className="faq">
-            {FAQ.map(([q, a]) => <details key={q}><summary>{q}</summary><p>{a}</p></details>)}
+            {faq.map(([q, a]) => <details key={q}><summary>{q}</summary><p>{a}</p></details>)}
           </div>
         </div>
       </section>

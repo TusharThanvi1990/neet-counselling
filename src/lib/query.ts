@@ -140,7 +140,8 @@ function bestGroups(p: Profile, year = p.year) {
 
 export type SortKey = 'close' | 'margin' | 'inst';
 
-export function predict(p: Profile, opts: { band?: Band | 'all'; q?: string; sort?: SortKey; limit?: number } = {}) {
+/** `maxFee`: drop seats whose recorded yearly tuition is above this (seats with no recorded fee stay in). */
+export function predict(p: Profile, opts: { band?: Band | 'all'; q?: string; sort?: SortKey; limit?: number; maxFee?: number } = {}) {
   const d = getData();
   const q = (opts.q ?? '').trim().toLowerCase();
   const counts: Record<Band, number> = { safe: 0, possible: 0, reach: 0 };
@@ -149,6 +150,7 @@ export function predict(p: Profile, opts: { band?: Band | 'all'; q?: string; sor
     const band = bandOf(p.rank, g.close);
     if (!band) continue;
     if (q && !d.inst[g.inst].full.toLowerCase().includes(q)) continue;
+    if (opts.maxFee && (d.fees.get(`${g.inst}.${g.course}.${g.quota}`)?.fee ?? 0) > opts.maxFee) continue;
     counts[band]++;
     if (!opts.band || opts.band === 'all' || opts.band === band) list.push({ g, band });
   }
