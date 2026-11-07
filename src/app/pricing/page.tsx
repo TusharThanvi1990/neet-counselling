@@ -82,7 +82,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
 
       <h2>Bought on another device?</h2>
       <div className="card panel">
-        <p style={{ margin: 0 }}>Enter the payment ID from your Razorpay receipt email (it starts with <span className="mono">pay_</span>) to unlock this browser too.</p>
+        <p style={{ margin: 0 }}>Enter the payment ID from your Razorpay receipt (it starts with <span className="mono">pay_</span>) and the mobile number you paid with. Each purchase works on the device you bought it on plus up to 2 more, for your own phone and laptop.</p>
         <RestoreForm />
       </div>
 
@@ -91,6 +91,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
         <details><summary>Is it a subscription?</summary><p>No. You pay once and access lasts until {until}, the end of NEET PG 2026 counselling. Nothing renews.</p></details>
         <details><summary>How do I pay?</summary><p>Through Razorpay: UPI, cards, net banking or wallets. We never see your card or bank details.</p></details>
         <details><summary>Can I upgrade from Predictor Pass to Pro later?</summary><p>Yes, buy Pro any time from this page.</p></details>
+        <details><summary>Can I use it on my phone and laptop?</summary><p>Yes. A purchase unlocks the device you paid on, plus up to 2 more of your own devices using the payment ID and your mobile number. It is for one person; if you change phone or clear your browser and hit the limit, contact us and we will reset it.</p></details>
         <details><summary>Is GST extra?</summary><p>No. The price shown is the full amount you pay. We are not registered for GST yet, so none is added.</p></details>
         <details><summary>Can I get a refund?</summary><p>No. Access starts the moment you pay, so all sales are final; try the free tools first. If you were charged twice or paid but nothing unlocked, <Link href="/contact">contact us</Link> and we will fix it. See the <Link href="/refund-policy">refund policy</Link>.</p></details>
         <details><summary>Why is it cheaper than other sites?</summary><p>We read every official result PDF with our own pipeline, so the data costs us little to keep up to date. You get the same closing ranks, each linked to its source page.</p></details>

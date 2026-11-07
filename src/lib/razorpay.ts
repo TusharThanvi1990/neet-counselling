@@ -17,13 +17,27 @@ async function rzp<T>(path: string, init?: { method?: string; body?: unknown }):
 }
 
 export type Order = { id: string; amount: number; currency: string; status: string; notes: Record<string, string> };
-export type Payment = { id: string; order_id: string; amount: number; status: string; email?: string; contact?: string };
+export type Payment = { id: string; order_id: string; amount: number; status: string; email?: string; contact?: string; notes?: Record<string, string> | unknown[] };
 
 export const createOrder = (plan: PlanId) =>
   rzp<Order>('/orders', { method: 'POST', body: { amount: PLANS[plan].price * 100, currency: 'INR', receipt: `${plan}-${Date.now()}`, notes: { plan, product: 'neetpgcounselling.in NEET PG 2026' } } });
 
 export const getOrder = (id: string) => rzp<Order>(`/orders/${encodeURIComponent(id)}`);
 export const getPayment = (id: string) => rzp<Payment>(`/payments/${encodeURIComponent(id)}`);
+
+/** Notes on a payment as an object (Razorpay returns [] when there are none). */
+export const paymentNotes = (p: Payment): Record<string, string> => (p.notes && !Array.isArray(p.notes) ? (p.notes as Record<string, string>) : {});
+
+/** Replace a payment's notes. We keep the extra-device counter here, so no database is needed. */
+export const setPaymentNotes = (id: string, notes: Record<string, string>) =>
+  rzp<Payment>(`/payments/${encodeURIComponent(id)}`, { method: 'PATCH', body: { notes } });
+
+/** Extra devices a purchase can be unlocked on with the payment ID (besides the one it was bought on). */
+export const MAX_RESTORES = 2;
+export const restoresUsed = (p: Payment) => Number(paymentNotes(p).restores) || 0;
+
+/** Last 10 digits of a phone number, so +91 98…, 098… and 98… all compare equal. */
+export const phoneKey = (s: string | undefined) => String(s ?? '').replace(/\D/g, '').slice(-10);
 
 const eq = (a: string, b: string) => a.length === b.length && crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
 

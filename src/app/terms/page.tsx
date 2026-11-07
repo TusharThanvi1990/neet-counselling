@@ -28,7 +28,7 @@ export default function TermsPage() {
           <li>Refunds follow our <Link href="/refund-policy">refund policy</Link>.</li>
         </ul>
         <h2>5. Fair use</h2>
-        <p>A plan is for your own counselling. You may not resell access, share it publicly, or copy, scrape or republish the site&rsquo;s data in bulk. We may withdraw access, without refund, from accounts that do.</p>
+        <p>A plan is for one person&rsquo;s own counselling and can be unlocked on up to 3 devices (the one you paid on plus 2 more). You may not resell access, share it publicly, or copy, scrape or republish the site&rsquo;s data in bulk. We may withdraw access, without refund, from accounts that do.</p>
         <h2>6. Liability</h2>
         <p>The site is provided &ldquo;as is&rdquo;. To the extent the law allows, we are not liable for any loss arising from decisions made using it. Our total liability for any claim is limited to the amount you paid us.</p>
         <h2>7. Changes</h2>
