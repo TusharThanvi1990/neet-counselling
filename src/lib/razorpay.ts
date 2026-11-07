@@ -28,16 +28,10 @@ export const getPayment = (id: string) => rzp<Payment>(`/payments/${encodeURICom
 /** Notes on a payment as an object (Razorpay returns [] when there are none). */
 export const paymentNotes = (p: Payment): Record<string, string> => (p.notes && !Array.isArray(p.notes) ? (p.notes as Record<string, string>) : {});
 
-/** Replace a payment's notes. We keep the extra-device counter here, so no database is needed. */
+/** Replace a payment's notes. Support's unlock-link counter lives here, so no database is needed. */
 export const setPaymentNotes = (id: string, notes: Record<string, string>) =>
   rzp<Payment>(`/payments/${encodeURIComponent(id)}`, { method: 'PATCH', body: { notes } });
 
-/** Extra devices a purchase can be unlocked on with the payment ID (besides the one it was bought on). */
-export const MAX_RESTORES = 2;
-export const restoresUsed = (p: Payment) => Number(paymentNotes(p).restores) || 0;
-
-/** Last 10 digits of a phone number, so +91 98…, 098… and 98… all compare equal. */
-export const phoneKey = (s: string | undefined) => String(s ?? '').replace(/\D/g, '').slice(-10);
 
 const eq = (a: string, b: string) => a.length === b.length && crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
 
@@ -55,6 +49,7 @@ export async function planForPayment(paymentId: string): Promise<{ plan: PlanId;
   if (payment.status !== 'captured' && payment.status !== 'authorized') return null;
   const order = await getOrder(payment.order_id);
   const plan = order.notes?.plan as PlanId;
-  if (!(plan in PLANS) || payment.amount < PLANS[plan].price * 100) return null;
+  // The order was created by our server at that day's price, so match its amount (prices may have changed since).
+  if (!(plan in PLANS) || payment.amount !== order.amount) return null;
   return { plan, payment };
 }

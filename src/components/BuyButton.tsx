@@ -42,7 +42,7 @@ export default function BuyButton({ plan, label, className = 'btn primary lg blo
           setMsg('Confirming your payment…');
           const v = await fetch('/api/pay/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(resp) });
           const j = await v.json();
-          if (!v.ok) { setMsg(`${j.error ?? 'Could not confirm.'} Payment ID: ${resp.razorpay_payment_id}. Use “Restore purchase” with it, or write to us.`); setBusy(false); return; }
+          if (!v.ok) { setMsg(`${j.error ?? 'Could not confirm.'} Payment ID: ${resp.razorpay_payment_id}. Send it to us on the contact page and we will unlock your access.`); setBusy(false); return; }
           setMsg('Unlocked. Thank you!');
           if (next) router.push(next); else router.refresh();
           setBusy(false);

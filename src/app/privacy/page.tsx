@@ -23,7 +23,7 @@ export default function PrivacyPage() {
         <h2>Who we share it with</h2>
         <p>Only the services needed to run the site: Razorpay (payments) and Vercel (hosting). We may also disclose information if the law requires it.</p>
         <h2>Your rights</h2>
-        <p>You can ask us what we hold about you, ask us to correct it, or ask us to delete it, subject to records we must keep by law (such as payment records for tax). Clearing your browser&rsquo;s data removes your choice lists and access cookie; your payment ID restores access.</p>
+        <p>You can ask us what we hold about you, ask us to correct it, or ask us to delete it, subject to records we must keep by law (such as payment records for tax). Clearing your browser&rsquo;s data removes your choice lists and access cookie; contact us with your payment ID if you lose access.</p>
         <h2>Contact</h2>
         <ContactLines />
       </div>

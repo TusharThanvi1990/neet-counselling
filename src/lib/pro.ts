@@ -1,6 +1,7 @@
 /**
  * Paid plans and access. No accounts yet: a successful Razorpay payment sets a signed, httpOnly cookie
- * (plan + payment id + expiry). On another device the buyer restores it with the Razorpay payment id.
+ * (plan + payment id + expiry). One purchase = one device: there is no self-serve restore. If access is lost,
+ * support creates a single-use unlock link at /support.
  * The paywall is only active when PAYWALL=1 and Razorpay keys are set, so the site stays fully open until launch.
  */
 import crypto from 'node:crypto';
@@ -14,11 +15,11 @@ export const FREE_RESULTS = 25;
 
 export const PLANS: Record<PlanId, { id: PlanId; name: string; price: number; was: number; blurb: string; features: string[] }> = {
   pass: {
-    id: 'pass', name: 'Predictor Pass', price: 99, was: 799, blurb: 'Every college your rank can get.',
+    id: 'pass', name: 'Predictor Pass', price: 199, was: 799, blurb: 'Every college your rank can get.',
     features: ['All predictor matches, not just the top 25', 'MCC + every state counselling', 'Max-fee and state filters', 'Valid till NEET PG 2026 counselling ends'],
   },
   pro: {
-    id: 'pro', name: 'Pro', price: 199, was: 2199, blurb: 'Everything, for the whole season.',
+    id: 'pro', name: 'Pro', price: 299, was: 2199, blurb: 'Everything, for the whole season.',
     features: ['Everything in Predictor Pass', 'Allotment lists: who got which seat, every round', 'Rank Scan and seat increase', 'Compare colleges side by side', 'Smart choice list with PDF export', 'Valid till NEET PG 2026 counselling ends'],
   },
 };
@@ -52,6 +53,17 @@ export function readAccess(token: string | undefined): Access {
 export async function getAccess(): Promise<Access> {
   if (!paywallOn()) return { plan: 'pro', open: true };
   return readAccess((await cookies()).get(COOKIE)?.value);
+}
+
+/** Single-use unlock link made by support: payment id, link number (must match notes.links) and expiry. */
+export type Unlock = { p: string; n: number; exp: number };
+export const signUnlock = (u: Unlock) => { const body = b64(JSON.stringify(u)); return `${body}.${mac('unlock.' + body)}`; };
+export function readUnlock(t: string | null): Unlock | null {
+  const [body, sig] = String(t ?? '').split('.');
+  if (!body || !sig || !secret()) return null;
+  const want = mac('unlock.' + body);
+  if (sig.length !== want.length || !crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(want))) return null;
+  try { const u = JSON.parse(Buffer.from(body, 'base64url').toString()); return u.exp > Date.now() ? u : null; } catch { return null; }
 }
 
 export const can = (a: Access, need: PlanId) => (need === 'pass' ? a.plan !== 'free' : a.plan === 'pro');

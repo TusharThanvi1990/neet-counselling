@@ -14,8 +14,8 @@ export default function ShippingPage() {
         <h2>How access is delivered</h2>
         <ul>
           <li>Access unlocks on {B.site} in the same browser immediately after a successful payment, usually within a few seconds.</li>
-          <li>Razorpay emails a payment receipt with your payment ID. Use it on the <Link href="/pricing">pricing page</Link> to unlock the site on another device or browser.</li>
-          <li>If access has not unlocked within 30 minutes of a successful payment, <Link href="/contact">contact us</Link> with your payment ID and we will sort it out within one working day.</li>
+          <li>Each purchase unlocks one device: the browser you paid in. Razorpay emails a receipt with your payment ID; keep it in case you need help.</li>
+          <li>If access has not unlocked within 30 minutes of a successful payment, <Link href="/contact">contact us</Link> with your payment ID and we will send you an unlock link within one working day.</li>
         </ul>
         <h2>Contact</h2>
         <ContactLines />
