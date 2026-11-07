@@ -41,6 +41,6 @@ export async function planForPayment(paymentId: string): Promise<{ plan: PlanId;
   if (payment.status !== 'captured' && payment.status !== 'authorized') return null;
   const order = await getOrder(payment.order_id);
   const plan = order.notes?.plan as PlanId;
-  if (!(plan in PLANS) || payment.amount !== PLANS[plan].price * 100) return null;
+  if (!(plan in PLANS) || payment.amount < PLANS[plan].price * 100) return null;
   return { plan, payment };
 }

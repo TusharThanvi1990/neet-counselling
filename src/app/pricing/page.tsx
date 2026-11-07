@@ -8,7 +8,7 @@ import { fmt, type SearchParams } from '@/lib/url';
 
 export const metadata: Metadata = {
   title: 'Pricing',
-  description: 'NEET PG Counselling plans: free tools, Predictor Pass ₹399 and Pro ₹999 for the whole NEET PG 2026 counselling season.',
+  description: 'NEET PG Counselling plans: free tools, Predictor Pass ₹199 and Pro ₹499 for the whole NEET PG 2026 counselling season.',
 };
 
 const ROWS: [string, boolean | string, boolean | string, boolean | string][] = [
@@ -60,7 +60,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
               {id === 'pro' && <span className="badge">Best value</span>}
               <h3>{p.name}</h3>
               <div className="price">₹{fmt(p.price)}</div>
-              <p className="sub">{p.blurb} About half what similar tools charge.</p>
+              <p className="sub">{p.blurb} A fraction of what similar tools charge.</p>
               <ul className="checks">{p.features.map((f) => <li key={f}>{f}</li>)}</ul>
               {owned ? <span className="btn added lg block">✓ Active on this device</span>
                 : live ? <BuyButton plan={id} label={`Get ${p.name} · ₹${fmt(p.price)}`} className={`btn ${id === 'pro' ? 'accent' : 'primary'} lg block`} />

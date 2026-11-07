@@ -14,11 +14,11 @@ export const FREE_RESULTS = 25;
 
 export const PLANS: Record<PlanId, { id: PlanId; name: string; price: number; was: number; blurb: string; features: string[] }> = {
   pass: {
-    id: 'pass', name: 'Predictor Pass', price: 399, was: 799, blurb: 'Every college your rank can get.',
+    id: 'pass', name: 'Predictor Pass', price: 199, was: 799, blurb: 'Every college your rank can get.',
     features: ['All predictor matches, not just the top 25', 'MCC + every state counselling', 'Max-fee and state filters', 'Valid till NEET PG 2026 counselling ends'],
   },
   pro: {
-    id: 'pro', name: 'Pro', price: 999, was: 2199, blurb: 'Everything, for the whole season.',
+    id: 'pro', name: 'Pro', price: 499, was: 2199, blurb: 'Everything, for the whole season.',
     features: ['Everything in Predictor Pass', 'Allotment lists: who got which seat, every round', 'Rank Scan and seat increase', 'Compare colleges side by side', 'Smart choice list with PDF export', 'Valid till NEET PG 2026 counselling ends'],
   },
 };
