@@ -8,7 +8,7 @@ import { fmt, type SearchParams } from '@/lib/url';
 
 export const metadata: Metadata = {
   title: 'Pricing',
-  description: 'NEET PG Counselling plans: free tools, Predictor Pass ₹199 and Pro ₹499 for the whole NEET PG 2026 counselling season.',
+  description: 'NEET PG Counselling plans: free tools, Predictor Pass ₹99 and Pro ₹199 for the whole NEET PG 2026 counselling season.',
 };
 
 const ROWS: [string, boolean | string, boolean | string, boolean | string][] = [
