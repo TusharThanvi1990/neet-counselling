@@ -19,6 +19,8 @@ import { gridTable } from '../grid';
 const RAW = 'data/raw/states/tamilnadu';
 const SITE = 'https://tnmedicalselection.net/';
 const ROUNDS: [string, number, string, string[]][] = [ // [output, year, round label, list files]
+  // 2026 Round 1 (05-11-2026; PwD list 31-10-2026), live on tnmedicalselection.net/news/
+  ['tn2026_r1', 2026, 'Round 1', ['tn2026_r1_gq', 'tn2026_r1_mq', 'tn2026_r1_pwd']],
   ['tn2025_r1', 2025, 'Round 1', ['tn2025_r1_gq', 'tn2025_r1_mq', 'tn2025_r1_pwd']],
   ['tn2025_r2', 2025, 'Round 2', ['tn2025_r2_gq', 'tn2025_r2_mq', 'tn2025_r2_pwd']],
   ['tn2025_r3', 2025, 'Round 3', ['tn2025_r3_gq', 'tn2025_r3_mq', 'tn2025_r3_pwd']],
@@ -33,6 +35,8 @@ const ROUNDS: [string, number, string, string[]][] = [ // [output, year, round l
   ['tn2024_sstray', 2024, 'Special stray', ['tn2024_sstray_gq', 'tn2024_sstray_mq']],
 ];
 const RANKS: Record<number, string[]> = {
+  // provisional rank lists (28-10-2026) and their addenda (29-10, 31-10, 02-11-2026)
+  2026: ['tn2026_rank_gq', 'tn2026_rank_mq', 'tn2026_rank_gq_a1', 'tn2026_rank_gq_a2', 'tn2026_rank_gq_a3', 'tn2026_rank_mq_a1'],
   2025: ['tn2025_rank_gq', 'tn2025_rank_gq_lp', 'tn2025_rank_mq', 'tn2025_rank_mq_lp'],
   // provisional rank lists (16-11-2024), their addenda and the revised GQ state merit lists after the percentile cut-off fell
   2024: ['tn2024_rank_gq', 'tn2024_rank_mq', 'tn2024_rank_gq_a1', 'tn2024_rank_mq_a1', 'tn2024_rank_gq_a2', 'tn2024_rank_mq_a2', 'tn2024_rank_gq_a3',
@@ -97,7 +101,8 @@ for (const [out, year, label, files] of ROUNDS) {
       if (!to) continue;
       listed++;
       if (/retain/i.test(r.STATUS ?? '') || (r.ALLOTTEDFROM && key(r.ALLOTTEDFROM) === key(to))) { retained++; continue; }
-      const roll = rollOf.get(r.ARNO), rank = roll ? air[roll]?.[0] : undefined;
+      const roll = rollOf.get(r.ARNO ?? r.APPNO), // 2026 lists head the column "APP. NO"
+        rank = roll ? air[roll]?.[0] : undefined;
       if (!rank) { noAir++; continue; }
       // the 2024 Round 1 MQ list prints "M.D. … COLLEGE" without the "MQ - " prefix: take the quota from the list
       const [quota, course, college] = split(/^(GQ|MQ|NRI|SQ|[A-Z]{2,4})\s*-/.test(clean(to)) ? to : `${f.endsWith('_mq') ? 'MQ' : 'GQ'} - ${to}`);

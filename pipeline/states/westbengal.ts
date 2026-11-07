@@ -16,6 +16,8 @@ import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 const OCR = 'data/raw/states/westbengal/ocr';
 const C = 'https://cdnbbsr.s3waas.gov.in/s3aae8d1e00b15a30e5901227e97ffbef7/uploads/';
 const ROUNDS: [string, number, string, string, string][] = [ // [out, year, label, OCR name, official URL]
+  // 2026 Round 1 (04-11-2026): live on WBMCC's CDN (linked from wbmcc.nic.in/pg-medical-counselling/), text readable, grids by grid-json.ts
+  ['wb2026_r1', 2026, 'Round 1', 'wb2026_r1_result', C + '2026/11/202611041797935242.pdf'],
   // 2025 Round 1 (26-11-2025): WBMCC's PDF (Reporting Services, text readable, grids by pipeline/grid-json.ts) via the Google
   // Drive copy linked from pw.live; the WBMCC CDN file was not found. Being first for 2025, Round 2's Retained rows are skipped.
   ['wb2025_r1', 2025, 'Round 1', 'wb2025_r1_result', 'https://drive.google.com/file/d/1uzQF46Adnj4ARWpy6B9hzL9iV0RlJiyn/view'],

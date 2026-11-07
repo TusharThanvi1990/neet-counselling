@@ -16,6 +16,11 @@ import { pageLines, type Line } from '../textlines';
 const RAW = 'data/raw/state';
 type YearCfg = { year: number; base: string; rounds: [string, string, string][]; merits: string[]; meritRe: RegExp; form: string };
 const YEARS: YearCfg[] = [
+  // 2026 (medical2026.mahacet.org NEET-PGM-2026): Round 1 provisional selection list printed 05-11-2026; AIR from the final
+  // provisional state merit list (02-11-2026) and the in-service merit list. Same row layout as 2024.
+  { year: 2026, base: 'https://medical2026.mahacet.org/NEET-PGM-2026/instructions-downloadFile/', form: '261',
+    rounds: [['mh2026_r1', 'Round 1', 'PGM_SelList_R1.pdf']],
+    merits: ['mh2026_merit_r1', 'mh2026_merit_r1_ins'], meritRe: /^\d+\s+(\d+)\s+[\d.]+\s+\d{11}\b.*?\b(261\d{6})\b/ },
   { year: 2025, base: 'https://statecetcell.s3.ap-south-1.amazonaws.com/PGM-25/', form: '258',
     rounds: [ // [file, round label, official PDF]
       ['mh2025_r1', 'Round 1', 'SelList_R1.pdf'],

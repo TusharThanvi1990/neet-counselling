@@ -3,7 +3,7 @@
 The one place that says what data the site has, what is missing, and why. **Update it in the same commit as any data change.**
 State-by-state detail (sources, quirks, row counts, checks) lives in [STATES.md](STATES.md).
 
-Last updated: 2026-11-06.
+Last updated: 2026-11-07.
 
 Cross-check (2026-11-04): 96 Round 1 closing ranks (rank and seat count) compared by hand with neetvantage.com across MCC 2023–26, Karnataka, Maharashtra, West Bengal, Haryana, MP and Rajasthan: 96/96 match. Nothing copied from it. A dataset-wide outlier scan found and fixed: Bihar DQ (Divyang) seats filed as non-PwD, MP in-service candidates on general seats (now in-service quota), Punjab PwD / NRI seats inside other quotas, Punjab 2026 ranks printed as "1E+05" (now from the NBEMS 2026 result), J&K sports seats.
 
@@ -14,7 +14,7 @@ Cross-check (2026-11-04): 96 Round 1 closing ranks (rank and seat count) compare
 | Data | Years | Status | Where it comes from |
 |---|---|---|---|
 | Allotments, all rounds (AIQ, deemed, central universities, DNB) | 2023, 2024, 2025 | ✅ | mcc.nic.in result PDFs → `data/parsed/mcc20xx_*.json` |
-| Allotments 2026 | Round 1 | ✅ | Round 2 onwards ⏳ as MCC publishes |
+| Allotments 2026 | Round 1 | ✅ | Round 2 ⏳: MCC notice no. 5 (07-11-2026, `data/raw/mcc2026_schedule_r2_revised.pdf`) moved Round 2 back for NMC's new seats: provisional result 16 Nov, final result 17 Nov 2026 |
 | Seat matrix (AIQ, deemed, central, DNB) | 2023–2026 | ✅ | MCC seat matrix PDFs (`data/raw/sm20xx_*.pdf`) |
 | Institute profiles (fees, stipend, bond, hostel) | current | ✅ | MCC institute profile pages, 2,036 institutes |
 | Allotments before 2023 | 2021–2022 | ⬜ | MCC archive |
@@ -25,8 +25,8 @@ All ranks shown on the site are All India Ranks. Where a state prints only its o
 
 | State | 2025 | 2026 | Notes |
 |---|---|---|---|
-| Maharashtra | ✅ R1–R3, stray, special stray | ⏳ | |
-| Karnataka (+ in-service) | ✅ R1–R3, stray, special stray | ⏳ | 2024: R1, R2, R3, first stray (R4, 25-02-2025), second stray (state lists only) |
+| Maharashtra | ✅ R1–R3, stray, special stray | ✅ R1 (2,053) | 2026 R1 selection list 05-11-2026 (medical2026.mahacet.org); AIR via the 02-11-2026 final state merit list |
+| Karnataka (+ in-service) | ✅ R1–R3, stray, special stray | ✅ R1 final (07-11-2026, 3,268); in-service ⏳ | 2024: R1, R2, R3, first stray (R4, 25-02-2025), second stray (state lists only) |
 | Kerala | ✅ R1–R3, stray | ⏳ | |
 | Andhra Pradesh | ✅ R1–R3, stray | ⏳ | 2025: closing ranks only (official last-rank table) |
 | Rajasthan | ✅ R1–R3, stray | ✅ R1 | 2026 R1 (1,365) from pg.neetrajasthan.com via the GitHub mirror (sha256 matches) |
@@ -43,8 +43,8 @@ All ranks shown on the site are All India Ranks. Where a state prints only its o
 | **Uttar Pradesh** | 🟡 R1 MD/MS (2,733); R2, R3, stray not found | ✅ R1 | 2026 R1 added 2026-11-03. 2025 R1 from a consultancy's public Google Sheet export of upneet's pages (its 2026 sheet matched our own scrape 2,832/2,832); AIR via DGME UP's own 2025 merit lists |
 | **Assam** | 🟡 R1, R2 (2024: R1) | ⏳ | R1 select list from the Internet Archive (10-12-2025); R2 now keeps only seats that changed from R1 (159, was 373 incl. held seats); R3/stray notices without lists |
 | **Odisha** | ✅ R1, R2, R3, stray | ✅ R1 (04-11-2026, 374; AIR via the revised final merit list of 30-10-2026) | R2 = revised common allotment (21-12-2025); R3 / stray = rows admitted in R-3 / R-4 in the final admission list after stray (25-02-2026); Internet Archive copies |
-| **West Bengal** | ✅ R1–R3, stray | ⏳ R1 due 4 Nov | added 2026-11-03. Result PDFs have no text mapping, read with NamahaPDF OCR (`pipeline/ocr-grid.ts`). R1 and R3 result files not found in any archive snapshot |
-| Tamil Nadu | ⛔ needs NBEMS 2025 result | ⏳ R1 not out (PwD list out 31 Oct) | 2025 lists give TN rank + roll no. only; the 2025 NBEMS result is offline and not archived |
+| **West Bengal** | ✅ R1–R3, stray | ✅ R1 (04-11-2026, 918; text PDF, no OCR needed) | added 2026-11-03. Result PDFs have no text mapping, read with NamahaPDF OCR (`pipeline/ocr-grid.ts`). R1 and R3 result files not found in any archive snapshot |
+| Tamil Nadu | ✅ R1–R3, stray (via the NBEMS 2025 result) | ✅ R1 (05-11-2026, 1,889) | Lists give TN rank + application no. only; AIR via the TN rank lists (app. no. → roll) and the NBEMS result of the year |
 | Delhi | ✅ via MCC | ✅ via MCC | DU / IP University quotas are MCC rounds |
 | **Jharkhand** | ✅ R1, R2, R3, stray (2024: R1–R3, stray, special stray) | ✅ R1 (03-11-2026) | added 2026-11-04: JCECEB allotment PDFs still on jceceb.jharkhand.gov.in/download/; AIR from the NBEMS result by roll no.; incentive marks > 0 = in-service quota |
 | **Uttarakhand** | ✅ R1, R2, R3, stray (+ NRI rounds; 2024: R1–R3, stray, special stray) | ✅ R1 (315) | added 2026-11-04: HNBUMU broad sheets still on meta-secure.com/MDMS2024/UploadDocs/; NEET rank printed |
@@ -81,9 +81,9 @@ All ranks shown on the site are All India Ranks. Where a state prints only its o
 
 | When | What |
 |---|---|
-| 5 Nov 2026 | West Bengal 2026 R1 (wbmcc.nic.in; not out on 4 Nov, only the Round 1 provisional candidate list); Jharkhand 2026 R1 (neetpg.jceceb.co.in; not out on 4 Nov, latest is the 29-10 merit list) |
-| this week | Uttarakhand 2026 R1 (meta-secure.com/HNBUMU_MDMS), Tamil Nadu 2026 R1, Assam 2026 R1 |
-| after each round | MCC 2026 R2+, later 2026 rounds for UP, Gujarat, MP, Punjab, Chhattisgarh, Goa |
+| 8–10 Nov 2026 | Assam 2026 R1 (press said 5 Nov; not on dme.assam.gov.in on 7 Nov); Karnataka 2026 in-service R1; Kerala, AP, Telangana, Bihar, HP, Haryana, Puducherry 2026 R1 (nothing published as of 7 Nov) |
+| 16–17 Nov 2026 | MCC 2026 Round 2 (provisional 16 Nov, final 17 Nov, per MCC notice no. 5 of 07-11-2026) |
+| after each round | later 2026 rounds for every state with R1 (UP, MH, KA, TN, WB, Gujarat, MP, Rajasthan, Punjab, Chhattisgarh, J&K, Goa, Odisha, Jharkhand, Uttarakhand) |
 
 
 ### Fee coverage (college × branch × quota with a fee), 2026-11-03

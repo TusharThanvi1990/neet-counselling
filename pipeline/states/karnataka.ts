@@ -27,6 +27,9 @@ const ROUNDS: [string, string, string, string][] = [ // [file, round label, quot
   // 2024 (still on KEA's site under keawebentry456/pget2024/; file names found via Collegedunia's Round 1 article and Scribd
   // titles; R2's name was found by trying KEA's naming pattern over the round's dates, R4's from a link on t.me/SRISAINEETPG).
   // R4 is the first stray round, R5 the second.
+  // 2026 Round 1 final (07-11-2026), live on KEA (cetonline.karnataka.gov.in/kea/pgetmed2026); the "english" and "kannada"
+  // links serve the same file. In-service (INS) 2026 lists not published yet.
+  ['ka2026_r1', 'Round 1', 'State', '2026:PGNEET_MEDICAL_ALLOT_2026_FINAL_07112026_R1english.pdf'],
   ['ka2024_r1', 'Round 1', 'State', '2024:PGNEET_MEED_ALLOT_2024_R1_finL_26_11_2024.pdf'],
   ['ka2024_r2', 'Round 2', 'State', '2024:PGNEET_MEED_ALLOT_2024_R2_finL_20_12_2024.pdf'],
   ['ka2024_r3', 'Round 3', 'State', '2024:PGNEET_MEED_ALLOT_2024_R3_Final_30_01_2025.pdf'],
@@ -34,7 +37,8 @@ const ROUNDS: [string, string, string, string][] = [ // [file, round label, quot
   ['ka2024_r5', 'Special stray', 'State', '2024:PGNEET_MEED_ALLOT_2024_R5_17032025_Final_kannada.pdf'],
 ];
 const KEA24 = 'https://cetonline.karnataka.gov.in/keawebentry456/pget2024/';
-const urlOf = (pdf: string) => (pdf.startsWith('2024:') ? KEA24 + pdf.slice(5) : KEA + pdf);
+const KEA26 = 'https://cetonline.karnataka.gov.in/keawebentry456/pgetmed2026/';
+const urlOf = (pdf: string) => (pdf.startsWith('2024:') ? KEA24 + pdf.slice(5) : pdf.startsWith('2026:') ? KEA26 + pdf.slice(5) : KEA + pdf);
 const rawOf = (file: string) => (file.startsWith('ka2024') ? `${RAW}/2024/${file}.pdf` : `${RAW}/${file}.pdf`);
 const key = (s: string) => s.toLowerCase().replace(/[^a-z]/g, '');
 const FIELDS: Record<string, string> = {
@@ -47,7 +51,7 @@ const out = new Map<string, { label: string; url: string; counselling: string; y
 const statuses = new Map<string, number>(), cats = new Map<string, number>();
 for (const [file, label, group, pdf] of ROUNDS) {
   let idx: Record<string, number> | null = null, n = 0, skipped = 0, prevRank = 0, breaks = 0;
-  const o = { label, url: urlOf(pdf), counselling: group === 'In-service' ? 'Karnataka in-service' : 'Karnataka', year: file.startsWith('ka2024') ? 2024 : 2025, rows: [] as any[] };
+  const o = { label, url: urlOf(pdf), counselling: group === 'In-service' ? 'Karnataka in-service' : 'Karnataka', year: Number(file.slice(2, 6)), rows: [] as any[] };
   out.set(file, o);
   for await (const pg of readPages(new Uint8Array(readFileSync(rawOf(file))))) {
     for (const cells of gridTable(pg).rows) {
